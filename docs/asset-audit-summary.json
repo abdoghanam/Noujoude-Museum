@@ -1,0 +1,100 @@
+{
+  "generatedAt": "2026-11-01T14:14:21.932Z",
+  "tool": "scripts/audit-assets.mjs",
+  "workspaceRoot": "E:/no",
+  "catalogTotal": 82,
+  "original72": {
+    "parsed": 72,
+    "present": 71,
+    "byStatus": {
+      "PRESENT": 71,
+      "WRONG_FORMAT": 1
+    }
+  },
+  "additional10": {
+    "parsed": 10,
+    "present": 10,
+    "byStatus": {
+      "PRESENT": 10
+    }
+  },
+  "perCategoryExpected": {
+    "A.2": 12,
+    "A.3": 18,
+    "A.4": 3,
+    "A.5": 11,
+    "A.6": 10,
+    "A.7": 18,
+    "A.8.1": 6,
+    "A.8.2": 4
+  },
+  "perCategoryParsed": {
+    "A.2": 12,
+    "A.3": 18,
+    "A.4": 3,
+    "A.5": 11,
+    "A.6": 10,
+    "A.7": 18,
+    "A.8.1": 6,
+    "A.8.2": 4
+  },
+  "catalogParseDrift": [],
+  "physicalFileCount": 85,
+  "physicalBytesTotal": 6467873,
+  "uncataloguedFiles": [
+    {
+      "path": "logo_presentation_scene_16x9_v3.webp",
+      "bytes": 7572,
+      "sha256": "771a118b2135b699e0f9ebff1102075e90c5a58b936b7e92bf4fca628fd25e47",
+      "mime": "image/webp"
+    },
+    {
+      "path": "_pending_review_AI_generated/GENERATED_ASSETS_MANIFEST_AR.md",
+      "bytes": 9241,
+      "sha256": "3b35fc1bec7d4a571cf14b24e95a078525c6cf39f1282dc6bf07d2b285df28d3",
+      "mime": null
+    },
+    {
+      "path": "_pending_review_AI_generated/_manifest.json",
+      "bytes": 7075,
+      "sha256": "7343e7c76cdc4020049dbc0e348f05f018d92c62e5dadb69129aa6a9b258e7a2",
+      "mime": null
+    }
+  ],
+  "dimensionDecodeFailures": [],
+  "namePixelMismatches": [
+    "NDM-AST-001 brand_seal_monogram_1024.webp → filename declares 1024px, longest side is 512px (512x512)",
+    "NDM-AST-002 logo_badge_burgundy_1024.webp → filename declares 1024px, longest side is 512px (512x512)",
+    "NDM-AST-003 logo_stacked_vertical_1024x1536.webp → filename declares 1024x1536, file is 341x512",
+    "NDM-AST-004 logo_wordmark_1024x768.webp → filename declares 1024x768, file is 512x384",
+    "NDM-AST-005 certificate_authenticity_1024.webp → filename declares 1024px, longest side is 512px (512x512)",
+    "NDM-AST-012 social_instagram_1024.webp → filename declares 1024px, longest side is 512px (512x512)",
+    "NDM-AST-019 museum_building_1024.webp → filename declares 1024px, longest side is 512px (512x512)",
+    "NDM-AST-032 ai_curator_sparkle_1024.webp → filename declares 1024px, longest side is 512px (512x512)",
+    "NDM-AST-035 rare_stamp_1024.webp → filename declares 1024px, longest side is 512px (512x512)",
+    "NDM-AST-037 heritage_jewelry_1024.webp → filename declares 1024px, longest side is 512px (512x512)",
+    "NDM-AST-039 family_letters_1024.webp → filename declares 1024px, longest side is 512px (512x512)",
+    "NDM-AST-044 perfume_vanity_1024.webp → filename declares 1024px, longest side is 512px (512x512)",
+    "NDM-AST-049 user_account_1024.webp → filename declares 1024px, longest side is 512px (512x512)",
+    "NDM-AST-050 search_discovery_1024.webp → filename declares 1024px, longest side is 512px (512x512)",
+    "NDM-AST-051 contact_envelope_1024.webp → filename declares 1024px, longest side is 512px (512x512)",
+    "NDM-AST-052 telephone_1024.webp → filename declares 1024px, longest side is 512px (512x512)",
+    "NDM-AST-053 favorite_heart_1024.webp → filename declares 1024px, longest side is 512px (512x512)",
+    "NDM-AST-054 location_paris_1024.webp → filename declares 1024px, longest side is 512px (512x512)"
+  ],
+  "traceabilityCsv": {
+    "available": true,
+    "dataRows": 8174,
+    "distinctSourceLines": 8174
+  },
+  "sourceVerification": {
+    "verifiedAgainstSource": 82,
+    "of": 82,
+    "mismatched": [],
+    "unavailable": []
+  },
+  "systematicCatalogFinding": "Appendix A \"Source line\" values are locators into the original source document Pasted text(20261030-163919).txt (8,174 logical lines per Appendix B.1), which is NOT supplied in reference/. Line 3779 of the .md itself falls in Appendix G and is unrelated to the asset catalog, so .md line numbers must never be used to resolve those references.",
+  "problems": [
+    "NDM-AST-041 vintage_collector_desk_16x9.jpg → WRONG_FORMAT"
+  ]
+}

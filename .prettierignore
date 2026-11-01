@@ -1,0 +1,45 @@
+# Noujoude — Prettier exclusion list.
+#
+# WHY THIS FILE EXISTS (it is a safety control, not a style preference):
+# `package.json` ships `"format": "prettier --write ."`. Prettier parses Markdown
+# and JSON, and this repository's read-only source documents are Markdown. With no
+# ignore file, a single well-intentioned `pnpm format` would rewrite the files under
+# `reference/` — which Directive §3 places off limits ("Never modify, rename,
+# overwrite, or delete original source files") and which `docs/REFERENCE_INTEGRITY.json`
+# fingerprints, so the rewrite would also trip the preflight DRIFT check and invalidate
+# every `line N` citation in `docs/` (ARCHITECTURE_DECISIONS §8: citations are addressed
+# to these exact bytes).
+#
+# `pnpm format:check` (`prettier --check .`) is the gate that CI runs; it never writes.
+# `pnpm format` is the developer's fixing command and is only safe because of this file.
+
+# ─── Read-only inputs ────────────────────────────────────────────────────────
+# Authoritative sources. Never reformatted, never rewritten, never renamed.
+reference/
+# Original asset library. Preserved byte-for-byte; 82/82 SHA-256 re-checked on every
+# preflight run. `_manifest.json` inside it is evidence, not a file to beautify.
+Noujoude.photo/
+
+# ─── Unknown-provenance root file ────────────────────────────────────────────
+# Present in the workspace before this build; preserved untouched by standing rule
+# ("inspect the actual directory, preserve unknown files"). Not ours to reformat.
+README_Noujoude_Master_Specification_EN111.md
+
+# ─── Generated evidence artefacts ────────────────────────────────────────────
+# Machine-written by scripts/. Byte stability matters more than formatting, and a
+# reformat would make a regenerated artefact diff against its own previous run.
+docs/CITATION_VERIFICATION.json
+docs/REFERENCE_INTEGRITY.json
+docs/DOCX_MD_ALIGNMENT.json
+docs/asset-audit-summary.json
+docs/ASSET_INVENTORY_AUDIT.csv
+docs/CITATION_TRIAGE_2026-10-31.superseded.txt
+# Verbatim command transcripts. Their value is that they are the bytes a run produced;
+# any formatter touching them would make the evidence unquotable.
+docs/A5_PRIVILEGE_EVIDENCE.txt
+
+# ─── Tool output and installed trees ─────────────────────────────────────────
+node_modules/
+.next/
+pnpm-lock.yaml
+*.tsbuildinfo

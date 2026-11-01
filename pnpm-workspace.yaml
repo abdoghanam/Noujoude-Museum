@@ -1,0 +1,18 @@
+# pnpm-workspace.yaml — created by `pnpm install` under Owner decision OD-2 (1 November 2026).
+#
+# `allowBuilds` is pnpm 11's mechanism for permitting a dependency to run its own install-time build
+# script. It is a supply-chain grant, so it is recorded rather than left as a file pnpm wrote:
+#   • pnpm 11.21.0 no longer reads the `pnpm` field in package.json (measured: it prints
+#     `[WARN] The "pnpm" field in package.json is no longer read by pnpm` and ignores
+#     onlyBuiltDependencies), so this file — not package.json — is the live mechanism here.
+#   • Without these two grants `pnpm install` exits 1 with ERR_PNPM_IGNORED_BUILDS, and every
+#     `pnpm run <script>` then refuses with ERR_PNPM_VERIFY_DEPS_BEFORE_RUN even though the tree
+#     exists. The workspace is not usable while that stands, which is why the grant was made.
+#   • Granted deliberately, by name, non-interactively, after inspecting what each package builds:
+#       esbuild        — postinstall fetches/links its native binary; vitest and next depend on it.
+#       unrs-resolver  — native platform resolver used by eslint-config-next / Next.js.
+#   • Both are already in the dependency graph at pinned versions; neither grant changes a version.
+#   • Anything pnpm adds to this list in future is a new decision, not a continuation of this one.
+allowBuilds:
+  esbuild: true
+  unrs-resolver: true

@@ -1,0 +1,242 @@
+DISPOSITION — superseded working dump, retained as evidence, not a current defect list
+---------------------------------------------------------------------------------------
+What this is: an ad-hoc triage extract produced while remediating line citations across
+docs/ (filesystem mtime 2026-10-31 02:42). It was written by an interactive repair step, not
+by a committed tool; `scripts/verify-citations.mjs` writes only docs/CITATION_VERIFICATION.json.
+The file was originally the hidden docs/.triage.txt and was renamed on 31 Oct 2026 so that a
+reviewer would actually find it; everything below the rule is its unedited body.
+
+What it measures — 47 findings, cross-tabulated from the body itself:
+  file                              LINE_OFF   LINE_OFF_OTHER_SOURCE   NOT_FOUND   total
+  docs/AI_CURATOR_GOVERNANCE.md           3                         1           1       4
+  docs/DATA_MODEL.md                      6                         1           2       9
+  docs/IMPLEMENTATION_PLAN.md             0                         1           0       1
+  docs/MEDIA_AND_RIGHTS_GOVERNANCE.md    12                         3           3      18
+  docs/REQUIREMENTS_TRACEABILITY.md       1                         1           0       2
+  docs/SECURITY_AND_PERMISSIONS.md        6                         5           2      13
+  TOTAL                                  28                        11           8      47
+
+  LINE_OFF               — the quoted text exists, but not on the line number cited.
+  LINE_OFF_OTHER_SOURCE  — the text exists on that line of a DIFFERENT reference file, i.e.
+                           the number was right and the file label was missing.
+  NOT_FOUND              — the quoted text appears on no line of any cited source.
+
+Per-finding detail (Q = quoted text, REAL = the actual text of the line it cites) is below
+and is the only surviving record of the intermediate state.
+
+Current status of all 47: RESOLVED. Measured by re-running the gate on 31 Oct 2026 —
+  "scanned 12 docs/ markdown files, 476 quoted fragments carrying a line reference
+   (skipped 13 quoted strings shorter than 3 tokens)"
+  "VERIFIED 422 | LINE_OFF 0 | LINE_OFF_OTHER_SOURCE 0 | SELF_RECORDING 10 |
+   PROJECT_RECORD 8 | DEFINED_TERM 4 | NOT_FOUND 0 | NO_LINE_REF 36 (of which 0 are
+   verbatim requirement text with no citation)"
+That was one run; the final run of the same window measured 478 fragments / 38 no-reference
+strings with VERIFIED 422 and the same zero defect counts. Fragment totals move while
+documents are being written — defect classes stayed at zero, which is the claim that matters.
+What the 47 actually were, honestly split: most were a missing file label or a line number
+displaced by editing. But several NOT_FOUND rows were never mis-citations — they were this
+project's own wording sitting inside quotation marks, e.g. DATA_MODEL line 555
+"these fields are the schema", the MEDIA_AND_RIGHTS line 203 usage labels "display in a
+country hero" and "AI retrieval citation", and the line 325 note about a .jpg extension
+holding a WebP container, which is a finding of docs/ASSET_INVENTORY_AUDIT.csv rather than a
+sentence from any reference document. How they read now, verified against
+docs/CITATION_VERIFICATION.json: the line-203 labels are plain prose with no quotation marks
+(MEDIA_AND_RIGHTS line 203), the DATA_MODEL sentence was rewritten without quotes, and the
+WebP note is classified SELF_RECORDING against the audit CSV (line 327). None of the four
+counts changed because a threshold was loosened — the checker's rules were untouched by this
+remediation. The dump is kept rather than deleted because a "0 defects" reading is only
+meaningful next to the number it moved from.
+
+---------------------------------------------------------------------------------------
+
+===== docs/AI_CURATOR_GOVERNANCE.md (4)
+
+[LINE_OFF] doc:116  onLine=[1047,1352,1134,1453] names=any  actual=228 in docs/ARCHITECTURE_DECISIONS.md
+  Q   : never from one global field
+  REAL: for a page is derived from the relevant `PublicationRecord`, never from one global field.
+
+[LINE_OFF] doc:294  onLine=[2076-2079,2552,206,2660,56] names=any/standard/env-example  actual=2660 in reference/Noujoude_Master_Specification_EN.md
+  Q   : AI policy/configuration changes
+  REAL: - AI policy/configuration changes.
+
+[NOT_FOUND] doc:317  onLine=[1447,1453,1457-1460,1461,1983] names=any  actual=- in -
+  Q   : Arabic and English are separately authored and reviewed content experiences… preserve the same factual meaning
+
+[LINE_OFF] doc:335  onLine=[3109] names=any  actual=2548 in reference/Noujoude_Master_Specification_EN.md
+  Q   : where lawful and approved
+  REAL: Where lawful and approved, retain limited administrative quality-review records with access and retention controls. Public inquiry data is excluded from knowledge by default.
+
+===== docs/DATA_MODEL.md (9)
+
+[NOT_FOUND] doc:308  onLine=[1344] names=any  actual=- in -
+  Q   : The presence of a file in the [library] does not establish rights.
+
+[LINE_OFF] doc:338  onLine=[1654] names=any  actual=227 in docs/ARCHITECTURE_DECISIONS.md
+  Q   : Published for a page is derived from the relevant `PublicationRecord`, never from one global field
+  REAL: (entity, locale), carrying state, timestamps, publisher, scheduled time, and route/slug version. `Published`
+
+[LINE_OFF] doc:345  onLine=[1557] names=any  actual=1354 in reference/Noujoude_Master_Specification_EN.md
+  Q   : previous and new values **or** a safe structured diff
+  REAL: **Revision:** record type and ID, revision ID, previous and new values or a safe structured diff, author, timestamp, change reason, and associated review/publication state.
+
+[LINE_OFF_OTHER_SOURCE] doc:454  onLine=[110,1382] names=standard  actual=1382 in reference/Noujoude_Master_Specification_EN.md
+  Q   : do not use mutable titles as primary keys
+  REAL: - Use stable identifiers; do not use mutable titles as primary keys.
+
+[LINE_OFF] doc:544  onLine=[1041] names=any  actual=1259 in reference/Noujoude_Master_Specification_EN.md
+  Q   : Current review status
+  REAL: - Current review status.
+
+[LINE_OFF] doc:544  onLine=[1041] names=any  actual=1261 in reference/Noujoude_Master_Specification_EN.md
+  Q   : Reviewer and review timestamp
+  REAL: - Reviewer and review timestamp.
+
+[LINE_OFF] doc:549  onLine=[1370] names=any  actual=1282 in reference/Noujoude_Master_Specification_EN.md
+  Q   : supporting source/evidence links
+  REAL: - Supporting source/evidence links.
+
+[NOT_FOUND] doc:555  onLine=[1198] names=any  actual=- in -
+  Q   : these fields are the schema
+
+[LINE_OFF] doc:608  onLine=[124,125] names=any  actual=277 in reference/Noujoude_Technology_and_Security_Standard_EN.md
+  Q   : database migration verification and restore test
+  REAL: 10. Database migration verification and restore test.
+
+===== docs/IMPLEMENTATION_PLAN.md (1)
+
+[LINE_OFF_OTHER_SOURCE] doc:235  onLine=[262,3887] names=standard/master  actual=88 in docs/OWNER_INPUT_REGISTER.md
+  Q   : Closed as proposed baseline; provider proof/Owner approval pending
+  REAL: | **OID-20** | Formal acceptance of the proposed RPO/RTO and availability baseline — and a decision on whether anything may ever be **published** as an SLA | The `GAP-14` row of `reference/Noujoude_Ga
+
+===== docs/MEDIA_AND_RIGHTS_GOVERNANCE.md (18)
+
+[LINE_OFF] doc:133  onLine=[1318] names=any  actual=1851 in reference/Noujoude_Master_Specification_EN.md
+  Q   : not exposed publicly
+  REAL: - Storage identifier/path (not exposed publicly).
+
+[LINE_OFF_OTHER_SOURCE] doc:158  onLine=[301] names=standard  actual=36 in docs/CHANGELOG.md
+  Q   : Not supplied in any reference document
+  REAL: Values written into those columns by the tool: `Source/Creator` = *Not supplied in any reference document*
+
+[LINE_OFF_OTHER_SOURCE] doc:158  onLine=[301] names=standard  actual=152 in docs/OWNER_INPUT_REGISTER.md
+  Q   : AI-generated (Qwen ImageGen tooling), generator recorded in `_manifest.json`
+  REAL: | Read `docs/ASSET_INVENTORY_AUDIT.csv` rights/approval/attribution columns for all 82 rows (CSV-aware parse, 20 columns × 82 rows) | `Rights Status`: 72 × `UNKNOWN — no rights statement supplied in r
+
+[LINE_OFF] doc:161  onLine=[1318] names=any  actual=38 in docs/CHANGELOG.md
+  Q   : Original (no derivatives produced)
+  REAL: `Derivative Status` = *Original (no derivatives produced)* on all 82. These are this project's own recorded
+
+[LINE_OFF] doc:161  onLine=[1318] names=any  actual=92 in docs/SECURITY_AND_PERMISSIONS.md
+  Q   : DERIVATIVE (webp) from a PNG original that is not retained
+  REAL: (`ASSET_INVENTORY_AUDIT.csv` `Derivative Status` = "DERIVATIVE (webp) from a PNG original that is not retained").
+
+[LINE_OFF] doc:167  onLine=[1372] names=any  actual=37 in docs/CHANGELOG.md
+  Q   : None — no application code exists yet (src/ is empty)
+  REAL: on all 82 rows, `Actual Usage` = *None — no application code exists yet (src/ is empty)* on all 82, and
+
+[NOT_FOUND] doc:203  onLine=[1372,1329-1342] names=any  actual=- in -
+  Q   : display in a country hero
+
+[NOT_FOUND] doc:203  onLine=[1372,1329-1342] names=any  actual=- in -
+  Q   : AI retrieval citation
+
+[LINE_OFF] doc:228  onLine=[1291-1295] names=any  actual=260 in docs/ARCHITECTURE_DECISIONS.md
+  Q   : each to carry its own evidence and approval
+  REAL: assessments", and §8.13 (1291–1295) requires each to carry its own evidence and approval — but §8.2's entity
+
+[LINE_OFF] doc:289  onLine=[3089,3090] names=any  actual=36 in docs/CHANGELOG.md
+  Q   : Not supplied in any reference document
+  REAL: Values written into those columns by the tool: `Source/Creator` = *Not supplied in any reference document*
+
+[NOT_FOUND] doc:325  onLine=[3844] names=any  actual=- in -
+  Q   : extension .jpg but container is image/webp ; source line 3844 confirms this entry verbatim
+
+[LINE_OFF] doc:398  onLine=[1584] names=any  actual=1885 in reference/Noujoude_Master_Specification_EN.md
+  Q   : Awaiting Rights Review
+  REAL: - Awaiting Rights Review.
+
+[LINE_OFF] doc:463  onLine=[3089] names=any  actual=36 in docs/CHANGELOG.md
+  Q   : Not supplied in any reference document
+  REAL: Values written into those columns by the tool: `Source/Creator` = *Not supplied in any reference document*
+
+[LINE_OFF] doc:463  onLine=[3089] names=any  actual=3463 in reference/Noujoude_Master_Specification_EN.md
+  Q   : source; creator; creation/acquisition date when known
+  REAL: Every asset record MUST include: Asset ID; exact filename; original filename; asset type; MIME type; dimensions; file size; color profile when relevant; source; creator; creation/acquisition date when
+
+[LINE_OFF] doc:469  onLine=[2724,2780,3102] names=any/doc:SECURITY_AND_PERMISSIONS.md  actual=176 in docs/SECURITY_AND_PERMISSIONS.md
+  Q   : competent rights reviewer
+  REAL: 2688–2736), yet §17.4/§16.9/§16.19 depend on a competent **rights reviewer** (line 2724, 2780), an **AI
+
+[LINE_OFF_OTHER_SOURCE] doc:497  onLine=[53,1895,1386,2504,322] names=standard/directive  actual=1386 in reference/Noujoude_Master_Specification_EN.md
+  Q   : Keep the original media file separate from derivatives
+  REAL: - Keep the original media file separate from derivatives.
+
+[LINE_OFF] doc:498  onLine=[1318,193] names=any/standard  actual=1856 in reference/Noujoude_Master_Specification_EN.md
+  Q   : original/derivative relationship
+  REAL: - Original/derivative relationship.
+
+[LINE_OFF] doc:501  onLine=[1897-1899,224,2952] names=any/standard  actual=2952 in reference/Noujoude_Master_Specification_EN.md
+  Q   : optimization must not corrupt meaningful inscriptions or material features
+  REAL: - Preserve visual detail in documentary and artifact images; optimization must not corrupt meaningful inscriptions or material features.
+
+===== docs/REQUIREMENTS_TRACEABILITY.md (2)
+
+[LINE_OFF] doc:371  onLine=[21-23] names=any  actual=226 in docs/ARCHITECTURE.md
+  Q   : Pending Human Approval
+  REAL: in `_pending_review_AI_generated/`, pending human approval and awaiting rights review.
+
+[LINE_OFF_OTHER_SOURCE] doc:441  onLine=[3908] names=directive  actual=3908 in reference/Noujoude_Master_Specification_EN.md
+  Q   : A backup job reporting success is not proof of recoverability; only a tested restore is acceptable evidence.
+  REAL: - A backup job reporting success is not proof of recoverability; only a tested restore is acceptable evidence.
+
+===== docs/SECURITY_AND_PERMISSIONS.md (13)
+
+[LINE_OFF] doc:47  onLine=[2916-2930] names=any  actual=2884 in reference/Noujoude_Master_Specification_EN.md
+  Q   : assessed as one system
+  REAL: The public application, Control Center, APIs, data layer, media pipeline, and AI retrieval services must be assessed as one system.
+
+[NOT_FOUND] doc:122  onLine=[2724,2780,1344,1593] names=any  actual=- in -
+  Q   : The presence of file in the library does not prove a right to display it
+
+[LINE_OFF] doc:182  onLine=[2664] names=any  actual=1356 in reference/Noujoude_Master_Specification_EN.md
+  Q   : Audit records are protected from ordinary editing
+  REAL: **AuditEvent:** event ID, timestamp, actor, action, target record, outcome, relevant before/after state where appropriate, and security context. Audit records are protected from ordinary editing.
+
+[LINE_OFF] doc:192  onLine=[2624] names=any  actual=3790 in reference/Noujoude_Master_Specification_EN.md
+  Q   : …provider tokens, or raw storage credentials
+  REAL: - Editing `.env` files, secrets, signing keys, encryption keys, provider tokens, or raw storage credentials.
+
+[LINE_OFF_OTHER_SOURCE] doc:208  onLine=[148,2684,3044,3105] names=standard  actual=2684 in reference/Noujoude_Master_Specification_EN.md
+  Q   : Hiding a menu item or button is not authorization
+  REAL: Permissions must be enforced on the server and at the data/action layer. Hiding a menu item or button is not authorization.
+
+[LINE_OFF_OTHER_SOURCE] doc:211  onLine=[151,2793-2800,1551,2800,3041,3102] names=standard  actual=1551 in reference/Noujoude_Master_Specification_EN.md
+  Q   : Approval does not automatically publish content
+  REAL: Approval does not automatically publish content.
+
+[LINE_OFF_OTHER_SOURCE] doc:211  onLine=[151,2793-2800,1551,2800,3041,3102] names=standard  actual=2800 in reference/Noujoude_Master_Specification_EN.md
+  Q   : distinct review events and record who made each decision
+  REAL: For a small team, the Owner may perform multiple roles, but the system must preserve the distinct review events and record who made each decision.
+
+[LINE_OFF_OTHER_SOURCE] doc:213  onLine=[153,3920] names=standard  actual=3920 in reference/Noujoude_Master_Specification_EN.md
+  Q   : Admin tests cover all twenty modules and permissions, including negative/unauthorized cases
+  REAL: - Admin tests cover all twenty modules and permissions, including negative/unauthorized cases.
+
+[NOT_FOUND] doc:261  onLine=[3791,2624] names=any  actual=- in -
+  Q   : LOCAL DEVELOPMENT INFRASTRUCTURE ONLY … never a production deployment definition
+
+[LINE_OFF] doc:263  onLine=[3792,2672,2844,2787,115,2506,2844,3080] names=any/standard  actual=2787 in reference/Noujoude_Master_Specification_EN.md
+  Q   : Protected Owner process
+  REAL: | Permanent deletion | Protected Owner process | Technical safeguard only | No | No | No | No | No | No | No |
+
+[LINE_OFF] doc:422  onLine=[2664] names=any  actual=1391 in reference/Noujoude_Master_Specification_EN.md
+  Q   : Preserve audit history for consequential changes
+  REAL: - Preserve audit history for consequential changes.
+
+[LINE_OFF_OTHER_SOURCE] doc:460  onLine=[332,3086] names=standard  actual=3086 in reference/Noujoude_Master_Specification_EN.md
+  Q   : Unclear/restricted media cannot be publicly served for unauthorized use
+  REAL: | STT-002 | Rights enforcement | Unclear/restricted media cannot be publicly served for unauthorized use |
+
+[LINE_OFF] doc:537  onLine=[3110] names=any  actual=2952 in reference/Noujoude_Master_Specification_EN.md
+  Q   : meaningful inscriptions or material features
+  REAL: - Preserve visual detail in documentary and artifact images; optimization must not corrupt meaningful inscriptions or material features.

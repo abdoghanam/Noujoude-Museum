@@ -1,0 +1,132 @@
+== A.5 / ADR-019 privilege evidence - raw transcript ==
+
+Command    : IMAGE=postgres:18.6-alpine sh scripts/db/run-privilege-tests.sh
+Executed   : 1 November 2026. Exit code 0, captured directly from the process (not through a pipe).
+Scope      : one throwaway container (ndm-privtest-1254) and one throwaway volume
+             (ndm-privtest-data-1254), both created by the run and removed by the run.
+             No pre-existing resource was read, changed or removed: after the run, noujoude-postgres,
+             noujoude-postgres2, noujoude-postgres3 and pgvector-data were still present in their
+             original state ("Exited (137) 2 days ago" / volume listed), and no other container or
+             volume matching ndm-privtest remained (docker ps -a | grep -c -> 0; docker volume ls | grep -c -> 0).
+Contents   : 34 grant-state assertions from verify-privileges.sh, the 14 behavioural cases A-N
+             attempted as the role that would perform them, the residual-risk probe (the table owner
+             can drop the guard; the verifier detects it; the guard is restored; the denial is re-proven),
+             the server version actually tested, and the teardown line.
+Secrets    : passwords are generated per run and are never written to a file. This transcript was
+             grepped for password / passwd / _pw / secret / md5: / scram and contains none.
+Streams    : stdout only. The run wrote 5 NOTICE lines to stderr, all of the form "... does not exist,
+             skipping", emitted when the guard removed by the residual-risk probe was re-applied.
+
+-- transcript follows --
+== Noujoude ADR-019 privilege evidence ==
+image: postgres:18.6-alpine    throwaway container: ndm-privtest-1254
+
+-- waiting for the server, then checking the bootstrap script's own output
+/usr/local/bin/docker-entrypoint.sh: running /docker-entrypoint-initdb.d/10-init-roles.sh
+[noujoude] roles initialised: ndm_migration / ndm_runtime / ndm_reporting / ndm_backup
+[noujoude] append-only relations: audit_event
+   (10-init-roles.sh ran as an entrypoint script; its echo lines above are its own report)
+
+-- representative relations, created as ndm_migration the way a migration will
+-- idempotency: re-running init-roles.sh must tighten an existing cluster, not skip it
+[noujoude] roles initialised: ndm_migration / ndm_runtime / ndm_reporting / ndm_backup
+[noujoude] append-only relations: audit_event
+
+-- applying harden-append-only.sh
+[noujoude] hardening public.audit_event
+REVOKE
+DROP TRIGGER
+CREATE TRIGGER
+ALTER TABLE
+ALTER TABLE
+DROP POLICY
+CREATE POLICY
+DROP POLICY
+CREATE POLICY
+DROP POLICY
+CREATE POLICY
+DROP POLICY
+CREATE POLICY
+[noujoude] append-only enforcement applied: audit_event
+
+-- verify-privileges.sh: grant-state assertions
+PASS  audit_event: ndm_runtime may SELECT
+PASS  audit_event: ndm_runtime may INSERT
+PASS  audit_event: ndm_runtime may NOT UPDATE
+PASS  audit_event: ndm_runtime may NOT DELETE
+PASS  audit_event: ndm_runtime may NOT TRUNCATE
+PASS  audit_event: ndm_reporting may NOT DELETE
+PASS  audit_event: append-only guard trigger attached, enabled, and bound to the guard function
+PASS  audit_event: row-level security is FORCED (covers the table owner too)
+PASS  audit_event: RLS allows the audit read path (ndm_allow_select)
+PASS  audit_event: RLS allows the append path (ndm_allow_insert)
+PASS  audit_event: RLS denies UPDATE (ndm_deny_update)
+PASS  audit_event: RLS denies DELETE (ndm_deny_delete)
+PASS  runtime: not a superuser
+PASS  runtime: no BYPASSRLS
+PASS  runtime: cannot create tables (no CREATE on schema public)
+PASS  reporting: read-only on every relation it can see
+PASS  guard function exists and is executable by runtime
+PASS  guard function is executable by the table owner (deny is delivered by design)
+PASS  guard trigger function exists, RETURNS trigger, and is executable by runtime
+PASS  runtime retains UPDATE on at least one ordinary relation (positive control)
+[noujoude] privilege state matches ADR-019
+
+-- behavioural matrix: each statement attempted AS the role that would run it
+PASS    A  ndm_runtime    expect=ok     actual=ok      INSERT INTO audit_event (actor, action, target_record, outcome) VALUES ('ndm_runtime','TEST','artifact/1','success')
+PASS    B  ndm_runtime    expect=denied actual=denied  UPDATE audit_event SET outcome = 'tampered' WHERE id = 1
+        server said: ERROR:  permission denied for table audit_event
+PASS    C  ndm_runtime    expect=denied actual=denied  DELETE FROM audit_event WHERE id = 1
+        server said: ERROR:  permission denied for table audit_event
+PASS    D  ndm_runtime    expect=denied actual=denied  TRUNCATE audit_event
+        server said: ERROR:  permission denied for table audit_event
+PASS    E  ndm_runtime    expect=ok     actual=ok      UPDATE artifact SET title = 'ordinary write still works' WHERE id = 1
+PASS    F  ndm_runtime    expect=denied actual=denied  CREATE TABLE should_not_exist (id int)
+        server said: ERROR:  permission denied for schema public LINE 1: CREATE TABLE should_not_exist (id int)                      ^
+PASS    G  ndm_migration  expect=denied actual=denied  UPDATE audit_event SET outcome = 'tampered' WHERE id = 1
+        server said: ERROR:  NDM append-only relation: UPDATE on public.audit_event is not permitted for ordinary application roles HINT:  Master Spec line 3822; see docs/ARCHITECTURE_DECISIONS.md ADR-019 CONTEXT:  PL/pgSQL function ndm_guar
+PASS    H  ndm_migration  expect=denied actual=denied  DELETE FROM audit_event WHERE id = 1
+        server said: ERROR:  NDM append-only relation: DELETE on public.audit_event is not permitted for ordinary application roles HINT:  Master Spec line 3822; see docs/ARCHITECTURE_DECISIONS.md ADR-019 CONTEXT:  PL/pgSQL function ndm_guar
+PASS    I  ndm_migration  expect=ok     actual=ok      INSERT INTO audit_event (actor, action, outcome) VALUES ('ndm_migration','DDL','success')
+PASS    J  ndm_reporting  expect=ok     actual=ok      SELECT count(*) FROM audit_event
+        server said:  count  -------      2 (1 row)
+PASS    K  ndm_reporting  expect=denied actual=denied  INSERT INTO audit_event (actor, action) VALUES ('ndm_reporting','TEST')
+        server said: ERROR:  permission denied for table audit_event
+PASS    L  ndm_reporting  expect=denied actual=denied  DELETE FROM artifact WHERE id = 1
+        server said: ERROR:  permission denied for table artifact
+PASS    M  ndm_runtime    expect=denied actual=denied  DROP POLICY ndm_deny_delete ON audit_event
+        server said: ERROR:  must be owner of relation audit_event
+PASS    N  ndm_runtime    expect=denied actual=denied  ALTER TABLE audit_event DISABLE ROW LEVEL SECURITY
+        server said: ERROR:  must be owner of table audit_event
+
+-- audit trail survived the attempts: rows that exist after the matrix
+ id |     actor     | action | outcome 
+----+---------------+--------+---------
+  1 | ndm_runtime   | TEST   | success
+  2 | ndm_migration | DDL    | success
+(2 rows)
+
+-- residual risk, measured rather than asserted
+VULNERABLE  the table owner (ndm_migration) CAN drop the guard trigger and the RLS
+            policies. It is a governed CI/deploy-only identity (DATABASE_URI_MIGRATION,
+            .env.example line 36), never reachable from the app or the CMS.
+            AND CAN rewrite it: with the trigger and the deny policies dropped the
+            owner's UPDATE succeeded, so the exposure is real, not theoretical.
+
+-- compensating control: does the verifier detect the removed guard? (expect a real FAIL)
+DETECTED  verify-privileges.sh failed, and failed on the removed guard:
+          FAIL  audit_event: append-only guard trigger attached, enabled, and bound to the guard function   (got: f)
+          PASS  guard trigger function exists, RETURNS trigger, and is executable by runtime
+
+-- remediation: re-apply the guard and re-test the denial (expect a real PASS)
+RESTORED  verify-privileges.sh passes again after harden-append-only.sh (exit 0).
+DENIED    the owner's UPDATE is refused again: ERROR:  NDM append-only relation: UPDATE on public.audit_event is not permitted for ordinary application roles HINT:  Ma
+
+-- server version actually tested
+18.6
+        server major version 18 agrees with image tag postgres:18.6-alpine — the transcript measures what it claims
+
+-- teardown of what this run created (its own container and volume only)
+        removed ndm-privtest-1254 and ndm-privtest-data-1254
+
+RESULT: every behavioural case matched expectation for an authorization reason, and the grant state passed.

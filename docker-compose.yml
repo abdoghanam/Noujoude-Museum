@@ -1,0 +1,63 @@
+name: noujoude
+
+# Noujoude — LOCAL DEVELOPMENT INFRASTRUCTURE ONLY.
+# Per Technology & Security Standard §2.2 ("Non-production local dependencies only;
+# secure configuration") this file is never a production deployment definition.
+# No production credentials appear here; every secret is injected from .env,
+# which is git-ignored and must never be exposed through the Control Center
+# (Standard §4.2, Master Spec G.7).
+
+services:
+  postgres:
+    image: postgres:18.6-alpine
+    # Not noujoude-postgres: this host already has three stopped containers occupying
+    # noujoude-postgres, noujoude-postgres2 and noujoude-postgres3 (measured 1 Nov 2026 with
+    # docker ps -a, all postgres:16-alpine, all Exited 137). An explicit name that is already
+    # taken makes pnpm db:up fail with a name conflict even after .env exists, and those
+    # containers are not this project's to start, reuse or remove. Leaving the field out would
+    # let Compose generate noujoude-postgres-1, which the harness rule protecting
+    # noujoude-postgres* (scripts/db/run-privilege-tests.sh) would then also cover. ndm- is the
+    # prefix this project already uses for its roles, scripts and throwaway test container.
+    # Everything else in the repository addresses this service by service name (docker compose
+    # exec -T postgres), which is unaffected by the container name.
+    container_name: ndm-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in .env}
+      # Bootstrap superuser. Used ONLY to run scripts/db/init-roles.sh once.
+      # The application never connects as this user (Standard §3.2).
+      POSTGRES_USER: ${POSTGRES_SUPERUSER:?set POSTGRES_SUPERUSER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD:?set in .env}
+      # Role passwords consumed by the init script.
+      NDM_MIGRATION_PASSWORD: ${NDM_MIGRATION_PASSWORD:?set in .env}
+      NDM_RUNTIME_PASSWORD: ${NDM_RUNTIME_PASSWORD:?set in .env}
+      NDM_REPORTING_PASSWORD: ${NDM_REPORTING_PASSWORD:?set in .env}
+      NDM_BACKUP_PASSWORD: ${NDM_BACKUP_PASSWORD:?set in .env}
+      # Guarded on every occurrence, not just the first: an unguarded `${POSTGRES_DB}` here made
+      # Compose emit `Defaulting to a blank string` for this key when .env was absent (measured
+      # 1 Nov 2026), which is a path by which a blank value reaches the container.
+      NDM_DATABASE: ${POSTGRES_DB:?set POSTGRES_DB in .env}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      # Mounted at /var/lib/postgresql, not .../data: the postgres:18+ images keep data in a
+      # major-version-specific subdirectory so `pg_upgrade --link` can cross the mount boundary.
+      # An 18 image given the old .../data path refuses to initialise (measured 1 Nov 2026 against
+      # postgres:18.6-alpine — the tag this file declares on line 12). See ADR-004.
+      - noujoude-pgdata:/var/lib/postgresql
+      - ./scripts/db/init-roles.sh:/docker-entrypoint-initdb.d/10-init-roles.sh:ro
+      # Operator scripts, run with `docker compose exec` after each migration:
+      # harden-append-only.sh applies the ADR-019 per-table exception (ALTER DEFAULT
+      # PRIVILEGES cannot name a table), verify-privileges.sh asserts the result.
+      - ./scripts/db:/opt/ndm-db:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_SUPERUSER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    # Server-side only: 5432 is bound to loopback above, never to 0.0.0.0.
+
+volumes:
+  noujoude-pgdata:
+    driver: local

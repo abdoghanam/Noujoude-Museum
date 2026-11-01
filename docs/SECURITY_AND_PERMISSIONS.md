@@ -1,0 +1,701 @@
+# NOUJOUDE DIGITAL HERITAGE MUSEUM — SECURITY & PERMISSIONS
+
+**Document ID:** NDM-SEC-001
+**Version:** 1.0.0
+**Date:** 31 October 2026
+**Status:** **CONTRACT — UNIMPLEMENTED.** Every control in this document is a *required* rule with a named
+enforcement mechanism and a named planned test. **None is a satisfied control.**
+**Supersedes nothing.** Companion documents: `docs/ARCHITECTURE_DECISIONS.md` (NDM-ARCH-ADR-001),
+`docs/MASTER_SPECIFICATION.md` (working copy + discrepancy log), `docs/AI_CURATOR_GOVERNANCE.md` (NDM-AI-GOV-001),
+`docs/MEDIA_AND_RIGHTS_GOVERNANCE.md` (NDM-MED-001).
+
+---
+
+## 0. Status banner and evidence rule — read before using this document
+
+There is **zero application code**. At the time of writing the workspace contains two files under `src/`
+and `tests/` (`src/README.md`, `tests/setup/env.ts`), authored configuration at root
+(`package.json`, `tsconfig.json`, `eslint.config.mjs`, `vitest.config.ts`, `playwright.config.ts`,
+`.env.example`, `docker-compose.yml`, `scripts/db/init-roles.sh`), and documentation under `docs/`.
+`pnpm install` has never been run; the dependency set is a *candidate* pin list
+(`ARCHITECTURE_DECISIONS.md` §5), and the clean-install gate of Standard §2.3 step 9 is **blocked by B-01**
+(Host Node.js 24.19.0 violates `engines.node: ">=24.22.1 <25"`; `ARCHITECTURE_DECISIONS.md` §2, ADR-003).
+
+This document is therefore governed by the two binding statements it must not violate:
+
+| Rule | Source | Consequence here |
+|---|---|---|
+| "Do not claim a feature is implemented without verifying behavior." | Directive §17 (line 318) | No control below is marked met. |
+| "A route, React component, button, schema field, migration, or successful build alone is not proof." | Directive §15 (line 290) | Authored config (ESLint rule, `.env.example`, role script) is recorded as *intended enforcement*, never as verified behaviour. |
+| "No invented metrics, security compliance, or backup success claims." | Standard §15 (line 334) | No ASVS, WCAG, RPO/RTO, or availability *result* is asserted. |
+| "A security header set alone does not establish that the application is secure. Security must be verified through tests against the implemented system." | Master Spec §19.3 (line 2906) | Each control carries a required test, all Not Implemented. |
+| Requirement status vocabulary: Implemented and Verified / Partially Implemented / Not Implemented / Blocked by Owner Input / Out of V1 Scope | Directive §15 (line 288) | Default status throughout: **Not Implemented**. |
+
+Two vocabulary notes used consistently below:
+
+- **Contract — unimplemented** = the rule is binding, the mechanism is named, nothing has executed.
+- **Authored, unexecuted** = a file exists that is *intended* to enforce the rule and has not been run.
+  `eslint.config.mjs` is the example that still holds: ESLint has never run because `node_modules` is absent
+  (B-02). `scripts/db/init-roles.sh` **left this class on 1 November 2026** — the A.5 harness ran it against a
+  live PostgreSQL 18.6 container (`docs/A5_PRIVILEGE_EVIDENCE.txt`) — so it is now *executed in isolation,
+  undeployed here*, because this project's compose stack cannot start without `.env` (B-03) and the image pull
+  that D-03 once recorded as unattempted is moot: the tag is already in the local cache.
+
+---
+
+## 1. Threat model framing for this specific product
+
+Master Spec §19.3 (line 2884) requires the public application, Control Center, APIs, data layer, media
+pipeline and AI retrieval services to be "assessed as one system". §19.5 (lines 2916–2930) names the minimum
+assessment set. Framed against the four actual surfaces of this product:
+
+### 1.1 Surface A — public bilingual (EN/AR) museum experience
+Anonymous, high-volume, indexable, RTL and LTR, with search and an AI Curator (§17.2 J, line 2732: "No
+ordinary visitor account is required for browsing").
+
+Primary threats (§19.5 lines 2918–2930): reflected/stored XSS through rich text, forms, metadata and imported
+content; injection through search, filtering, sorting, upload and integration inputs; unintended publication or
+indexing of private content; open redirects through language switching; scraping that enumerates unpublished
+records; enumeration of draft slugs. Product-specific aggravator: the §10 lines 1457–1461 rule "Never silently
+substitute another language" and §23 invariant 19 (line 3308) "Missing content is shown honestly rather than
+fabricated" mean an information-disclosure bug here is also a *content-truth* defect.
+
+### 1.2 Surface B — private 20-module Control Center (`/control-center`)
+Root protected by authentication and server-side authorization; "A user must not gain access by hiding a
+navigation element" (§4.3, line 432); "Direct links to private Control Center pages must be denied to
+unauthorized users" (§4.4, line 444); module map fixed by ADM-001 (line 3097: "Control Center uses the 20-module
+map only").
+
+Primary threats: unauthorized `/control-center` and protected-API access; privilege escalation and Owner
+account takeover (§19.5 lines 2918–2919); broken object-level access (§19.3 line 2893 requires
+*object-level* authorization to prevent insecure direct object reference); CMS as a lateral-move platform —
+the Control Center is the only rich administrative surface the product has, so any capability creep inside it
+is a control-plane compromise (§23 invariant 14, line 3303).
+
+### 1.3 Surface C — AI Curator over governed knowledge
+A retrieval system whose *permission model* is the museum's own eight state dimensions
+(§11.1 lines 1528–1537). Threats: prompt injection through user prompts **and** through retrieved documents
+(§19.5 lines 2927–2928; §14.8 lines 2025–2027); AI disclosure of private source material or administrative
+records; secret/credential extraction via tool access; retrieval-layer bypass by crafting a query that matches
+an ineligible record; fabricating provenance/ownership/authenticity, which §14.13 (line 2095) makes a
+**release-blocking defect**. Detailed governance is `docs/AI_CURATOR_GOVERNANCE.md`.
+
+### 1.4 Surface D — private originals for heritage artifacts whose rights are largely uncleared
+Physical fact from the Phase 0 audit (`docs/asset-audit-summary.json`, `docs/ASSET_INVENTORY_AUDIT.csv`):
+**all 82 catalogued assets have `Not Approved — no approval record supplied`, and 72 of them carry rights
+status `UNKNOWN — no rights statement supplied in reference/`.** There is therefore no asset in this
+workspace whose public display is presently defensible.
+
+Threats: public serving of restricted originals; signed-URL leakage, replay or over-long validity; using a
+file extension as a sanitization claim (Standard §6 line 189); upload of an executable/SVG/script payload
+executing in the application origin (Standard §6 line 190); destructive deletion of an original; loss of
+original→derivative lineage — **already materialized** in this workspace for the 10 quarantined AI-generated
+assets, whose manifest-referenced source PNGs are absent from the workspace
+(`ASSET_INVENTORY_AUDIT.csv` `Derivative Status` = "DERIVATIVE (webp) from a PNG original that is not retained").
+
+### 1.5 Cross-surface threats named by the specification
+Exposure of draft/private/rights-restricted content (§19.5 line 2921); malicious or oversized uploads
+(line 2924); CSRF/session abuse (line 2925); secret exposure in source maps, logs, frontend bundles or admin
+views (line 2926); unauthorized permanent deletion or destructive recovery (line 2930). Standard §15 adds the
+unconditional prohibitions: no frontend-only authorization, no public access to private originals or
+restricted artifacts, no raw SQL/shell/secret/infrastructure controls through the ordinary CMS UI, no
+deployment to production without Owner authorization, no silent downgrade of RPO/RTO, accessibility,
+performance or security requirements (lines 331–336).
+
+---
+
+## 2. Roles and the permission model
+
+### 2.1 Canonical roles (Master Spec §17.2 A–K, lines 2688–2736) and roles the spec *implies* but does not canonicalize
+
+| # | Role (this document's name) | Canonical source | Verbatim constraint that drives the design | Status |
+|---|---|---|---|---|
+| R1 | **Owner / Institutional Authority** | §17.2 A, 2688–2696 | "The Owner's authority must not be silently removed or downgraded by an ordinary administrator" (2694); "Owner control does not expose raw credentials, arbitrary code execution, production deployment secrets, direct unrestricted SQL, or destructive infrastructure operations" (2696) | Contract — unimplemented |
+| R2 | **System Administrator** | §17.2 B, 2698–2700 | "Does not automatically receive curatorial authority to verify artifact claims, provenance, ownership, or authenticity. Does not automatically override the Owner" (2700) | Contract — unimplemented |
+| R3 | **Museum Director** | §17.2 C, 2702–2704 | Institutional content governance and *assigned* publication oversight within scope (2704) | Contract — unimplemented |
+| R4 | **Curator / claim reviewer** | §17.2 D, 2706–2708; action row "Review/verify claims" (2775) | "Does not automatically manage user security or infrastructure" (2708); §8.11 line 1268: "Verification is claim-specific" | Contract — unimplemented |
+| R5 | **Editor (content editor)** | §17.2 E, 2710–2712 | "Cannot independently mark uncertain historical claims verified or bypass curatorial review" (2712) | Contract — unimplemented |
+| R6 | **Publisher** | §17.2 F, 2714–2716 | "Cannot bypass required curatorial, rights, or locale approval" (2716) | Contract — unimplemented |
+| R7 | **Translator / localization editor** | §17.2 G, 2718–2720 | "Translation authority does not grant authority to alter factual claims, provenance, ownership, or verification state" (2720) | Contract — unimplemented |
+| R8 | **Media Manager** | §17.2 H, 2722–2724 | "A media-management role does not automatically prove legal rights; a qualified rights reviewer/Owner must approve relevant permission claims" (2724) | Contract — unimplemented |
+| R9 | **Researcher / Contributor** | §17.2 I, 2726–2728 | "A contributor cannot publish or approve their own material unless separately granted that authority" (2728) | Contract — unimplemented |
+| R10 | **Public Visitor** (anonymous) | §17.2 J, 2730–2732 | Published public content, search, AI Curator, language change, permitted contact requests only (2732) | Contract — unimplemented |
+| R11 | **AI Service Principal** (non-human) | §17.2 K, 2734–2736 | "read-only, scoped access to eligible knowledge sources. It cannot publish, approve, edit collection records, change permissions, or access secrets beyond its minimal runtime requirement" (2736) | Contract — unimplemented |
+| R12 | **Rights reviewer (competent approver)** | **Implied, not canonical.** Named only inside §17.2 H line 2724 ("a qualified rights reviewer/Owner") and reached through the §17.4 row "Approve rights status" = "Yes / delegated" + "Assigned" (lines 2780) | §17.2 lists A–K and contains no rights-reviewer role, yet §8.15 (line 1344) states "The presence of a file in the library does not prove a right to display it" and §11.6 line 1593 requires "Only rights states explicitly cleared for the intended public use may be displayed". A distinct approver must exist for that to be enforceable. | Contract — unimplemented; **§2.4 finding 1 closed by ADR-020**: not a twelfth role, but the `Approve` action (line 2749) scoped to the rights module, granted by recorded delegation |
+| R13 | **AI knowledge reviewer** | **Implied, not canonical.** Reached through Module 09 "Knowledge review" (§16.9 line 2536) and §17.4 row "Manage AI knowledge policy" = Curator "Source/curation input", Translator "Terminology only", Director "Oversight" (line 2782) | §14.13 (line 2083) says "Reviewers may classify outputs…" — a reviewer actor the role list never defines | Contract — unimplemented; **§2.4 finding 1 closed by ADR-020**: the `Review` action (line 2747) scoped to the AI knowledge module, plus `Verify Claims` (line 2748) where a review changes retrieval eligibility |
+| R14 | **Read-only auditor** | **Implied, not canonical.** §17.3 action "View Audit Records" (line 2759) is a distinct permission; §16.19 line 2664 restricts audit access; Standard §3.2 (line 103) already provisions a read-only DB identity (`ndm_reporting`) | "Ordinary users must not be able to silently edit or erase audit history. Access to sensitive audit details is restricted" (2664) | Contract — unimplemented; **§2.4 finding 1 closed by ADR-020**: `View Audit Records` granted with no write action in the same assignment, field-level scope for sensitive detail, and `ndm_reporting` for the data-layer read path (ADR-019) |
+
+### 2.2 Permission action vocabulary (§17.3, lines 2740–2760)
+
+View · Create · Edit · Duplicate · Submit for Review · Review · Verify Claims · Approve · Publish · Unpublish ·
+Archive · Restore · Delete (protected, exceptional) · Manage Users · Manage Roles and Permissions ·
+Manage Institutional Settings · Manage Security-Sensitive Integrations · View Audit Records · Export Data
+(where approved).
+
+Scoping rule, verbatim (line 2762): "Every permission must be scoped by module, record type, record, locale,
+and action where relevant. A role must not acquire permissions solely because it can open a module." Grant
+narrowing rule (line 2766): "Owner may grant narrower scopes where appropriate; privileges must not be
+broadened implicitly."
+
+### 2.3 Positive / negative permission matrix — 20 Control Center modules (§16.1–§16.20, lines 2259–2674)
+
+Legend — **A** = allow (positive case required), **D** = deny (negative case required),
+**S** = allow only within an explicit record/locale/action scope, **R** = read-only, **X** = structurally
+forbidden to every role except Owner through a protected process.
+Derived from the §17.4 baseline matrix (lines 2768–2789); the module list is ADM-001 (line 3097).
+
+| # | Module (line) | OWN | ADM | DIR | CUR | ED | PUB | TR | MM | RES | AUD | AI | PUB-V | Enforcement basis |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 01 | Executive Overview (2259) | A | S | A | A | A | R | R | R | R | R | D | D | read aggregation only; must not fabricate metrics (Directive §17 line 320) |
+| 02 | Website & Page Studio (2285) | A | D | A | S | A | D | S | D | D | R | D | D | §17.4 "Manage page sections" (2772) |
+| 03 | Brand & Visual Identity Studio (2343) | A | S | A | D | D | D | D | S | D | R | D | D | §17.4 "Manage institutional identity" (2771); §23 invariant 1 (3290) |
+| 04 | Museum Worlds Management (2377) | A | D | A | A | S | S | S | S | S | R | D | D | §17.4 "Manage country/collection records" (2773); G.4 six-value state incl. `Hidden/Not Public` (3723) |
+| 05 | Collections Management (2402) | A | D | A | A | S | S | S | S | S | R | D | D | (2773) |
+| 06 | Artifact Management (2419) | A | D | S | A | S | D | D | S | S | R | D | D | factual metadata (2774), claims (2775), provenance (2776); screen sets §16.6 + G.8 per S-12 |
+| 07 | Stories & Editorial Studio (2480) | A | D | A | S | A | D | S | S | S | R | D | D | (2777) |
+| 08 | Media & Asset Library (2492) | A | D | S | S | D | D | D | A | D | R | D | D | (2779); upload safeguards line 2504 |
+| 09 | AI Curator Command Center (2510) | A | S | S | S | D | D | S | D | D | R | **X** | D | (2782); AI may not self-approve (§17.5 line 2797; Standard §7 line 206) |
+| 10 | Navigation & Footer Studio (2554) | A | D | A | S | S | S | S | D | D | R | D | D | (2772); route rules 438–447 |
+| 11 | SEO & Metadata Center (2562) | A | D | A | S | S | S | S | D | D | R | D | D | G.9 (3842); §20.5 checklist (3120–3131) |
+| 12 | Language & Translation Center (2572) | A | D | S | D | D | D | A | D | D | R | D | D | (2778) "No factual authority" for Curator on translation review |
+| 13 | Forms & Inquiries Center (2582) | A | S | A | D | D | D | D | D | D | R | **X** | D | PII surface; §19.2 line 2871, §9.1 line 1410, Standard §7 line 199 |
+| 14 | Users, Roles & Permissions (2592) | A | S | D | D | D | D | D | D | D | R | **X** | D | (2783) "Technical account admin"; Owner protection §17.6 (2804–2808) |
+| 15 | Publishing & Revision Control (2600) | A | D | S | D | D | A | D | D | D | R | **X** | D | (2781); emergency unpublish line 2610 |
+| 16 | System & Institutional Settings (2612) | A | S | S | D | D | D | S | D | D | R | **X** | D | (2784); hard boundary G.7 (3785–3794), line 2624 |
+| 17 | Analytics & Insights (2626) | A | S | A | R | R | R | R | R | D | R | D | D | line 2630: unconfigured metrics "must be shown as unavailable" |
+| 18 | Notifications & Alerts (2634) | A | S | A | A | A | A | A | A | S | R | D | D | alert categories (2636–2641) incl. backup/security events |
+| 19 | Audit & Activity Center (2647) | R | S | S | S | R | R | R | S | R | **R** | D | D | line 2664; no edit/erase path for any role |
+| 20 | Archive & Recovery Center (2666) | A | S | S | S | D | S | D | S | D | R | **X** | D | (2786–2787); permanent deletion = "Protected Owner process" (2787); §18.8 (2844) |
+
+Every cell above is a **required test**, not an observed behaviour. The matrix carries 12 role columns; roles
+R12 (rights reviewer) and R13 (AI knowledge reviewer) are absent as columns because **ADR-020 decided they are
+not roles** — they are scoped permission grants, so they are matrixed as *grants on the columns that already
+exist* rather than as new ones (the delegation rows themselves still need a design; see §2.4 finding 1 status).
+Status of all **240 (20 × 12)** cells: **Contract — unimplemented.**
+
+### 2.4 Recorded gaps found while building this matrix (new, not in S-01…S-14 / D-01…D-04)
+
+1. **Three implied competences had no canonical definition — decided by ADR-020.** §17.2 defines exactly
+   eleven roles (A–K, lines 2688–2736), yet §17.4/§16.9/§16.19 depend on a competent **rights reviewer**
+   (line 2724, 2780), an **AI knowledge reviewer** (line 2083 "Reviewers may classify outputs", 2536) and a
+   **read-only auditor**
+   (line 2759, 2664). The permission engine could not be built without deciding whether these are roles,
+   permission grants on existing roles, or both. **Decided: scoped permission grants on the eleven canonical
+   roles, expressed with §17.3's own action vocabulary and recorded as delegations with grantor, grantee,
+   scope and timestamp — ADR-020.** The eleven-role boundary stays closed (§21.6 line 3240 puts "the role
+   boundaries" in the baseline an architect implements without asking); *who* holds each delegated approval
+   remains an Owner input, not an engineering invention.
+2. **Audit-record integrity is not achievable with the delivered role grants.** Master Spec §8.16 line 1356
+   ("Audit records are protected from ordinary editing") and §16.19 line 2664 ("must not be able to silently
+   edit or erase audit history") are absolute. `scripts/db/init-roles.sh` — the delivered implementation of
+   Standard §3.2 / ADR-005 — grants `ndm_runtime` `SELECT, INSERT, UPDATE, DELETE ON ALL TABLES` plus
+   `ALTER DEFAULT PRIVILEGES … GRANT SELECT, INSERT, UPDATE, DELETE`, i.e. the runtime identity **can**
+   `DELETE` and `UPDATE` the audit table. So "protected from ordinary editing" (line 1356) is enforceable only by the
+   application layer as written; it had no database-level guarantee. **RESOLVED as a decision and as
+   implementation — ADR-019** (`docs/ARCHITECTURE_DECISIONS.md` §6): the runtime identity keeps
+   `SELECT, INSERT` and loses `UPDATE`, `DELETE`, `TRUNCATE` on the declared append-only relations, with a
+   superuser-owned guard trigger and `FORCE ROW LEVEL SECURITY` deny policies behind the grant, because
+   `ALTER DEFAULT PRIVILEGES` cannot name a table and the table owner otherwise bypasses its own policies.
+   **The evidence has now been produced, twice-qualified**: the behavioural matrix in
+   `scripts/db/run-privilege-tests.sh` executed on 1 November 2026 with **exit 0** — 34 grant-state assertions
+   and 14 of 14 cases A–N matching, 10 of them refused for an authorization reason
+   (`docs/A5_PRIVILEGE_EVIDENCE.txt`) — after the 31 October attempt aborted on B-09, which has since cleared by
+   observation. It ran against a **disposable container**, so this is "decision taken, code delivered, grant
+   design demonstrated in isolation" — still **not** a passing control for this project, whose own database does
+   not exist (`pnpm db:up` is blocked by B-03, the absent `.env`).
+   **This conflict was not in S-01…S-14 or D-01…D-04 when it was found; it is now covered by ADR-019.**
+3. **Provider selection has no compliant CMS path.** G.7 line 3779 requires the Owner to manage "provider
+   selection" for the AI Curator through the Control Center, while G.7 line 3790 forbids editable Owner UI
+   fields for "…provider tokens, or raw storage credentials", §16.16 line 2624 places "environment files …
+   private deployment credentials … outside ordinary CMS settings", and Standard §13 (line 304) makes provider
+   approval a non-fabricable Owner input. `.env.example` currently resolves the provider out-of-band
+   (`AI_PROVIDER=`, `AI_PROVIDER_API_KEY=`, `AI_MODEL=` — all empty). A DB-backed, credential-*referencing*
+   configuration record is required to satisfy both sides. Not previously logged.
+4. **Two authored configs disagree on where tag-defined specs live.** `vitest.config.ts` comments place axe
+   automation at `tests/a11y/**`, while `playwright.config.ts` sets `testDir: './tests/e2e'` and
+   `package.json` runs `test:a11y` as `playwright test --grep @a11y`. Until reconciled, an `--grep @a11y`
+   run against an empty `tests/e2e` would pass vacuously — which is exactly the "successful build alone is not
+   proof" failure mode (Directive §15 line 290). Reconcile before writing the first a11y spec.
+
+### 2.5 Authorization invariants (A-01…A-09 all Standard §4.2, lines 145–155; all Contract — unimplemented)
+
+A-10 below is **not** from §4.2: it is an architect addition made by ADR-025 and is sourced from Standard §4.1
+lines 132 and 134. It is labelled as an addition rather than presented as a quotation of the Standard's
+authorization list.
+
+| # | Invariant | Verbatim source | Enforcement plan | Required evidence |
+|---|---|---|---|---|
+| A-01 | Deny by default | Standard §4.2 line 147 | Payload access control returns `false` unless a predicate matches; no collection/global ships with open `read`/`create`/`update`/`delete` | `src/lib/access/*.access.integration.ts` — default-deny assertion per collection + global |
+| A-02 | Server-side check on every protected operation | Standard §4.2 line 148; Master §17.1 line 2684 "Hiding a menu item or button is not authorization" | Payload hooks + access predicates on REST/Local API; Next.js route handlers re-check; no `use client` authorization decision | direct-API tests per §20.3 item 8 (line 3044); SEC-002 (line 3105) |
+| A-03 | Never trust client-supplied role, owner, state, locale or record IDs | Standard §4.2 line 149 | Zod validation on every boundary (Standard §2.2 line 51: "Client validation is usability only; server validation is authoritative"); identity taken from the session, scope re-derived server-side | fuzzed-identity integration tests |
+| A-04 | IDOR / object-level protection | Standard §4.2 line 150; Master §19.3 line 2893 | every read/write resolves the record, then evaluates the record's own scope; opaque existence for denied records (404 vs 403 choice must be deliberate and tested) | negative cross-object tests per module |
+| A-05 | Separation of duties, evidence review vs publication | Standard §4.2 line 151; Master §17.5 lines 2793–2800; §11.3 line 1551 "Approval does not automatically publish content" | the *actor who reviewed a claim* may not be recorded as the actor who publishes it without an explicit second event; §17.5 line 2800 allows one person in multiple roles but requires "distinct review events and record who made each decision" | workflow tests §20.3 item 5 (line 3041); IAM-002 (line 3102) |
+| A-06 | Owner authority protected from ordinary administrators | Standard §4.2 line 152; Master §17.6 lines 2804–2808; §17.2A line 2694 | Owner reassignment is a protected, re-authenticated, audited, two-step process; no admin UI path downgrades Owner; IAM-003 (line 3103) | negative tests: SysAdmin attempting Owner change must fail server-side |
+| A-07 | Positive **and** negative cases for all twenty modules | Standard §4.2 line 153; G.12 line 3920 "Admin tests cover all twenty modules and permissions, including negative/unauthorized cases" | matrix in §2.3 instantiated as 20 spec files (§3) | planned files listed in §3; **all Not Implemented** |
+| A-08 | Permission breadth never widens implicitly | Master §17.4 line 2766 | no role inheritance chain that grants by proximity; explicit grant records only | policy unit tests |
+| A-09 | No frontend-only authorization | Standard §15 line 331 | ESLint `no-restricted-properties` on `process.env` in client scope (`eslint.config.mjs` lines 54–62) — **authored, unexecuted**; plus the runtime rule that the client never receives an authorization decision object it can act on | lint gate in CI (never run yet) + API tests |
+| A-10 *(ADR-025 addition)* | **A role grant means nothing until the identity layer has authenticated its holder.** Authorization is never evaluated for a session whose second factor is unproven. | Standard §4.1 line 134 (MFA mandatory for Owner and privileged administrative accounts) and line 132 (Payload-supported auth or a maintained OIDC-compatible provider); Master §19.3 line 2890 re-authentication | the identity provider's assertion carries the authentication method; `auth.strategies` maps it to the Payload `users` record; privileged-route access predicates require the authenticated principal *and* the factor claim, so a session lacking either is denied before any role is consulted; local staff passwords disabled, break-glass account disabled unless actively recovered | negative tests in ADR-025's Consequences: first factor without second yields no session; assertion without the method claim refused on every privileged route; IdP-side revocation must not survive the cookie/JWT window; MFA-bypass attempt writes an `AuditEvent`; break-glass enablement names both approvers. **None executed — no IdP exists (B-05)** |
+
+**Two clarifications added in the gap-closure batch (31 Oct 2026), because A-10 is the invariant most likely to
+be over-read.**
+
+*First — what has actually been verified about the mechanism.* ADR-025's premise is that Payload 3.92.1 ships no
+native second factor, so the factor must come from an external identity provider. That premise is now verified
+**against the pinned release rather than against a moving branch**: enumerating the monorepo's `packages/`
+directory at tag `v3.92.1` returns **44** packages with **zero** hits for any identity, MFA, OTP, two-factor,
+WebAuthn, SSO, OIDC or passkey keyword, and the published `payload-3.92.1.tgz` contains no second-factor module.
+The verification has recorded limits, and they are part of the finding rather than a footnote: the `@payloadcms`
+npm *scope* could not be enumerated at all (the registry search endpoint returned `total: 0`), so a package
+published outside the monorepo would not have been seen; and the measurement is dated, which is why
+`docs/ARCHITECTURE_DECISIONS.md` §8 makes re-verification a trigger condition. **What is verified is the absence
+of a native mechanism at one pinned version. What is not verified is anything about behaviour** — no strategy has
+been configured, no assertion has been received, no session has been issued.
+
+*Second — A-10's acceptance tests are staged behind OID-19 and must not be scheduled before it.* Every negative
+test in the right-hand column requires a reachable identity provider. Scheduling them into Module 14's wave-1
+acceptance would schedule criteria that are guaranteed to be blocked, which produces either a false green or a
+red box everyone learns to ignore. `docs/IMPLEMENTATION_PLAN.md` §6 therefore splits Module 14's gate in two: the
+role and permission half stays in wave 1 and is testable once the schema exists; the MFA half is deferred **by
+name** until OID-19 supplies an IdP instance. Until that half closes, Module 14 is *partially accepted* and must
+be reported as such — never as accepted. This is a scheduling correction, not a weakening: Standard §4.1 line 134
+still binds, and A-10 still holds as an invariant.
+
+---
+
+## 3. Required test inventory for §2 — planned locations and status
+
+`vitest.config.ts` only collects `src/**/*.test.ts`, `src/**/*.test.tsx`, `src/**/*.integration.ts`, with
+`passWithNoTests: false`; `playwright.config.ts` uses `testDir: './tests/e2e'` with four projects
+(en-desktop, ar-desktop-rtl, en-mobile, ar-mobile-rtl). Planned paths below respect those two include-lists.
+
+| Planned location | Covers | Status |
+|---|---|---|
+| `tests/e2e/permissions/module-01-executive-overview.spec.ts` … `module-20-archive-recovery.spec.ts` (20 files) | A-07 positive + negative per module | Not Implemented (no `tests/e2e/` files exist) |
+| `src/lib/access/collections.access.integration.ts` | A-01, A-02, A-04 per collection & global | Not Implemented |
+| `src/lib/access/ownership-protection.integration.ts` | A-06 | Not Implemented |
+| `src/lib/access/separation-of-duties.integration.ts` | A-05 | Not Implemented |
+| `src/lib/validation/untrusted-boundary.integration.ts` | A-03 (role/owner/locale/id injection) | Not Implemented |
+| `src/lib/access/rls-runtime-role.integration.ts` | §5.4 RLS-as-runtime-role | Not Implemented |
+| `tests/e2e/security/headers.spec.ts` | §6.1 CSP/headers/HSTS | Not Implemented |
+| `tests/e2e/security/csrf.spec.ts` | §6.3 | Not Implemented |
+| `tests/e2e/security/upload.spec.ts` | §6.4 + Standard §6 | Not Implemented |
+| `tests/e2e/security/rate-limit.spec.ts` | §6.2 | Not Implemented |
+| `tests/e2e/security/secret-leak.spec.ts` | §6.9, SEC-005 (line 3108) | Not Implemented |
+| `tests/e2e/ai/redteam-*.spec.ts` (5 files, see `AI_CURATOR_GOVERNANCE.md` §7) | Standard §7 line 204 | Not Implemented |
+
+Status of the whole table: **Contract — unimplemented.** No test has ever executed; `pnpm test`,
+`pnpm lint`, `pnpm typecheck` and `pnpm build` have not been run (no `node_modules`, B-01).
+
+---
+
+## 4. The CMS boundary as a security control
+
+G.7 (lines 3785–3794) is the normative list: "The following are NOT ordinary CMS capabilities and MUST NOT be
+exposed as editable Owner UI fields". ADM-004 (line 3100) makes it an acceptance gate: "CMS does not expose
+arbitrary SQL, source code, or infrastructure secrets". §23 invariant 14 (line 3303) makes it an invariant.
+Standard §15 line 333 states it as a prohibition. Counterweight, so the boundary is not read as obstruction:
+G.7 line 3769 and §15 line 2130 require the Owner to do all ordinary museum work **without editing source
+code**, through "explicit forms, safe structured configuration, preview, validation, confirmation, audit
+logging, and rollback" (line 3783).
+
+| # | Capability the Control Center must never expose | Verbatim source | Mechanism intended to enforce it | Status | Planned verification |
+|---|---|---|---|---|---|
+| C-01 | Arbitrary source-code or executable editing | G.7 line 3787 | Payload field-level access control: no collection field accepts code; Lexical rich text only (ADR-016), no arbitrary HTML/script (Standard §2.2 line 52); ESLint blocks `eval` (`eslint.config.mjs` lines 37–42) | Contract — unimplemented | AST/API test attempting to persist executable content |
+| C-02 | Shell / OS command execution | G.7 line 3788; Standard §15 line 333 | No child-process API reachable from any handler; Payload hooks are code-defined, never UI-defined; deployment runs the app, not the CMS | Contract — unimplemented | negative API test: command string in every text field, assert no side effect + no `child_process` import in `src/` |
+| C-03 | Arbitrary SQL, DB console, schema mutation, superuser credentials | G.7 line 3789; Standard §15 line 333; §16.16 line 2624; §17.2A line 2696 | Only `@payloadcms/db-postgres`/Drizzle reach (ADR-002); parameterized operations (Standard §5 line 169); `DATABASE_URI` = `ndm_runtime`, `DATABASE_URI_MIGRATION` kept separate (`.env.example` lines 35–36); no superuser connection string in app env (`docker-compose.yml` header comment) | Contract — unimplemented | SQLi suite; assert `pg_read_file`/DDL via app role fails at the DB, not only in the UI |
+| C-04 | Editing `.env`, secrets, signing keys, encryption keys, provider tokens, raw storage credentials | G.7 line 3790; §16.16 line 2624; Standard §5 line 180; G.11.3 line 3905 | `.env` git-ignored (`.gitignore` lines 10–15); ESLint blocks non-`NEXT_PUBLIC_*` env reads in client scope (`eslint.config.mjs` lines 54–62) — **authored, unexecuted**; secret fields rendered masked only | Contract — unimplemented | secret-scan over build output, source maps, rendered admin HTML and logs (SEC-005, line 3108) |
+| C-05 | Docker daemon, host OS, cloud account, network, firewall, DNS, infrastructure administration | G.7 line 3791; §16.16 line 2624 | `docker-compose.yml` is declared "LOCAL DEVELOPMENT INFRASTRUCTURE ONLY … never a production deployment definition" (its own header lines 3–8) — **authored, unexecuted**; no infra API in the app; ops lives outside the CMS | Contract — unimplemented | route-inventory review: no `/control-center/**` handler touches infra providers |
+| C-06 | Unrestricted file-system browsing or arbitrary server-side file deletion | G.7 line 3792 | Object storage only, via private bucket (`S3_BUCKET_PRIVATE`, `.env.example` line 43); originals preserved (Standard §6 line 192; §16.8 line 2504); path traversal tests (Standard §5 line 173) | Contract — unimplemented | traversal suite + assert no `fs` write path from handlers |
+| C-07 | Destructive DB commands / casual permanent deletion | G.7 line 3792; Standard §15; §16.20 line 2672; §18.8 line 2844; §17.4 line 2787 ("Protected Owner process"); Standard §3.3 line 115 (no cascading deletes of claims/evidence/rights/audit/revisions) | Archive/soft-delete default; dependency-impact review before deletion (§16.8 line 2506); no cascade of artifacts/stories/sources/media on collection or page-section removal (line 2844) | Contract — unimplemented | DAT-002 (line 3080) cascade test; deletion-permission negative test |
+| C-08 | Ability to disable authorization, security logging, evidence requirements, privacy safeguards, or audit integrity | G.7 line 3793; Standard §4.2; §23 invariant 15 (line 3304) | These five are *not representable as settings fields at all*: no boolean exists to switch off access control or audit writing; audit writes are inline with the operation, not configurable. The DB-level half of the audit-integrity guarantee is now specified as grants + guard trigger + forced RLS (ADR-019); it is authored, not yet executed. **See §2.4 finding 2 for status.** | Contract — unimplemented | assert no settings key disables access control / audit; assert audit row written on every privileged action; `pnpm db:verify-privileges` in the deploy pipeline |
+| C-09 | Direct deployment/release execution through the public CMS | G.7 line 3794; Standard §12 line 281; §15 line 335 | Release is a controlled pipeline step; "Do not deploy production without explicit Owner authorization" (Standard §12 line 281) | Contract — unimplemented | no deploy endpoint exists (grep gate in CI) |
+| C-10 | Break-glass inside the museum interface | G.7 line 3796 | Emergency technical break-glass "belong[s] to a separately secured infrastructure process with independent authentication and audit, not the museum content interface" | Contract — unimplemented; procedure not authored | documented runbook + independent auth path |
+
+---
+
+## 5. Database roles (ADR-005, Standard §3.2, `scripts/db/init-roles.sh`)
+
+Standard §3.2 (lines 99–106) requires four separate roles and states: "The runtime role must not be a database
+superuser and must not have unnecessary DDL privileges. Migration credentials must not be present in browser
+bundles or the CMS settings UI. Backup credentials must be isolated from normal application credentials."
+ADR-005 records the four-role decision; **ADR-019 refines what the runtime role may do to data.**
+`scripts/db/init-roles.sh` is the authored bootstrap, now accompanied by `scripts/db/harden-append-only.sh`
+(apply the per-table append-only exception), `scripts/db/verify-privileges.sh` (assert the resulting grant
+state, non-zero exit on violation) and `scripts/db/run-privilege-tests.sh` (behavioural evidence).
+**Status of all four: executed against a live PostgreSQL 18.6 server on 1 November 2026, inside the harness's
+throwaway container — and never yet against this project's own database, which does not exist.** The harness
+mounts `scripts/db` read-only, runs `init-roles.sh` as an entrypoint script *and* re-runs it to prove
+idempotency, applies `harden-append-only.sh`, and calls `verify-privileges.sh` three times (clean, tampered,
+remediated); the transcript is `docs/A5_PRIVILEGE_EVIDENCE.txt`, exit 0. That is why the relations under test are
+described as *representative* — created by the harness the way a migration will create them, not by
+`pnpm migrate`. Before this batch this line read "never executed against a server", and the 31 October blocker
+sequence it recorded (engine reachable in the morning pass — `preflight.mjs` reported
+`PASS | Docker | server reachable; compose 5.3.1`, then `500 Internal Server Error` on `/containers/create`,
+then timeouts) is now history: `preflight.mjs` reports `PASS | Docker | server reachable; compose: 5.6.1`.
+That sequence, and the Owner actions it appeared to require, were recorded as **B-09** in
+`docs/ARCHITECTURE_DECISIONS.md` §7.2. **B-09 has since cleared by observation** — on
+1 November 2026 `docker info` exits 0 (server 29.9.2) and the harness that it blocked ran with exit 0 — while
+`wsl -l -v` *still* reports the `docker-desktop` distribution as Stopped, which is why that listing is no longer
+cited as a daemon test (`docs/TEST_AND_RELEASE_REPORT.md` §0). `.env` still does not exist by agreement — its
+password variables are deliberately empty and creating credentials is out of scope. `docker compose config`
+confirms both halves of the consequence rather than asserting one: rc=1 naming `required variable … is missing a
+value: set in .env` for all seven secrets when they are unset, and **rc=0** rendering the whole stack when they are
+supplied as process-environment placeholders — so the definition is valid and the role design has a working place
+to be applied once B-03 clears.
+
+| Role | Purpose | Privileges as authored in `init-roles.sh` | Never present in | Status |
+|---|---|---|---|---|
+| `ndm_migration` | DDL, schema owner, `pnpm migrate:create` / `pnpm migrate` | `LOGIN`; owns `public` schema (`ALTER SCHEMA public OWNER TO ndm_migration`) | browser bundle, Control Center UI, telemetry, logs | Contract — unimplemented |
+| `ndm_runtime` | the running application and Payload | `LOGIN`; `SELECT, INSERT, UPDATE, DELETE` on ordinary + default tables; `USAGE, SELECT` on sequences; **`SELECT, INSERT` only on the declared append-only relations** (`UPDATE`/`DELETE`/`TRUNCATE` revoked by `harden-append-only.sh`, guard trigger + forced RLS deny policies behind it); **no `CREATE`, no DDL, not superuser, no `BYPASSRLS`** | migration path | Contract — unimplemented in this project; **§2.4 finding 2 closed by ADR-019: implementation authored and its grant design demonstrated in a disposable container (1 November 2026, exit 0, 10 refusals for authorization reasons)** |
+| `ndm_reporting` | read-only reporting/analytics/audit queries | `LOGIN`; `SELECT` only, all + default tables | any write path | Contract — unimplemented |
+| `ndm_backup` | `pg_basebackup` / WAL / PITR | `LOGIN REPLICATION`; `CONNECT` on database; **no DML, no DDL** | application env, Control Center | Contract — unimplemented |
+| bootstrap superuser | one-time init only | container `POSTGRES_USER`, used only to run `init-roles.sh` once | the application, ever (`docker-compose.yml` lines 15–16) | Contract — unimplemented |
+
+Credential hygiene, verified against the authored files rather than asserted: `.env.example` declares a
+distinct password variable per role (lines 22–30) and separate URIs for runtime and migration (lines 35–36);
+`.gitignore` ignores `.env`, `.env.*`, `*.pem`, `*.key`, `secrets/` and force-keeps only `.env.example`
+(lines 10–15); `tests/setup/env.ts` injects inert values so no test can reach a real credential or provider,
+and refuses integration unless `NDM_ALLOW_INTEGRATION=1` targets `noujoude_test`. **None of this has executed.**
+One unresolved wiring question is recorded here rather than answered: `DATABASE_URI_MIGRATION` is not a
+variable the Payload CLI reads by itself, so routing `payload migrate` through `ndm_migration` requires an
+explicit configuration decision in Phase 2 — an ADR-005 feasibility item, not a satisfied control.
+
+### 5.4 Row-Level Security — the warning the Standard makes explicit
+
+Standard §4.2 line 155, verbatim: *"Row-Level Security may be used as defense in depth when compatible with
+Payload's connection and migration model. It must be tested with the actual runtime database role; never
+assume an RLS policy is effective if the runtime role bypasses it."* ADR-005 repeats it. Consequences adopted
+as required rules:
+
+1. RLS, if adopted, is **defense in depth only**. Payload access control (§4.2 line 145) stays the primary
+   authority; RLS is never the sole enforcement of A-01…A-04.
+2. RLS must be exercised **as `ndm_runtime`**, because `ndm_runtime` is neither superuser nor
+   `BYPASSRLS` per `init-roles.sh` — that is precisely the condition under which a policy *can* bind, and it
+   must be measured, not assumed.
+3. A test executed as the bootstrap superuser or `ndm_migration` proves nothing and is **invalid evidence**
+   for an RLS claim.
+4. `ALTER DEFAULT PRIVILEGES` grants future tables to `ndm_runtime` automatically, so a new table can be
+   reachable without a policy. Required guard: `src/lib/access/rls-runtime-role.integration.ts` must enumerate
+   every relation in `information_schema` and assert policy coverage as `ndm_runtime`, failing on any
+   unprotected table.
+5. Payload's migration model must be confirmed compatible with policies attached to tables Payload owns;
+   incompatibility is a Standard §4.2 condition ("when compatible"), so a measured failure is a recorded
+   decision, not a silent skip.
+
+Status: RLS is **not adopted** in Phase 1/2; the rule above is the contract for when it is.
+
+---
+
+## 6. Application and API security controls (Standard §5, lines 163–180)
+
+Every row is **Contract — unimplemented**. "Minimum controls include" (line 165) is a floor, not a target; the
+target is the ASVS review in §7.
+
+| # | Control | Verbatim requirement | Enforcement plan | Status |
+|---|---|---|---|---|
+| 6.1 | CSP + security headers | "Strict Content Security Policy and security headers configured for production" (line 171) | response headers at the edge/app for public *and* `/control-center`; admin UI compatibility with a strict policy must be measured, not assumed | Contract — unimplemented |
+| 6.2 | HSTS | "HSTS once HTTPS and subdomain policy are confirmed" (line 172) | gated on a condition that is **not yet true**: no HTTPS deployment exists, `.env.example` still sets `NEXT_PUBLIC_SITE_URL=http://localhost:3000`. Ship only after confirmation; do not pre-enable | Contract — unimplemented; precondition unmet |
+| 6.3 | CSRF | "CSRF protection where cookie-authenticated state changes are exposed" (line 170) | Cookie-authenticated Payload admin + REST writes make this live; `CSRF_ORIGIN_ALLOWLIST` exists in `.env.example` line 76 with no consumer yet | Contract — unimplemented |
+| 6.4 | Input validation & output encoding | "Input validation on every untrusted boundary" (167); "Context-sensitive output encoding and safe rich-text rendering" (167) | Zod at every boundary + server-side domain validation (Standard §2.2 line 51); Lexical sanitized, no arbitrary executable HTML (§2.2 line 52, ADR-016); ESLint blocks `innerHTML` assignment (lines 44–46) — **authored, unexecuted** | Contract — unimplemented |
+| 6.5 | Injection classes | "Protection against XSS, SQL injection, command injection, SSRF, open redirects, path traversal, insecure deserialization, and unsafe file processing" (173) | parameterized operations only (169); outbound fetch allowlist for SSRF incl. any AI/provider/webhook call; redirect allowlist; storage-key derivation never from user paths | Contract — unimplemented |
+| 6.6 | Rate limits | "Rate limits on authentication, contact forms, search, AI, upload, and public expensive routes" (174); Master §19.3 line 2891 | five named route families; `RATE_LIMIT_REDIS_URL` declared in `.env.example` line 75, **unpopulated, no consumer** | Contract — unimplemented |
+| 6.7 | Size / timeout / pagination | "Request size, body size, timeout, and pagination limits" (175) | upload body caps; DB statement timeouts; every list endpoint paginated; AI request token/turn caps | Contract — unimplemented |
+| 6.8 | Safe errors | "Safe error responses without stack traces, secrets, or internal implementation details" (176) | error boundary + handler mapping; details to logs, correlation ID to client | Contract — unimplemented |
+| 6.9 | CORS | "CORS allowlists; never use permissive wildcards with credentialed access" (177) | explicit origin allowlist derived from `CSRF_ORIGIN_ALLOWLIST`; CI assertion that no config emits `origin: '*'` with `credentials: true` | Contract — unimplemented |
+| 6.10 | Dependency & secret scanning | "Dependency audit and vulnerability response process" (178); "Dependency and secret scanning" (§12 item 8, line 275) | pnpm audit + secret scan on the lockfile and build artifacts; pinned exact versions per Standard §2.3 step 7 and `ARCHITECTURE_DECISIONS.md` §5 | Contract — unimplemented; `pnpm-lock.yaml` does not exist yet. **Split state, recorded so the easier half cannot close the row (see §13.1):** the *dependency* half is now **authored** as CI job `security-scans` running `pnpm audit --audit-level=high` and has never executed; the *secret* half is **NOT IMPLEMENTED anywhere** and is deliberately absent from `.github/workflows/ci.yml`, which declares that absence in its own header. Landing point for both halves: `docs/IMPLEMENTATION_PLAN.md` §4 work item **2.10** |
+| 6.11 | Secret placement | "No secrets or privileged values in `NEXT_PUBLIC_*` variables, source maps, HTML, logs, screenshots, or client-side bundles" (180) | the **one mechanism that already exists as configuration**: `eslint.config.mjs` lines 54–62 restrict `process.env` property access to `/^(?!NEXT_PUBLIC_).*/`, with server-only overrides at lines 66–73. Cited as *authored, unexecuted* — ESLint has never run, and the override globs (`src/app/**/page.tsx`, `layout.tsx`) are broad enough to re-open the hole in a server component that is later marked `'use client'`; that specific risk needs its own test | Contract — unimplemented |
+| 6.12 | Secure cookies | "Secure cookies and session handling" (179) | see §8 | Contract — unimplemented |
+
+Also required by §19.3 (lines 2894–2904) and not covered above: safe rich-text sanitization with no arbitrary
+script execution from CMS content (2896); secure uploads with type/content validation, size limits, safe
+storage and scanning where available (2897); secrets masked in administrative interfaces (2898); secure
+transport and headers appropriate to production (2899); dependency and vulnerability management (2900);
+restricted database and infrastructure privileges (2902). All **Contract — unimplemented**.
+
+---
+
+## 7. OWASP ASVS 5.0.0 Level 2 — review target, mapping, and an explicit non-claim
+
+Source: Standard §5 line 163 ("reviewed against OWASP ASVS 5.0.0, targeting Level 2 by default and adding
+risk-based controls for privileged and high-impact functions") and Master Spec §19.4 line 2910, which closes
+with the sentence that governs this whole section: **"This is a target, not a compliance claim."**
+
+**No compliance claim exists in this document, is implied by it, or may be derived from it.** The project has
+no application to review, no ASVS requirement IDs have been walked, no assessor has been engaged, and the
+published ASVS 5.0.0 requirement numbering has not been transcribed into this repository. Column "Planned
+evidence" therefore names the artifact that *must* exist before any statement could be made.
+
+| ASVS 5.0.0 control area (by name; exact requirement IDs to be pinned against the published edition at review start — deliberately not asserted here) | Project control | Planned evidence | Status |
+|---|---|---|---|
+| Architecture, design and threat modeling | §1 of this document; Master §19.5 (2916–2930); Standard §2.1 boundaries | threat register with owner + review date; ADR links | Contract — unimplemented |
+| Authentication | Standard §4.1: Payload-supported auth or maintained OIDC, "Do not write custom cryptographic authentication mechanisms" (132); MFA mandatory for Owner + privileged accounts (134); Argon2id with reviewed parameters if local passwords (138); rate-limited login/reset/verification (141) | SEC-001 evidence (line 3104); MFA enrolment records; parameter review note; ADR-025's negative tests — a first factor without a second must yield no session, an assertion lacking the authentication-method claim must be refused on privileged routes, IdP-side revocation must not survive the cookie/JWT window, an MFA-bypass attempt must write an `AuditEvent`, and break-glass enablement must name both approvers | Contract — unimplemented. **Mechanism decided by ADR-025** (OIDC-compatible provider enforces the factor per its own policy; Payload consumes it through `auth.strategies`; local staff passwords disabled; one audited break-glass Owner account). **Provider instance still not selected and none is claimed** — ADR-025 names self-hosted Keycloak only as a non-committed zero-cost candidate, and `.env.example` deliberately carries no identity keys (`grep -c 'OIDC' .env.example` → 0) |
+| Session management | §8 of this document; Standard §4.3 (159) | cookie attribute capture from a real response; expiry/revocation/re-auth tests | Contract — unimplemented |
+| Access control | §2 + §4; Standard §4.2 (145–155) | the 20 module spec files (§3), IAM-001/002/003 (3101–3103), SEC-002 (3105) | Contract — unimplemented |
+| Validation, sanitization and output encoding | §6.4, §6.5; ADR-016 | Zod schemas per boundary; XSS corpus test; Lexical render snapshot tests | Contract — unimplemented |
+| Cryptography | Standard §4.1 (138–139) "Never store plaintext or reversibly encrypted passwords"; Master §19.2 line 2873 data at rest/in transit | hashing parameters record; TLS configuration record | Contract — unimplemented |
+| Error handling and logging | §6.8; Standard §10 (228–241) | correlation-ID behaviour test; log-redaction fixture | Contract — unimplemented |
+| Data protection | §9, §11; Master §19.2 (2869–2878) | inquiry-retention policy record (blocked on Owner: §14.10 line 2045) | Contract — unimplemented; **Blocked by Owner Input** for the policy itself |
+| Communications | §6.1, §6.2, §6.9 | header capture; HSTS only after HTTPS confirmed | Contract — unimplemented; precondition unmet |
+| Files and media | §6.6, §6.7; Standard §6; Master §16.8 (2504–2506) | upload/security-scan suite; SEC-004 (3107) | Contract — unimplemented |
+| API and web services | A-02, A-04; Master §20.3 item 8 (3044) | direct-API authorization matrix | Contract — unimplemented |
+| Configuration | Standard §2.3, §5, §12; `.gitignore`, `docker-compose.yml` posture | deployment config review; CI check list §12 mapped | Contract — unimplemented |
+| Dependencies | §6.10; Standard §15 (329) no canary/alpha/beta/RC without written exception | lockfile + `pnpm audit` output (both absent — install blocked by B-01) | Contract — unimplemented |
+| Business logic / high-risk operations | A-05, A-06; Standard §4.3 (159) role changes, Owner changes, rights approval, publication, destructive ops, export, recovery "with appropriate confirmation and audit" | workflow tests; audit-row assertions | Contract — unimplemented |
+
+Higher-risk components needing risk-based additions (Standard §5 line 163; Master §19.4 line 2910 "a documented
+threat assessment for any higher-risk component and explicit justification for exclusions"): `/control-center`
+as a whole, Module 09 AI Curator Command Center, Module 14 Users/Roles/Permissions, Module 16 System Settings,
+Module 19 Audit, Module 20 Archive & Recovery, the upload pipeline, the AI retrieval layer, and the inquiry
+(PII) pipeline. **None has been assessed.** G.12 line 3924 requires this mapping at release; line 3929 forbids
+unresolved critical/high defects without explicit Owner risk acceptance.
+
+---
+
+## 8. Session and cookie controls (Standard §4.3, line 159; Master §19.3 line 2890)
+
+Required, all **Contract — unimplemented**:
+
+- Secure, HttpOnly, SameSite cookies; HTTPS-only in production (Standard §4.3 line 159). Production HTTPS
+  does not exist, so this cannot be exercised; recording it as satisfied would be false.
+- Session expiration and revocation established as *behaviour*, with tests (line 159).
+- **ADR-025 adds one revocation path that this document previously did not name:** because the assertion now
+  comes from an identity provider, an IdP-side revocation or de-provisioned staff account must not remain
+  usable inside Payload's own cookie/JWT window. Line 159's revocation requirement and §19.3 line 2890's
+  re-authentication rule therefore become a *cross-system* behaviour to test, not a local session-setting:
+  the session lifetime must be bounded by, or revalidated against, the provider. Short access-token lifetimes
+  plus per-privileged-route claim checks are the planned mechanism; **nothing here is measured, because no
+  provider exists (B-05) and no session has ever been issued in this workspace.**
+- Re-authentication for sensitive actions; §19.3 line 2890 "re-authentication for critical actions"; §17.6
+  line 2807 "Critical operations must require re-authentication or additional verification where appropriate".
+- Safe account recovery; §17.6 line 2806 "Account recovery and transfer must be protected against
+  unauthorized takeover".
+- Confirmation + audit for: role changes, Owner changes, rights approval, publication, destructive
+  operations, export, recovery actions (Standard §4.3 line 159).
+- Admin language independent of content language (§15.9 line 2248) must not become a session-scoped
+  authorization input — see A-03.
+- `PAYLOAD_SECRET` rotation invalidates sessions, as recorded in `.env.example` line 15; rotation procedure is
+  **not authored**.
+
+---
+
+## 9. Audit events and audit integrity
+
+**Entity, verbatim (Master §8.16, line 1356; entity also listed at line 1051 as item 20 of §8.2):**
+"`AuditEvent:` event ID, timestamp, actor, action, target record, outcome, relevant before/after state where
+appropriate, and security context. **Audit records are protected from ordinary editing.**" §8.2 line 1051
+adds: "`AuditEvent` — an immutable or protected record of a consequential action."
+
+**Required recorded events** (Master §16.19, lines 2649–2662): user login and access changes · permission and
+role changes · artifact creation/editing · source and evidence changes · verification decisions · publication
+and unpublication · archive and restore · media replacement · rights updates · AI policy/configuration changes ·
+site-wide settings changes · inquiry assignment or status changes where required. Plus Standard §4.3 line 159's
+destructive/export/recovery set, and §19.3 line 2901 "Audit logging for privileged and sensitive actions".
+
+**Integrity rules:** "Ordinary users must not be able to silently edit or erase audit history. Access to
+sensitive audit details is restricted" (line 2664). "Preserve audit history for consequential changes"
+(§8.18 line 1391). "Do not delete historical claims, evidence, rights, audit events, or revisions through
+cascading deletes without an approved retention rule" (Standard §3.3 line 115). Audit integrity may not be
+disabled from the CMS (G.7 line 3793). Restoring a revision "must create a new traceable revision; it must not
+erase intervening history" (§16.15 line 2608). Asset "Status transitions must be auditable" (A.11 line 3469).
+
+**Module 01 and Module 19 exposure rule:** an overview screen must show only "trustworthy information derived
+from actual system records and configured services" (§16.1 line 2261) and unavailable metrics must render as
+unavailable (§16.17 line 2630) — faked audit or activity counts in an admin screen is separately prohibited by
+Directive §17 line 320.
+
+**Telemetry boundary (Standard §10, lines 228–241):** instrument request paths, DB operations, Payload hooks,
+jobs, media, search, AI calls and integrations; minimum indicators include authentication failures and
+suspicious access patterns (line 238) and backup success and restore-test status (line 239). Telemetry
+"must avoid personal/inquiry content, credentials, tokens, and unnecessary sensitive identifiers" and
+"Define retention, access, and alert routing before production" (line 241). **No OTLP endpoint is configured
+(`OTEL_EXPORTER_OTLP_ENDPOINT=` empty), so no signal has ever been emitted; retention, access and alert
+routing are undefined.** Status: Contract — unimplemented.
+
+---
+
+## 10. Media and object-storage security (Standard §6, lines 183–193)
+
+Detail of the asset *governance* side is `docs/MEDIA_AND_RIGHTS_GOVERNANCE.md`; this section states the
+security controls. All **Contract — unimplemented.**
+
+| # | Control | Verbatim requirement (Standard §6) | Plan / note |
+|---|---|---|---|
+| M-01 | Private originals by default | "Keep original collection photography and documentary files private by default **until rights and publication approval are recorded**" (184) | Measured against the audit: **no asset in this workspace currently satisfies the condition** — 82/82 `Not Approved`, 72/82 rights `UNKNOWN` (`ASSET_INVENTORY_AUDIT.csv`). `S3_BUCKET_PRIVATE=noujoude-originals` is declared in `.env.example` line 43 with no bucket existing |
+| M-02 | Separate policies for public derivatives vs restricted originals | "Use separate logical policies for public derivative assets and restricted originals" (185) | two buckets declared (`noujoude-originals` / `noujoude-derivatives`, `.env.example` 43–44) — **declaration only; nothing provisioned** |
+| M-03 | Short-lived signed URLs | "Use short-lived signed URLs for private assets" (186) | TTL is a decision that must be recorded and tested; `.env.example` lines 39–40 state the rule; no expiry value chosen |
+| M-04 | Content validation | "Validate MIME type, magic bytes, extension, file size, dimensions, and allowed formats" (187) | the Phase 0 audit proves why extension is not evidence: `NDM-AST-041 vintage_collector_desk_16x9.jpg` has a `.jpg` name but its container is `RIFF….WEBP` (magic bytes read directly during preparation of this document; `ASSET_INVENTORY_AUDIT.csv` row 42: MIME `image/webp`, 512×290, `WRONG_FORMAT`) |
+| M-05 | Malware scanning | "Scan uploaded files for malware where the selected infrastructure supports it" (188) | Master §11.8 (line 1603) makes `Security Scan` a pipeline stage and §16.8 (2504) says "scan where tooling supports it"; **no scanner is selected** — a capability-dependent control that must not be reported as unconditional |
+| M-06 | Re-encode derivatives | "Re-encode web-display derivatives; **never treat an extension change as sanitization**" (189) | `sharp` is the approved processor (Standard §2.2 line 53, `ARCHITECTURE_DECISIONS.md` §5) — **not installed**; 72/82 assets are recorded `Original (no derivatives produced)` |
+| M-07 | Script/SVG payloads | "Prevent SVG/script payloads and unsafe document previews from executing in the application origin" (190) | reject unsafe formats (§16.8 line 2504); never preview uploaded documents in the app origin; served from a distinct origin/policy where feasible |
+| M-08 | Credentials server-side | "Keep object storage credentials server-side" (191) | Standard §5 line 180 + ESLint client env rule (§6.11) + G.7 line 3790; `S3_ACCESS_KEY_ID`/`S3_SECRET_ACCESS_KEY` are non-`NEXT_PUBLIC_*` by construction (`.env.example` 45–46) |
+| M-09 | Versioning + protected deletion | "Enable versioning and protected deletion for original assets" (192) | also §16.8 line 2506 and §18.8 line 2844; **not provisioned**; note that "protected deletion" for the 10 AI-generated derivatives is already compromised by lost source PNGs (see M-10) |
+| M-10 | Lineage + checksums | "Record original/derivative lineage, checksums, rights, and usage links" (193); §8.14 `source_asset_id` (line 1318); §8.18 line 1386 "Keep the original media file separate from derivatives" | 10/82 records carry a **broken** original→derivative link: `_manifest.json` names source PNGs (e.g. `world_morocco_hero_16x9_1793387944337_307329d3.png`) that are absent from the workspace; SHA-256 baselines exist for all 82 in `ASSET_INVENTORY_AUDIT.csv` and are re-verified by `scripts/preflight.mjs` (82/82 match) |
+| M-11 | No public access to restricted artifacts | Standard §15 line 332; STT-002 line 3086 "Unclear/restricted media cannot be publicly served for unauthorized use" | enforced at the serving layer, not by UI hiding |
+
+---
+
+## 11. Backup, recovery and service objectives — **proposed engineering targets, not provider claims**
+
+Standard §11 opens: "These are proposed engineering targets, not a claim that a hosting vendor already meets
+them" (line 245). Master G.11 line 3883 adds: "They are engineering acceptance targets, not public contractual
+SLAs. The selected hosting/storage providers and cost plan must demonstrate that they can meet them **before**
+production approval. If a provider cannot meet them, the gap must be explicitly presented to the Owner; the
+target must not be silently downgraded." Standard §15 line 336 makes silent downgrade a prohibition.
+
+| Data class | Target RPO | Target RTO | Source | Required protection (Master G.11.2 lines 3895–3897) | Status |
+|---|---:|---:|---|---|---|
+| PostgreSQL primary data | ≤ 1 hour | ≤ 4 hours | Standard §11 line 249; G.11.2 line 3895 | encrypted backups, PITR/WAL or provider-equivalent, isolated backup credentials, restore runbook | Contract — unimplemented; **no provider selected, so feasibility is unknown** |
+| Original media + critical object storage / metadata | ≤ 4 hours | ≤ 8 hours | line 250; G.11.2 line 3896 | bucket versioning, protected deletion, replication or independent backup copy | Contract — unimplemented |
+| Application config + deployment artifacts | ≤ 24 hours | ≤ 4 hours | line 251; G.11.2 line 3897 | version-controlled configuration **without secrets**, reproducible build, protected deployment | Contract — unimplemented |
+
+Policy requirements (Standard §11 lines 255–260; G.11.3 lines 3901–3908): daily encrypted DB backup plus
+WAL/PITR to meet the 1-hour RPO; **35 daily, 12 weekly, 12 monthly** recovery points (mirrored as
+`BACKUP_RETENTION_DAILY=35`, `WEEKLY=12`, `MONTHLY=12` in `.env.example` lines 80–82 — declared, not
+provisioned); object versioning and protected deletion with independent recoverable copies of critical
+originals; **isolated backup identities and credentials** (`ndm_backup`, §5; "Backups must be isolated from
+ordinary CMS credentials and production application write permissions", line 3904); backup keys and
+credentials never exposed in the Control Center (3905); **restore tests quarterly and before major
+database/storage migrations** (3906); each restore test records date, dataset, measured RPO/RTO, integrity
+checks, failures, corrective actions and reviewer (3907).
+
+Two sentences that decide how this section may be reported:
+- G.11.3 line 3908: **"A backup job reporting success is not proof of recoverability; only a tested restore is
+  acceptable evidence."** §19.10 line 2987 repeats it. Therefore *no restore test has been performed and no
+  backup exists*, and nothing here may be described as "backups are tested".
+- Standard §11 line 262 / G.11.1 lines 3887–3888: monthly availability objective **99.5%** for the public
+  museum and the same basis for the Control Center, "subject to the actual provider/support plan and formal
+  Owner acceptance". **No SLA may be published from an internal objective** (line 262), and §19.10 line 2991
+  forbids inferring numerical commitments from the design. Availability objective status: **Contract —
+  unimplemented; no measurement, no provider, no Owner acceptance.** OPS-002 (line 3114) acceptance requires
+  "Backup configuration is verified and restore test succeeds" — both absent.
+
+Graceful degradation (G.11.4 line 3912; §19.10 line 2987): failure of AI, analytics, search enhancement,
+external media optimization or notifications must not disable core published pages. Contract — unimplemented.
+
+---
+
+## 12. Accessibility and performance — release **gates to be met**, not met
+
+**WCAG 2.2 Level AA** — Standard §8 line 210 ("Target WCAG 2.2 Level AA for public and administrative
+experiences"), Master §19.8 line 2957 ("subject to an accessibility audit of the implemented experience"),
+G.12 line 3922. Required test scope (Standard §8 line 212): semantic structure, keyboard access, focus
+visibility, form labels, error announcements, contrast, target sizes, modal behaviour, image viewer controls,
+reduced motion, screen-reader navigation, RTL/LTR behaviour; "Automated axe checks are required in CI for key
+pages, followed by manual testing of key visitor and admin flows". §19.8 (2961–2973) enumerates the
+requirements, including meaningful alt text with decorative images treated as decorative, no information
+conveyed by colour alone, reduced-motion support, captions/transcripts if meaningful audio/video is
+introduced, RTL and LTR testing, and accessible admin tables/forms/validation.
+
+Recorded against the physical audit rather than asserted: **alt text status is `Not Recorded` for 82 of 82
+assets** (`ASSET_INVENTORY_AUDIT.csv`), and §8.14 (line 1311) makes `alt_text_en` / `alt_text_ar` *required
+for meaningful public images*. Automated axe checks have never run: `axe-core` is a declared devDependency
+that is not installed. **No claim of WCAG AA attainment exists or may be made.** NFR-002 (line 3111) requires
+"WCAG 2.2 AA audit has no unresolved release-blocking issue" — there is no audit.
+
+**Core Web Vitals at p75** — Standard §9 lines 216–221; Master §19.6 lines 2934–2941:
+
+| Metric | Gate | Status |
+|---|---|---|
+| LCP | ≤ 2.5 s | Contract — unimplemented; §19.6 line 2942: "These are performance targets, not measured current results" |
+| INP | ≤ 200 ms | Contract — unimplemented |
+| CLS | ≤ 0.1 | Contract — unimplemented |
+
+Required coverage (Standard §9 line 222): Home, The Museum, Country World, Collection, Artifact Detail,
+Story, Search, and Control Center critical routes — none of these routes exists. Techniques required by
+Standard §9 line 224 and §19.7 lines 2946–2954 (responsive images, reserved dimensions, controlled preload of
+the primary hero, lazy loading below the fold, caching with clear invalidation, no unnecessary client
+JavaScript, focal-point/crop metadata) collide with a measured asset-library fact: 18 of 82 assets declare
+their pixel size in the filename and are wrong (see `MEDIA_AND_RIGHTS_GOVERNANCE.md` §6), so dimensions cannot
+be trusted from filenames and must be read from the decoded file. §19.7 line 2952 additionally forbids
+optimization that corrupts "meaningful inscriptions or material features". NFR-001 (line 3110) requires either
+met targets or a documented exception: **neither exists.**
+
+---
+
+## 13. CI/release gates this document depends on (Standard §12, lines 266–281)
+
+Required checks: 1 formatting and lint · 2 strict TypeScript typecheck (`tsconfig.json` `strict`) · 3 unit
+tests for domain and validation logic · 4 integration tests for database, CMS hooks, **access control**, jobs
+and storage adapters · 5 Playwright E2E for key public/admin routes in both locales · 6 accessibility
+automation plus manual audit records · 7 security checks mapped to ASVS controls and **negative authorization
+tests** · 8 dependency and secret scanning · 9 production build · 10 database migration verification **and
+restore test** · 11 SEO route and metadata checks · 12 performance measurements and regression checks.
+
+**Status: none of the twelve has ever been executed in this repository.** Directive §15 line 292 requires
+"Every completed module must pass its own acceptance tests and negative-permission tests" after every
+important change. Standard §12 line 281: "Do not deploy production without explicit Owner authorization. Do
+not use mock functionality as release evidence." Standard §15 line 335 repeats the deployment prohibition.
+Master §23 invariant 17 (line 3306): "A documented feature never counts as implemented without evidence."
+
+### 13.1 The CI definition now exists; the twelve checks still do not
+
+Added in the gap-closure batch, because the state changed in a way that is easy to over-read.
+
+`.github/workflows/ci.yml` **now exists** — 416 lines, 45 step items (37 named + 8 bare action steps), four jobs
+(`docs-gates`, `quality`, `db-privileges`, `security-scans`), and a header that reads `STATUS: **AUTHORED. NEVER
+EXECUTED.**`. It expresses the twelve checks above as pipeline steps. It enforces nothing, for four concrete reasons:
+
+1. It has **never run**. There is no run transcript anywhere, and no green tick exists to point at.
+2. It has **never been validated by a YAML conformance parser**. None exists on this host — measured, not assumed
+   (python, python3, `perl -MYAML`, `perl -MYAML::Tiny`, ruby and PowerShell `ConvertFrom-Yaml` all fail). What was
+   substituted on 1 November 2026 is `scripts/verify-workflow-structure.mjs`: ten structural rules that prove the
+   file parses as block YAML and that its jobs, steps, script paths, `pnpm` names and gate list are internally
+   consistent (hole H-11). That closes most of the risk a parse error would carry, and it is **not** the same thing
+   as GitHub's parser accepting the file.
+3. There is **no repository** for it to run in — `git rev-parse --is-inside-work-tree` returns
+   `fatal: not a git repository` (blocker B-04, Owner decision OD-4).
+4. Its `quality` job **will fail** on first run until OD-1 (Node in range) and OD-2 (`pnpm install`) clear. That
+   is an expected failure and must be recorded as a failure, not suppressed.
+
+There is a fifth trap, and it is about how a reviewer *runs* the checks rather than what the file contains. In this
+workspace `pnpm run <script>` performs a dependency install before it executes the script, because `node_modules` is
+absent by design until OD-2 — measured on 1 November 2026, when `pnpm run audit:workflow` resolved 669 packages
+against the public registry instead of checking this repository. No project-scoped setting prevents it
+(`verify-deps-before-run` is read only from the global pnpm config), so `.npmrc` intentionally sets nothing,
+`scripts/preflight.mjs` check 10 reports whether the trap is still armed, and `docs/TEST_AND_RELEASE_REPORT.md` §9
+prints `node scripts/<name>.mjs` for every read-only gate. Recorded as hole **H-12**, blocker **B-10**, Owner
+decision **OD-7**. The CI file is not exposed to it: `docs-gates` calls `node scripts/…` directly and was verified to
+contain no `pnpm` invocation, while the other three jobs install explicitly first.
+
+Two things the pipeline does contain that matter to this document. Job `db-privileges` runs
+`scripts/db/run-privilege-tests.sh` **unconditionally** and uploads its output as an artifact, then — behind a
+step that tests for `src/payload/payload.config.ts` — runs `pnpm db:up`, `pnpm migrate`, **`pnpm db:harden`** and
+**`pnpm db:verify-privileges`**, with `pnpm db:down` under an always-run condition. Those two named steps are the
+compensating control for ADR-019's residual risk, that the table owner `ndm_migration` can drop the audit guard
+trigger. **Because the workflow has never executed, that compensating control is authored and not enforced, and
+the residual risk stands open.** It must not be described as mitigated.
+
+Job `security-scans` runs `pnpm audit --audit-level=high` and carries a NOTICE that secret scanning is **not
+implemented**. The absence is declared rather than omitted so that check 8 cannot be quietly upgraded when the
+dependency half goes green.
+
+**The vulnerability-response process required by Standard §5 line 178 is still not written.** Scanning is a
+detector; line 178 asks for a *process*. What must exist and does not: who triages a reported advisory, within
+what window, what severity blocks a release, what the exception path is when a fix does not exist, and where the
+decision is recorded. Phase 2 work item **2.10** owns it, and its acceptance evidence requires a **seeded
+false-positive test** proving the secret scanner actually fails a build — an untested scanner is an unverified
+control, and a step in a YAML file is not behaviour.
+
+---
+
+## 14. Owner inputs this document must not fabricate (Standard §13, lines 296–305)
+
+Not decided here, and not inferable: institutional legal identity and jurisdiction · actual founder story and
+attributions · real artifact inventory and factual data · ownership, provenance and authenticity evidence ·
+image/document rights and licenses · official contact details · approval of operational costs, providers and
+formal service commitments. Two of these gate controls above: the hosting/storage provider (§11) and the
+conversation-data policy (§14.10 line 2045, referenced in `AI_CURATOR_GOVERNANCE.md`). Standard §13 line 306:
+"Implement the required workflows and placeholders; keep unapproved facts out of public output."
+
+## 15. Non-negotiable prohibitions restated as binding on this document (Standard §15, lines 327–336)
+
+No Prisma alongside Payload's Drizzle-backed adapter (ADR-002) · no dual competing migration systems · no
+canary/alpha/beta/RC dependencies in production without written exception (`ARCHITECTURE_DECISIONS.md` §3.1
+records the rejected pre-releases) · no plaintext passwords or homemade crypto · no frontend-only
+authorization · no public access to private originals or restricted artifacts · no raw SQL, shell, secret or
+infrastructure controls through the ordinary CMS UI · **no invented metrics, security compliance, or backup
+success claims** · no deployment to production without Owner authorization · no silent downgrade of RPO/RTO,
+accessibility, performance, or security requirements.
+
+*End of NDM-SEC-001. Every control above is a contract. Verification is pending; nothing here is evidence of a
+running system.*

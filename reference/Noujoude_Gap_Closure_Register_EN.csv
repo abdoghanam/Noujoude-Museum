@@ -1,0 +1,18 @@
+﻿Gap ID,Previously Flagged Requirement,Finding in Existing Master,Existing Canonical Location,Final Closure Location,Closure Status
+GAP-01,Museum is not an e-commerce platform,Already defined,"Master §§1.2, 2.6, 6.7, 23",Binding prohibition repeated and expanded in Appendix G.3,Closed at specification level
+GAP-02,"No prices, Buy Now, cart, checkout, payment, sellers, or sales funnel","Already defined, now explicit across product surface","Master §§2.6, 6.7, 23",Appendix G.3 and execution directive §4,Closed at specification level
+GAP-03,Official tagline,Already defined,"Master §§1.3, 23",Exact string locked in Appendix G.2/G.3 and asset requirements,Closed at specification level
+GAP-04,Morocco first fully curated V1 world,Already defined,"Master §§2.1–2.3, 11.9; Appendix F",Appendix G.4 and directive §5,Closed at specification level
+GAP-05,Six named country worlds,Already defined,"Master §§2.3, 6.4, 16.4, Appendix A",Explicit states and non-fabrication in Appendix G.4,Closed at specification level
+GAP-06,Collection taxonomy,Already defined,"Master §2.4, §§8.5–8.7, Appendix A",Taxonomy contract in Appendix G.5,Closed at specification level
+GAP-07,Feminine luxury visual direction,Already defined but consolidated into executable brand rules,"Master §§12–13, Appendix A",Appendix G.6 and separate Asset & Brand Requirements,Closed at specification level; visual approval remains
+GAP-08,Owner control across supported CMS content and identity,"Already defined, clarified",Master §§15–17,Appendix G.7 and module acceptance matrix,Closed at specification level
+GAP-09,"No arbitrary SQL, shell, code, secrets, infrastructure access through CMS","Partly defined, boundary strengthened","Master §§16.16, 17.6, 19",Appendix G.7 and Technology & Security Standard,Closed at specification level
+GAP-10,72 original assets + 10 requested assets,Already cataloged,Master Appendix A,Separate Asset & Brand Requirements includes exact 82 names and physical audit rules,Closed as catalog; file existence/rights remain to verify
+GAP-11,WCAG 2.2 AA,Already defined,Master §19.8,Appendix G.12 and Technology Standard §8,Closed at specification level; implementation audit pending
+GAP-12,Core Web Vitals thresholds,Already defined,Master §19.6,Appendix G.12 and Technology Standard §9,Closed at specification level; measurements pending
+GAP-13,OpenTelemetry,Was not explicit,Master Appendix G.10,Technology Standard §10,Closed at specification level; instrumentation pending
+GAP-14,"Backup, RPO, RTO numeric targets",Principle was defined; numeric targets not fixed,Master §19.10,Appendix G.11 and Technology Standard §11,Closed as proposed baseline; provider proof/Owner approval pending
+GAP-15,Bilingual SEO,Core principles existed; testable acceptance expanded,"Master §§4.2, 10.9, 16.11, 19.11",Appendix G.9 and Technology Standard §11/SEO references,Closed at specification level; implementation tests pending
+GAP-16,Acceptance criteria for all 20 admin modules,Detailed module definitions existed; consolidated acceptance gates expanded,Master §§15–17,Appendix G.8,Closed at specification level; implementation tests pending
+GAP-17,Source-to-master semantic confidence,Line locator existed; it was not a per-line semantic judgement,Master Appendix B; Traceability CSV notes,README explains limitation; Qwen must use requirement-to-code-to-test traceability,Not claimed as semantically closed by line count

@@ -1,0 +1,34 @@
+{
+  "capturedAt": "2026-10-30T23:31:40.689Z",
+  "note": "First capture. reference/ is declared read-only by Directive §3; any later DRIFT means an original was modified.",
+  "files": {
+    "Noujoude_Asset_and_Brand_Requirements_EN.md": {
+      "sha256": "6052faa004731a2ed6f9bc92501f03cd73b94d8e2fb93aa72f43283392e5ac3a",
+      "bytes": 20059
+    },
+    "Noujoude_Gap_Closure_Register_EN.csv": {
+      "sha256": "1a0ac3d62ffd010520c0b556e85bfc00aa8a89d75e2a73b0bfa2ce6f563f8b24",
+      "bytes": 3473
+    },
+    "Noujoude_Line_by_Line_Traceability_EN.csv": {
+      "sha256": "04c1732b4264315e73b0e5bacc85062b419750daa99bb5916730962df62c0296",
+      "bytes": 4430705
+    },
+    "Noujoude_Master_Execution_Directive_EN.md": {
+      "sha256": "e6d71f3d52a6520fea1cce4b660e48fda22bb6cd945ecbcdb39410c7dbcea7ab",
+      "bytes": 18954
+    },
+    "Noujoude_Master_Specification_EN.docx": {
+      "sha256": "69ccb03eec9806a5601c3cd066c93a1faf295efbe3464611256ddd56b5f71283",
+      "bytes": 142645
+    },
+    "Noujoude_Master_Specification_EN.md": {
+      "sha256": "5b30b21eaf6d6457b10b80e0ba48bc511c106db484336934b8e06d34ae47ecd5",
+      "bytes": 242312
+    },
+    "Noujoude_Technology_and_Security_Standard_EN.md": {
+      "sha256": "6829a73a6bc6cde95623b1ae813cf30dc9a846e65c69ac517f0709ee1fa01ad9",
+      "bytes": 19921
+    }
+  }
+}

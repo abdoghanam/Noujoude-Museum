@@ -1,0 +1,85 @@
+{
+  "generatedAt": "2026-11-01T14:03:08.214Z",
+  "tool": "scripts/check-docx-alignment.mjs",
+  "inputs": {
+    "docx": {
+      "path": "reference/Noujoude_Master_Specification_EN.docx",
+      "bytes": 142645,
+      "sha256": "69ccb03eec9806a5601c3cd066c93a1faf295efbe3464611256ddd56b5f71283"
+    },
+    "md": {
+      "path": "reference/Noujoude_Master_Specification_EN.md",
+      "bytes": 242312,
+      "sha256": "5b30b21eaf6d6457b10b80e0ba48bc511c106db484336934b8e06d34ae47ecd5"
+    }
+  },
+  "method": [
+    "ZIP local headers parsed directly; word/document.xml inflated with node:zlib",
+    "DOCX runs concatenated per <w:p>, entities decoded, whitespace collapsed",
+    "Markdown structural characters stripped; table rows flattened to cell text",
+    "Comparison is token-set and paragraph-containment based; punctuation and case normalised"
+  ],
+  "counts": {
+    "docxParagraphs": 4430,
+    "mdParagraphs": 2756,
+    "docxTokens": 31419,
+    "mdTokens": 31177,
+    "mdWordTypes": 3364,
+    "docxWordTypes": 3357,
+    "mdHeadings": 337,
+    "docxExternalHyperlinkTargets": 6
+  },
+  "differences": {
+    "excludedFromComparison": {
+      "docxTocFieldParagraphs": [
+        "Table of Contents"
+      ],
+      "markdownFrontMatterParagraphs": [
+        "title noujoude digital heritage museum",
+        "subtitle master product requirements experience content governance administration specification",
+        "document id ndm master 001",
+        "version 1 1 0 closed requirements baseline",
+        "status meaning permitted use",
+        "title",
+        "subtitle",
+        "title localized string required for locale publication yes",
+        "subtitle localized string optional yes",
+        "title localized string required for locale publication yes",
+        "title subtitle localized strings required optional yes",
+        "author reference user approved display name optional if approved",
+        "title string required",
+        "author string reference optional"
+      ],
+      "reason": "Word-generated \"Table of Contents\" label and YAML front matter are document packaging; the requirement text they duplicate is still compared."
+    },
+    "wordTypesOnlyInMarkdown": [],
+    "wordTypesOnlyInMarkdownCount": 0,
+    "wordTypesOnlyInDocx": [
+      "ndm",
+      "66",
+      "69"
+    ],
+    "wordTypesOnlyInDocxCount": 3,
+    "mdParagraphsAbsentFromDocx": [
+      {
+        "text": "w3c web content accessibility guidelines wcag 2 2 w3c recommendation https www w3 org tr wcag22 and wai wcag overview https www w3 org wai standards guidelines wcag the proposed accessibility target is wcag 2 2 level aa subject to formal project approval and testing",
+        "explainedByHyperlinkReflow": true
+      },
+      {
+        "text": "core web vitals google web dev thresholds https web dev articles defining core web vitals thresholds and google search central guidance https developers google com search docs appearance core web vitals proposed good thresholds are lcp 2 5 seconds inp 200 milliseconds and cls 0 1 evaluated at the 75th percentile of real user experience data where sufficient data exists",
+        "explainedByHyperlinkReflow": true
+      },
+      {
+        "text": "owasp application security verification standard asvs 5 0 0 official asvs project https asvs owasp org and official downloads https asvs owasp org downloads the project must define a risk based verification profile and map the applicable controls to the actual application architecture citing asvs does not establish compliance",
+        "explainedByHyperlinkReflow": true
+      }
+    ],
+    "mdParagraphsAbsentFromDocxCount": 3,
+    "mdHeadingsAbsentFromDocx": [],
+    "mdHeadingsAbsentFromDocxCount": 0,
+    "substantiveMisses": [],
+    "contentLossRisk": []
+  },
+  "verdict": "ALIGNED — the Markdown carries no requirement content the DOCX lacks and the DOCX contributes no requirement vocabulary the Markdown is missing. Remaining differences are Word packaging and hyperlink-reflow artifacts, listed for transparency.",
+  "note": "The .md is the working authority for implementation because it is line-addressable and is what the traceability CSV and Appendix A source-line references were measured against. This comparison establishes whether it lost content relative to the .docx supplied alongside it."
+}

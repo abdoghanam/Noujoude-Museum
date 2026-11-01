@@ -1,0 +1,872 @@
+# Noujoude Digital Heritage Museum — Test and Release Report
+
+**Document ID:** NDM-QA-001
+**Version:** 0.1.0
+**Measurement window:** 31 October 2026, 01:50–02:10 local, on this host.
+**Re-measurement window:** 31 October 2026, later the same day — the container engine, the toolchain versions,
+the pinned-artifact registry documents, the `v3.92.1` package listing, the preflight gate and both
+documentation-integrity gates were all re-run. Where the two windows disagree, §0 and §1.9 carry the **later**
+figures and §2 records the correction. The earlier window's numbers are not preserved as current anywhere.
+**Status:** **No application has been tested, because no application exists.** §1 lists what genuinely ran; §3 lists everything that has not.
+**Rule enforced:** Directive §17 line 318 *"Do not claim a feature is implemented without verifying behavior"* and line 320 *"Do not fake records or metrics"*; Standard §15 line 334 *"No invented metrics, security compliance, or backup success claims."* Every number below was produced by a command shown next to it, on this host, in this window. Where a figure in an earlier document disagreed with a fresh run, §2 records the correction.
+
+**Reproduce everything in §1 in four commands** (§9). Do not trust a number in this file that you have not re-produced: a parallel documentation workstream was editing `scripts/copy-master-spec.mjs` and the generated header of `docs/MASTER_SPECIFICATION.md` *while this report was being written*, which is visible in §2.3.
+
+---
+
+## 0. Environment actually measured
+
+| Tool | Command | Output | Required by decision | Verdict |
+|---|---|---|---|---|
+| Node.js | `node -v` | `v24.19.0` | `>=24.22.1 <25` (`package.json` engines; Payload 3.92.1 `engines.node "^22.23.4 \|\| >=24.22.1"`) | ❌ **FAILS — blocker B-01** |
+| pnpm | `pnpm -v` | `11.21.0` | `packageManager: pnpm@11.21.0` | ✅ matches |
+| npm | present | 11.17.0 | unused; pnpm is the authority | — |
+| Git | `git --version` | `git version 2.56.0.windows.2` | Git (Standard §2.2) | ✅ binary present, ❌ **no repository** (`git rev-parse --is-inside-work-tree` → `fatal: not a git repository`) |
+| Docker CLI | `docker --version` | `Docker version 29.7.2, build a7dcaa6` (client only — answers without a daemon) | local infrastructure (Standard §2.2) | ✅ binary present |
+| Docker Compose | `docker compose version` | `Docker Compose version v5.3.1` on 31 October, **rc=0**, 30 bytes — **client only.** Re-measured 1 November 2026: **v5.6.1**, rc=0. Either exit code proves the CLI is installed and says nothing about the engine. | ADR-004 (`postgres:18.6-alpine`) | ✅ binary present; preflight now reports `compose: 5.6.1` |
+| Docker context config | `docker context ls` | **rc=0** — lists `default` and `desktop-linux *` → `npipe:////./pipe/dockerDesktopLinuxEngine` | — | ✅ readable; the endpoint is *registered*, which is not the same as *live* |
+| Docker **daemon** | `docker version`, `docker info`, `docker ps -a`, `docker images` — each wrapped in `timeout 30`/`40`, exit code captured **before** any pipe | **Re-measured 1 November 2026: `docker info` exits 0**, server `29.9.2`, 3 containers listed (0 running), `docker images` exits 0. The 31 October reading in this row's earlier life was all four **rc=124** with **0 bytes** — not even the Client section of `docker version` was flushed, so the CLI hung while connecting rather than reporting a refusal. That reading is kept because it is what made B-09 true when it was written. | required to start `postgres:18.6-alpine` (ADR-004) | ✅ **reachable 1 November 2026; B-09 cleared by observation, not by an Owner decision — re-probe before relying on it** |
+| WSL | `wsl -l -v` | 31 October: **rc=0** → `docker-desktop  Stopped  2`; `Ubuntu  Stopped  2`. **1 November, re-run: the identical output** — `Ubuntu Stopped 2`, `docker-desktop Stopped 2`, rc=0 — *while `docker info` in the same minute exits 0 and answers.* | engine backend | ⚠️ **Diagnostic correction, and it changes F-A's remedy.** `wsl -l -v` was recorded on 31 October as the proof that the daemon was absent. Re-measured 1 November, the distribution still reports **Stopped** and the daemon nonetheless answers, so the WSL listing is **not** a valid proxy for engine reachability on this host; `docker info` is. F-A's two historical signatures stand as recorded — `docker-desktop Running` with `500 Internal Server Error` on `/containers/create` and `/containers/json` (ARCHITECTURE_DECISIONS §7.2.2), then Stopped with rc=124 (§7.2.1) — but neither is the current state, and no Owner engine restart was needed to reach the daemon. |
+| `postgres:18.6-alpine` in the local cache | `docker images` | **1 November 2026: rc=0** and the tag is listed, 433 MB. The 31 October value was **rc=124, 0 bytes — the cache could not be enumerated**, which is why this row read UNKNOWN. | ADR-004 mandates this image | ✅ **PRESENT.** An earlier note recorded the image as "absent from the local cache"; that claim stays withdrawn — it was unmeasurable then, and the measurement that finally replaced it is this one. |
+| `psql` client | not present | — | not required; the container provides it | ✅ acceptable |
+| `node_modules/`, `pnpm-lock.yaml` | `ls` | both absent | — | ❌ confirms **no install has ever run** |
+| Application source | `find src tests -type f` | `src/README.md`, `tests/setup/env.ts` — two files, neither is application code or a test | — | ❌ confirms zero implementation |
+| YAML validator | `python -c "import yaml"`, `python3 -c "import yaml"`, `node -e "require('yaml')"`, `perl -MYAML` / `-MYAML::Tiny`, `ruby -e "require 'yaml'"`, PowerShell `ConvertFrom-Yaml`, `jq --version` | python 3.13 → `ModuleNotFoundError: No module named 'yaml'`; python3 the same; node → module not found; both perl modules fail; ruby not installed; PowerShell silent; `jq` absent. Re-probed 1 Nov 2026 — no cached container image carries one either | needed to machine-check the newly authored `.github/workflows/ci.yml` | ❌ **none available, and installing one is outside this batch's authorization.** What was substituted instead is `scripts/verify-workflow-structure.mjs`: ten structural rules over the block subset, exit **0**, proven red-and-green by its own 32-case suite (hole **H-11**). So `ci.yml` is recorded as **authored and structurally checked, not YAML-conformance-validated, never executed** (§1.7). |
+
+---
+
+## 1. Executed — real runs with real output
+
+The commands executed in this window are transcribed below, one subsection per command group, plus §1.5 which
+was **attempted and blocked** by the dead container engine on 31 October and **has since been executed with
+exit 0** (1 November) — §1.5 carries both readings and says which one supersedes which. The list is *enumerated rather than totalled*: a
+count of subsections is precisely the kind of figure that goes stale mid-work, and §2 already records one such
+drift. §9 repeats the same commands as a reproduction script. All are read-only against `reference/` and
+`Noujoude.photo/` and write only inside `docs/` (ADR-014). Exit codes are from this shell.
+
+### 1.1 `node scripts/preflight.mjs` → **exit 1**
+
+Measured 31 October 2026, this window:
+
+```
+FAIL | Node.js 24.19.0
+     | VIOLATES engines.node ">=24.22.1 <25" — install Node 24.22.1 or later in range. Payload 3.92.1 refuses this version.
+WARN | Docker
+     | daemon did not answer within 20 s — required for postgres:18.6-alpine (ADR-004)
+WARN | .env
+     | missing — copy .env.example to .env before install. Do not commit it.
+PASS | pnpm 11.21.0
+     | packageManager declares pnpm@11.21.0
+PASS | reference/ integrity
+     | 7 files match baseline checksums
+PASS | Noujoude.photo/ integrity
+     | all 82 audited assets match their recorded SHA-256
+PASS | src/
+     | contains README.md
+
+7 checks: 1 FAIL, 2 WARN, 4 PASS
+```
+
+**Re-run 1 November 2026, same command, exit code still 1 — and the rows changed, which is why the
+tally alone is never the evidence.** `compose` is now reported as **5.6.1** (it was 5.3.1 in the
+earliest transcript and the daemon was not answering at all in the one above), so the Docker check
+is PASS and B-09 is closed for the harness's purpose — see §1.5. The two WARNs are now `.env`
+(absent by agreement, B-03) and the **new** H-7 reconciliation row, which did not exist when the
+transcript above was taken:
+
+```
+FAIL | Node.js 24.19.0
+     | VIOLATES engines.node ">=24.22.1 <25" — install Node 24.22.1 or later in range. Payload 3.92.1 refuses this version.
+WARN | .env
+     | missing — copy .env.example to .env before install. Do not commit it.
+WARN | Noujoude.photo/ reconciliation
+     | 1 image file(s) in the directory with NO catalog row: logo_presentation_scene_16x9_v3.webp | 2 non-image file(s) not catalogued (manifests/notes): _pending_review_AI_generated/GENERATED_ASSETS_MANIFEST_AR.md, _pending_review_AI_generated/_manifest.json | 1 WRONG_FORMAT (extension vs container): vintage_collector_desk_16x9.jpg: .jpg holding image/webp | 18 NAME/PIXEL mismatch(es): brand_seal_monogram_1024.webp → filename declares 1024px, longest side is 512px (512x512); logo_badge_burgundy_1024.webp → filename declares 1024px, longest side is 512px (512x512); logo_stacked_vertical_1024x1536.webp → filename declares 1024x1536, file is 341x512 … (catalog rows 82, physical files 85)
+PASS | pnpm 11.21.0
+     | packageManager declares pnpm@11.21.0
+PASS | Docker
+     | server reachable; compose: 5.6.1 — required for postgres:18.6-alpine (ADR-004)
+PASS | reference/ integrity
+     | 7 files match baseline checksums
+PASS | src/
+     | contains README.md
+
+7 checks: 1 FAIL, 2 WARN, 4 PASS
+```
+
+Same three digits, three different reasons: the FAIL is still B-01; the Docker WARN above has become
+a PASS; and a WARN that did not exist above (the register-versus-directory reconciliation, H-7) has
+appeared. A count would have reported these two runs as identical.
+
+Three claims that would otherwise be assertions are evidence: the `reference/` originals
+are unmodified against the baseline in `docs/REFERENCE_INTEGRITY.json`; all 82 audited
+originals in `Noujoude.photo/` match their recorded SHA-256, so the read-only rule held;
+and the FAIL is B-01, measured rather than assumed.
+
+The Docker row **changed state inside this window**. An earlier transcript in §1.1 read
+`PASS | Docker | server reachable; compose: 5.3.1`, and that run is what re-tested
+discrepancy D-03. It is superseded, not deleted — see §2.4. The daemon later stopped
+answering (`500 Internal Server Error` on `/containers/create` and `/containers/json`,
+then timeouts), and the sequence is documented as **B-09** in
+`docs/ARCHITECTURE_DECISIONS.md` §7.2 with its probe table. A tool that reported PASS
+once does not entitle this report to claim PASS now. The 1 November re-run above is the
+fresh measurement that does entitle it: `PASS | Docker | server reachable; compose: 5.6.1`.
+
+### 1.2 `node scripts/audit-assets.mjs` → **exit 0**
+
+Prints a JSON summary and rewrites `docs/ASSET_INVENTORY_AUDIT.csv` (82 rows × 20 columns, the column set required by Asset Requirements §10 line 218) plus `docs/asset-audit-summary.json`.
+
+| Measurement | Value |
+|---|---|
+| Catalog rows parsed | **82** (72 original + 10 additional, counted independently as required by Asset Requirements line 220) |
+| Per-category parse drift | **none** — expected vs parsed identical for A.2 = 12, A.3 = 18, A.4 = 3, A.5 = 11, A.6 = 10, A.7 = 18, A.8.1 = 6, A.8.2 = 4 |
+| Physical files found / bytes | 85 files, 6,467,873 bytes |
+| Non-`PRESENT` rows | **1** — `NDM-AST-041 vintage_collector_desk_16x9.jpg → WRONG_FORMAT` |
+| Name/pixel mismatches | **18** (see §1.6) |
+| Dimension decode failures | 0 |
+| Uncatalogued files | **3** — `logo_presentation_scene_16x9_v3.webp` (7,572 B), `_pending_review_AI_generated/GENERATED_ASSETS_MANIFEST_AR.md` (9,241 B), `_pending_review_AI_generated/_manifest.json` (7,075 B) |
+| All 10 additional assets | present, located inside `_pending_review_AI_generated/`, and **pending approval** |
+| Catalog-name verification | 82 of 82 filenames confirmed verbatim against `reference/Noujoude_Line_by_Line_Traceability_EN.csv` (8,174 data rows) — no entry accepted on the strength of its Appendix A line number (S-11) |
+
+The tool reports presence and pixels; it explicitly does **not** report licensing. `Rights Status` is `UNKNOWN — no rights statement supplied in reference/` for all 72 originals and `Awaiting Rights Review` for all 10 additional assets; `Brand/Curatorial Approval` is `Not Approved — no approval record supplied` for **82 of 82**. That is a finding, not a gap in the tool.
+
+**Coverage limit on the `82 of 82` line above — read it before quoting it (hole H-7).** That figure is produced by
+iterating the 82 catalog rows and looking each one up on disk. It is a statement about the *catalog*: every catalogued
+asset was found. It is not a statement about the *directory*, and this tool's own output shows why — the same run
+reports `Physical files found / bytes: 85 files`. The three extra files are the two AI-generated-review manifests and
+one quarantined image, all listed in the `Uncatalogued files` row above and documented in
+`docs/MEDIA_AND_RIGHTS_GOVERNANCE.md` §6.5. A directory-enumerating check would have to report `85`, and would then
+have to explain the difference.
+
+`scripts/preflight.mjs` performs the narrower check. Its line 112 holds the message template
+`all ${checked} audited assets match their recorded SHA-256`, and the most recent run — re-executed for this batch,
+exit **1** overall on the Node check — rendered that record as:
+
+```
+PASS | Noujoude.photo/ integrity
+     | all 82 audited assets match their recorded SHA-256
+```
+
+That check is stronger than mere presence, because it re-hashes each catalogued file against
+`docs/ASSET_INVENTORY_AUDIT.csv`. It is also narrower, because it loops over the CSV's rows (`preflight.mjs` line 105)
+and never enumerates the directory. The PASS is true as far as it goes and **must not be read as a claim that the asset
+library is fully accounted for** — a directory walk reports 85 files, and preflight cannot see the three that are not in
+the catalog. The gap is registered as hole **H-7** in `docs/IMPLEMENTATION_PLAN.md` §8, with the interim control
+(`audit-assets.mjs`'s `physicalFileCount`, which does enumerate) and the Phase 2 fix. The script was **deliberately not
+modified** in this batch: redefining what a validation gate checks is not inside a scope authorized to re-run
+documentation gates. The measurement behind the 85 was `find Noujoude.photo -type f` → exit 0.
+
+**Neither figure says anything about rights.** 82 of 82 physically present and 0 of 82 rights-cleared are independent
+measurements, and the second one is the binding constraint on publication.
+
+### 1.3 `node scripts/check-docx-alignment.mjs` → **exit 0**
+
+```
+docx paragraphs 4430 | md paragraphs 2756
+md word types 3364 | docx word types 3357 | external link targets 6
+DOCX vocabulary missing from Markdown (content-loss risk): 0 []
+Markdown-only word types: 0
+md headings: 337 | absent from docx: 0
+md paragraphs absent from docx: 3 (substantive: 0)
+VERDICT: ALIGNED — the Markdown carries no requirement content the DOCX lacks and the DOCX contributes no requirement vocabulary the Markdown is missing. Remaining differences are Word packaging and hyperlink-reflow artifacts, listed for transparency.
+wrote docs/DOCX_MD_ALIGNMENT.json
+```
+
+| Item | Result |
+|---|---|
+| Markdown headings located in the DOCX | **337 / 337** |
+| DOCX requirement vocabulary absent from the Markdown | **0** |
+| Substantive paragraph misses | **0** |
+| Paragraphs not contiguous in the DOCX | **3**, all reference blocks whose URLs the DOCX stores as hyperlink targets (WCAG, Core Web Vitals, ASVS) — classified as reflow, listed for a reviewer to disagree with |
+| DOCX input | `reference/Noujoude_Master_Specification_EN.docx`, 142,645 bytes, SHA-256 `69ccb03eec9806a5601c3cd066c93a1faf295efbe3464611256ddd56b5f71283` |
+| Markdown input | `reference/Noujoude_Master_Specification_EN.md`, 242,312 bytes, SHA-256 `5b30b21eaf6d6457b10b80e0ba48bc511c106db484336934b8e06d34ae47ecd5` |
+| Method | dependency-free: ZIP local headers parsed directly, `word/document.xml` inflated with `node:zlib`, hyperlink targets read from the relationship table; no npm install was needed to prove document alignment |
+
+This is the measured basis for S-14 / ADR-018 (two masters, no stated precedence) — resolved by comparison, not by preference.
+
+### 1.4 `node scripts/copy-master-spec.mjs` → **exit 0** (last run in this window)
+
+```
+wrote docs/MASTER_SPECIFICATION.md | 257,099 UTF-8 bytes | 4,069 lines (final newline present)
+body byte-identical to source: YES (misaligned lines: 0)
+verbatim body starts at this file's line 129 = source line 1
+source sha256 5b30b21eaf6d6457b10b80e0ba48bc511c106db484336934b8e06d34ae47ecd5
+header rows: 15 discrepancies
+```
+
+Transcribed from the run executed at 13:39Z on 1 November 2026, exit **0** — the first run after the §2.2 defect was
+fixed, so this transcript and the one it replaces are not the same tool. The previous reading of this section printed
+`255,561 bytes | 4070 lines`; those were a UTF-16 code-unit count wearing a byte label and a split length wearing a
+line count. The figures above are taken from the file the tool just wrote, and each was checked against an
+independent measurement in the same command sequence: `wc -c` → **257099**, `awk 'END{print NR}'` → **4069**,
+`grep -c '^'` → **4069**, a Node `Buffer.length` read → **257099**, and the two *old* formulas re-evaluated on that
+same file → **255561** and **4070**. Both old figures reproduced exactly, which is what shows the new ones are the
+same file measured correctly rather than a different file.
+
+The tool is still idempotent apart from its own timestamp row: two consecutive runs differ by exactly one `diff`
+line — `| Copy generated | 2026-11-01T13:39:51.636Z |` against `| Copy generated | 2026-11-01T13:40:05.077Z |`. The
+fix changed what the tool *reports*, not what it writes: the file on disk was 257,099 bytes before this run and
+257,099 bytes after it.
+
+| Item | Value |
+|---|---|
+| Source SHA-256 re-stamped into the header | `5b30b21eaf6d6457b10b80e0ba48bc511c106db484336934b8e06d34ae47ecd5` |
+| Verbatim body fidelity | byte-identical to the source body, 0 misaligned lines |
+| Discrepancy rows in the header | 15 (`S-01`…`S-15`; 14 at the start of this window — see §2.3) |
+| Reported size label | **correct as of the run above** — byte count read from the file as a Buffer and labelled `UTF-8 bytes`, line count counted by terminating newline with the final-newline state announced (§2.2 closed) |
+| Regression guard | `node scripts/tests/copy-master-spec-output.test.mjs` → `11 passed, 0 failed`, exit **0** (row in §1.8; command in §9) |
+
+### 1.5 `sh -n scripts/db/*.sh` → **exit 0 for all four; the privilege harness has now been executed (1 November 2026, exit 0)**
+
+Syntax check plus, in this batch, the real run. Four scripts now carry the database layer: `init-roles.sh` (bootstrap
+roles, ADR-005 refined by ADR-019), `harden-append-only.sh` (post-migration grant/trigger/RLS
+enforcement), `verify-privileges.sh` (asserts the ADR-019 grant set as catalog rows), and
+`run-privilege-tests.sh` (the host-side evidence harness behind `pnpm db:privilege-evidence`).
+
+`run-privilege-tests.sh` was **attempted** on 31 October 2026 against a throwaway container
+name and volume with randomly generated throwaway passwords that were never persisted
+anywhere. It aborted at its first step with `FATAL: the container could not be started
+(engine unavailable?)`. Nothing was created and nothing was torn down. **That reading is
+superseded by the successful run recorded below** and is kept because the sequence — not just
+the outcome — is what makes B-09 a dated fact rather than a permanent property of the machine.
+
+**Re-attempted in the gap-closure batch: not possible, and deliberately not retried.** The
+prerequisite was re-measured rather than assumed (§0): `wsl -l -v` → `docker-desktop **Stopped**`,
+and `docker version` / `docker info` / `docker ps -a` / `docker images` each returned **rc=124**
+with **0 bytes**. The harness was therefore **not** launched a second time in that window — an
+instruction in force for that batch forbids waiting repeatedly on commands that time out, and a
+`docker run` against a stopped engine produces no information that `wsl -l -v` has not already
+given. **Also superseded:** the engine answered on 1 November 2026 and the harness was run.
+
+**Finding F-B, recorded so a false prerequisite is never added.** The harness is pure POSIX shell
+driving the `docker` CLI, `timeout` and `od`; every SQL statement runs through `psql` **inside**
+the container, so no host PostgreSQL client is required. It reads no `package.json`, resolves no
+Node module, and never invokes `node` or `pnpm`. Consequently **A.5 requires neither the Node
+upgrade (B-01) nor a dependency install (B-02)**, and it does not need `.env` — it generates
+throwaway credentials per run and never writes them to a file. Its **only** hard prerequisite is a
+reachable container engine (B-09). Anyone who lists B-01 or B-02 as blocking A.5 is repeating an
+error this section exists to correct. F-B has now been *demonstrated*, not merely read: the run
+below executed with the host still on Node 24.19.0 and with no `node_modules` present.
+
+**A.5 CLOSED — executed 1 November 2026, exit 0, raw transcript in `docs/A5_PRIVILEGE_EVIDENCE.txt`.**
+`IMAGE=postgres:18.6-alpine sh scripts/db/run-privilege-tests.sh`. What the transcript measures:
+
+| Element | Measured |
+|---|---|
+| Server actually tested | `SHOW server_version` → `18.6`; major 18 agrees with the tag, so the transcript measures what it claims |
+| Grant-state assertions (`verify-privileges.sh`) | **34 PASS**, ending `[noujoude] privilege state matches ADR-019` |
+| Behavioural cases A–N | **14 of 14 matched expectation for an authorization reason** — every denial carried `ERROR: permission denied for table …` or the guard function's own message, never a syntax or connection error |
+| Positive controls included | A (runtime may INSERT into `audit_event`), E (runtime may UPDATE an ordinary relation), I (migration may append), J (reporting may SELECT) — without them the denials would prove nothing |
+| Append-only enforcement mechanism | trigger `ndm_append_only` + RLS `FORCE ROW LEVEL SECURITY` + four policies; `TRUNCATE`, `DROP POLICY` and `DISABLE ROW LEVEL SECURITY` as `ndm_runtime` are all refused (M, N) |
+| Residual risk, measured not asserted | `VULNERABLE` — the table owner `ndm_migration` **can** drop the guard trigger and the RLS policies, and with them dropped its `UPDATE` succeeded, so the exposure is real rather than theoretical |
+| Compensating control, proven to detect it | `DETECTED` — `verify-privileges.sh` failed on exactly the removed guard (exit 1), then `RESTORED` — re-applying `harden-append-only.sh` returned it to exit 0 and the owner's `UPDATE` was refused again (`DENIED`) |
+| Isolation and cleanup | one throwaway container + one throwaway volume, both named by the run and removed by the run; `noujoude-postgres`, `noujoude-postgres2`, `noujoude-postgres3` and `pgvector-data` were re-listed afterwards in their original state and were never connected to; no password appears in the transcript |
+
+What this means for the claims below: the scripts' content — four roles
+`ndm_migration` / `ndm_runtime` / `ndm_reporting` / `ndm_backup`; runtime granted DML but
+not CREATE, and stripped of `UPDATE`/`DELETE`/`TRUNCATE` on relations declared append-only;
+schema owned by the migration role — **is now a demonstrated privilege boundary, demonstrated
+inside a disposable container only.** Standard §3.2 and Master Spec line 3822 compliance for
+*this project's actual database* is still not claimed: no project database exists yet (§3 row 9,
+`Not run` — `pnpm db:up` needs `.env`, B-03), and the proof above ran against representative
+relations created by the harness, not against migrated Payload tables. The residual risk survives
+unchanged by design: the table owner can drop the guard, and the compensating control is a CI
+assertion that exists as code (`.github/workflows/ci.yml`, job `db-privileges`) but has **never
+executed** because no repository exists (B-04). **Audit immutability in production therefore
+remains unproven even though the grant design is proven** — the two statements are different, and
+collapsing them is the error this paragraph exists to prevent.
+
+### 1.6 Derived measurements from the executed audit (same evidence, restated)
+
+Produced by re-reading `docs/ASSET_INVENTORY_AUDIT.csv` rows in Node; these support risk items R-02 … R-05.
+
+| Measurement | Value |
+|---|---|
+| Rows in the CSV | 82 |
+| Filenames containing `_1024` | 18 |
+| Of those, longest side ≥ 1024 px | **0** |
+| Actual pixel sizes of the `_1024` set | 512×512 ×16; 341×512 ×1 (`logo_stacked_vertical_1024x1536`); 512×384 ×1 (`logo_wordmark_1024x768`) |
+| Rights-cleared assets | **0 of 82** |
+| Approved assets | **0 of 82** |
+| Assets with a supplied creator/source | **0 of 82** (`"Not supplied in any reference document"`) |
+| `WRONG_FORMAT` detail | `NDM-AST-041`: extension `.jpg`, magic bytes `RIFF….WEBP`, real MIME `image/webp`, 512×290 |
+| AI-generated assets in the pending folder | 10, each `ai_generated: true`, `approval_state: "Pending Human Approval"`, `rights_state: "Awaiting Rights Review"` (`_manifest.json` lines 21–23); **all 10 `source_png` originals absent from the filesystem** (existence-tested individually) |
+
+### 1.7 Static validation of authored configuration
+
+| Check | Result |
+|---|---|
+| `JSON.parse` of `package.json` | parse OK (re-verified in the gap-closure batch, after the `format:check` script was added) |
+| `JSON.parse` of `tsconfig.json` (JSONC subset actually used) | parse OK |
+| `JSON.parse` of `docs/asset-audit-summary.json` | parse OK |
+| `JSON.parse` of `docs/REFERENCE_INTEGRITY.json` | parse OK |
+| `JSON.parse` of `docs/DOCX_MD_ALIGNMENT.json` | parse OK |
+| `JSON.parse` of `docs/CITATION_VERIFICATION.json` | parse OK |
+| `sh -n scripts/db/init-roles.sh` | exit 0 |
+| `sh -n scripts/db/harden-append-only.sh` | exit 0 |
+| `sh -n scripts/db/verify-privileges.sh` | exit 0 |
+| `sh -n scripts/db/run-privilege-tests.sh` | exit 0 |
+| `package.json` scripts inventory | **39** scripts (re-measured 1 Nov 2026 by `node -e "Object.keys(require('./package.json').scripts).length"` — not by arithmetic over an older reading; this row last carried **37**, so two scripts have joined the file since that measurement. One is this batch's `test:gate:spec-copy`; the other is not attributed here, because counting keys reports a total and not an authorship, and guessing the cause would be the unverified-claim class §0 of `docs/IMPLEMENTATION_PLAN.md` exists to catch. The **29** recorded at the close of the gap-closure batch predates the gate registration, which added `test:gates`, the five `test:gate:*` aliases, and the two new gate commands `audit:compose` and `audit:workflow`); `format` = `prettier --write .`, `format:check` = `prettier --check .` (I-10 — the check-only form now exists) |
+| `.prettierignore` | present; **14** non-comment patterns (the row below carries the re-measurement); asserts confirmed for `reference/` and `Noujoude.photo/` (the two read-only inputs) |
+| `.npmrc` | present; **75 lines / 5,647 bytes, comments only — 0 option lines** (re-measured by a byte scan on 1 November 2026 after the measured value matrix was added to it: no CR, no tab, final newline present, 75 comment lines and **0** non-comment lines), and that emptiness is the finding: `verify-deps-before-run` (the key that would stop `pnpm run <script>` installing before it runs) is read by pnpm 11.21.0 only from the *global* config file, proved by a control line placed in this same file that *was* honoured. The file now also records what **every** value of that key does, measured rather than assumed: `install`/unset begin resolution; `error` refuses with exit 1; `warn` prints a warning and then **runs the script**; `false` runs it silently; an unrecognised value runs it too, because pnpm's switch has no default case; and `prompt` refuses **only** when stdin is not a terminal, so it is not a guard at a keyboard. It holds no credentials and `.gitignore` does not exclude it, so nothing credential-shaped may be written here. Hole **H-12**, blocker **B-10**, decision **OD-7**; `node scripts/preflight.mjs` check 10 classifies the values exactly that way |
+| `.github/workflows/ci.yml` | **416 lines, 22,226 bytes, four jobs, 45 step items (37 named + 8 bare `actions/…` steps)** — re-measured 1 November 2026 after the §2.2 spec-copy suite joined `docs-gates`; the three earlier additions were the compose contract, the workflow contract and the `pnpm run`-trap contract with their suites; **no tab characters, no CR bytes, final newline present** — counted with `tr -dc` over the whole file (0 CR, 0 TAB) and re-confirmed by a Node byte scan. **A measurement trap, recorded because it is repeatable:** `grep -c` with a carriage-return argument reports *every* line of an LF file on this host's Git Bash, so it must not be used for line-ending evidence; use the byte count. **A second trap, found while re-counting for the H-11 gate:** the step counts this table has carried — 33, then 35 — are *named*-step counts from a pattern that matches `- name:`, so they cannot see the eight `uses:` steps that have no `name:` line at all. The honest figures are 41 step items at 370 lines, **43** at 386, **44** at 399 and **45** at 416. Four jobs present (`docs-gates`, `quality`, `db-privileges`, `security-scans`) plus the `on.push` trigger. **Six earlier readings of this file were wrong or stale and are corrected here:** this section first recorded *337 lines, 15727 bytes*; the gap-closure batch corrected that to *336 lines, 16,374 bytes*; the 1 November additions moved it four times more — *368/18,410*, *370/18,563*, *386/19,799* and *399/20,772*, then the value-matrix rewrite of the H-12 step's comment moved the bytes to *20,787* while leaving the line count at **399** (a length-preserving edit, which is why only one of the two figures moved), and the new step took it to the current **416/22,226** — a non-length-preserving one, so both moved this time. Each correction is the count-drift class §0 of `docs/IMPLEMENTATION_PLAN.md` exists to prevent. **Machine-validation status, changed on 1 November 2026:** no YAML conformance parser exists on this host (§0 last row, re-measured rather than inherited), so the file was previously verified by reading only; `node scripts/verify-workflow-structure.mjs` now enforces ten structural rules over it and exits **0**, which proves it parses as block YAML and that its jobs, steps, script paths, `pnpm` names and gate list are consistent — it does **not** prove GitHub's parser accepts it. Recorded as **authored, structurally checked, never executed** — the file says so in its own header. |
+| `.prettierignore` | **45 lines** (`awk 'END{print NR}'` → 45; the earlier *43* and *42* were the same editor-style off-by-one and a stale count taken before the evidence artefacts were added), **2,709 bytes**, **14** patterns — counted as the lines that are neither blank nor comment-led — with `reference/` at line **18** and `Noujoude.photo/` at line **21**, both unchanged. All four figures re-measured 1 November 2026 |
+
+These prove the files are well-formed. They do **not** prove the files work: `tsconfig.json` has never been consumed by `tsc` (no install), `eslint.config.mjs` has never been loaded by ESLint, `vitest.config.ts` has never been read by Vitest, `playwright.config.ts` has never driven a browser, and `ci.yml` has never been parsed by a YAML engine or run by a CI system. A well-formed file that has never been executed is authored work, not verified work.
+
+### 1.8 Documentation-integrity gates → **both exit 0**
+
+These two read `docs/` rather than a system, so they are the documentation-integrity gates. They were **not** the
+only dependency-free commands in the repository when this section was written, and they are not now: the compose
+contract and the workflow contract (§1.7 rows) and all seven regression suites also run with no `node_modules`, no
+server and no network. They were re-run after every batch of `docs/` edits in this window, and again at the end of
+the gap-closure batch — the fresh transcripts are in the table below, and the superseded 01:50–02:10 readings are
+kept only where a correction has to be shown.
+
+**Correction I-3, applied in this batch.** The 01:50–02:10 transcription of `verify-citations.mjs` recorded
+`NO_LINE_REF 42`. That figure was wrong: it contradicted the identity written three paragraphs below it in this
+very section (`425 + 10 + 9 + 41 = 485`, the values as they stood at that moment — the final post-edit values are
+`426 + 10 + 15 + 55 = 506`, in §1.8.1), it contradicted `docs/ARCHITECTURE_DECISIONS.md` §0.1, and it
+contradicted the tool's own machine-written output `docs/CITATION_VERIFICATION.json`, which records
+`"noReference": 41`. The JSON was settled as authoritative because its mtime (17:48:04) is later than this
+section's (17:47:02) — the tool wrote it after the prose was transcribed. The digit is corrected here and the
+gate was then **re-run**, rather than being left as a silent edit.
+
+| Command | Actual output | Exit |
+|---|---|---|
+| `node scripts/verify-citations.mjs` | _final transcript in §1.8.1 below_ | 0 |
+| `node scripts/verify-tables.mjs` | _final transcript in §1.8.1 below_ | 0 |
+| `node scripts/verify-tables.mjs` against a **throwaway fixture outside the repository** (`/tmp/tblneg`: one 4-cell header with one 3-cell row, plus a pipe-led pseudo-table inside a fenced block) | `bad.md: table at line 1 has 3 separators; 1 uneven row(s): line 4 -> 2` and `UNEVEN TABLES: 1 of 1 tables in 2 files (exit 1)`; the fenced pseudo-table was correctly not treated as a table | 1 |
+| The seven gate regression suites, run **individually** 1 November 2026 (`node scripts/tests/<suite>.test.mjs`, one command per row) | `14 passed, 0 failed` (H-9 tables) · `22 passed, 0 failed` (H-7 asset reconciliation) · `23 passed, 0 failed` (H-8 citations) · `25 passed, 0 failed, 0 skipped (dynamic cases need a container engine)` (H-10 compose) · `32 passed, 0 failed` (H-11 workflow structure) · `19 passed, 0 failed` (H-12 pnpm-run trap — one case per **measured** value of `verify-deps-before-run`, where the two that must not pass are `prompt` and an unrecognised value, and the wording of each line is asserted too) · `11 passed, 0 failed` (§2.2 spec-copy output — the figures the generator prints about the file it wrote, checked against the file on disk, red-verified at `4 passed, 7 failed` against the pre-fix formulas) — the middle suites each drive their own checker over red and green fixtures, the compose suite's three dynamic cases report **SKIP** rather than PASS where no engine answers, the trap suite spawns the real `scripts/preflight.mjs` against temp fixtures with a stub `pnpm` on the child's PATH, and the spec-copy suite spawns the real generator with a throwaway workspace as its `cwd`. **This row used to read "run together (`pnpm test:gates`)" and that claim is withdrawn.** Measured on the same code path: `pnpm run audit:workflow` reached the dependency-resolution stage and printed `Progress: resolved 669 …` before it was killed, because pnpm verifies the declared dependencies before running any script and `node_modules` is absent by design (B-02/OD-2). `pnpm test:gates` was started once, produced **0 bytes** of captured output, and was killed — so its behaviour is the same code path rather than an independently observed one, and it is recorded that way. Nothing landed in this directory; the machine store did receive packages. The aggregate command therefore has never been the thing that produced these numbers, and the seven commands above are the real procedure. `pnpm test:gates` is the correct command **after** OD-7 arms the guard and OD-2 installs; until then the seven commands above are the real procedure, and they are what §9 prints | 0 |
+
+#### 1.8.1 Fresh re-run after the gap-closure edits
+
+Both gates were run **after** every documentation edit in this batch was complete, so these are that batch's
+transcripts rather than an intermediate reading. Exit codes were captured directly from the process, not through
+a pipe. **The blocks below are dated, not current.** Both gates ran again at the end of the 1 November work, after the
+`verify-deps-before-run` matrix was measured and written up, and again after the §2.2 correction was made: **528**
+fragments (VERIFIED 426 + SELF_RECORDING 10 +
+PROJECT_RECORD 10 + no-line-ref 82 = 528, `DEFINED_TERM` 6 inside that 82, 0 verbatim-without-citation) and **196**
+tables, both exit **0**. The counts moved — 506 → 522 → 525 → 523 → 526 → 527 → **528** fragments, 192 → 194 → 195 →
+**196** tables, and 1,225 → **1,226** bare references — because writing about the work adds quotations, references
+and table rows; the one-fragment delta lands entirely in the `NO_LINE_REF` class (81 → 82), which is what the tool
+prints, but which specific sentence became it is not attributed here, since the gate reports a class total and not an
+authorship, and guessing at the cause would be exactly the unverified claim this report exists to prevent. The
+transcripts printed below are kept as the record of the run they show, not as today's numbers; §9 is the command list
+that produces the current ones.
+
+```
+$ node scripts/verify-citations.mjs
+scanned 12 docs/ markdown files, 506 quoted fragments carrying a line reference (skipped 18 quoted strings shorter than 3 tokens)
+VERIFIED 426 | LINE_OFF 0 | LINE_OFF_OTHER_SOURCE 0 | SELF_RECORDING 10 | PROJECT_RECORD 15 | DEFINED_TERM 4 | NOT_FOUND 0 | NO_LINE_REF 55 (of which 0 are verbatim requirement text with no citation)
+
+wrote docs/CITATION_VERIFICATION.json
+exit code: 0
+```
+
+```
+$ node scripts/verify-tables.mjs
+OK: 192 tables in 12 markdown files, every row with a uniform separator count
+exit code: 0
+```
+
+The per-file breakdown for this run is clean: no file reports a `LINE_OFF` or `NOT_FOUND` defect, and no file
+reports a verbatim requirement quotation missing its line reference. The console prints a per-file line only for
+files that have a defect, so the final clean run prints none; the breakdown below is taken from
+`docs/CITATION_VERIFICATION.json`, which is the fuller artefact. `docs/IMPLEMENTATION_PLAN.md` contributes
+47 fragments — VERIFIED 38, SELF_RECORDING 1, PROJECT_RECORD 4, no-line-reference 4 — and this file contributes
+34 — VERIFIED 19, PROJECT_RECORD 2, no-line-reference 13. Across all twelve files the classes reconcile exactly:
+426 + 10 + 15 + 55 = 506, with `DEFINED_TERM` 4 counted inside the 55.
+
+**These two gates did not pass first time, and the failures are part of the evidence.** Earlier runs in this same
+batch reported `LINE_OFF 4 | NOT_FOUND 1`, then `NOT_FOUND 1` twice more, and `verify-tables.mjs` exited **1**
+twice and returned **193** once while still exiting **0**. Twelve distinct defects were found and repaired:
+
+| # | Defect | Found by | Repair |
+|---|---|---|---|
+| 1 | `docs/AI_CURATOR_GOVERNANCE.md:75` cited `ARCHITECTURE_DECISIONS.md` line 221; the text had moved to 341 | `verify-citations.mjs` | Citation corrected to 341 |
+| 2 | `docs/AI_CURATOR_GOVERNANCE.md:116` cited line 228; moved to 348 | `verify-citations.mjs` | Corrected to 348 |
+| 3 | `docs/AI_CURATOR_GOVERNANCE.md:150` cited line 250; moved to 369 | `verify-citations.mjs` | Corrected to 369 |
+| 4 | `docs/DATA_MODEL.md:341` cited lines 227–228; moved to 348 | `verify-citations.mjs` | Corrected to line 348 (the fragment sits entirely on that line, so a range would have re-triggered `LINE_OFF` against its first number) |
+| 5 | `docs/IMPLEMENTATION_PLAN.md` §2.1 quoted a **paraphrase** of Master Spec line 3252 inside quotation marks | `verify-citations.mjs` | Replaced with the verbatim sentence and its own line number |
+| 6 | `docs/MEDIA_AND_RIGHTS_GOVERNANCE.md:99` cited `ARCHITECTURE_DECISIONS.md` line 243 for ADR-009's consequence, now at 362–363 | **By hand — the gate cannot see it** | Corrected to lines 362–363, and the blind spot registered as hole **H-8** |
+| 7 | The new H-7 row quoted Directive §3's asset rule with no line reference | `verify-citations.mjs` (it named Directive line 54 itself) | Reference added |
+| 8 | Two rows of the new §0 measurement table embedded `grep` patterns containing a literal pipe inside code spans | `verify-tables.mjs`, exit 1 | Rows reworded; a Markdown cell cannot carry an unescaped pipe even inside backticks |
+| 9 | `docs/IMPLEMENTATION_PLAN.md` §8's own table was split by a `---` thematic break between H-6 and H-7, so the two newest hole rows rendered as a headerless run | **By a count anomaly, not a failure** — `verify-tables.mjs` reported 193 tables and still exited **0** | `---` moved below H-8; the run re-merged; count returned to 192; a hand-run sweep for headerless pipe-led runs across all twelve files returns **0 orphans**. Registered as hole **H-9** |
+| 10 | §0's discrepancy-log row reported **16** IDs `S-00…S-15`. `S-00` does not exist — `grep -o 'S-0[0-9]'` matched the substring inside `VIS-001` and `OPS-001` in Appendix G | By hand, while re-measuring every count for I-8 | Corrected to **15** rows `S-01…S-15` with an anchored pattern; the trap named in the row |
+| 11 | §0's distinct-requirement-ID row reported **206** against 219 rows and explained the gap as cross-references inside cells. The explanation was invented: `REQ-[A-Z]+-[0-9]+` drops `REQ-A11Y-*` (4) and `REQ-I18N-*` (9) | By hand, when `docs/CHANGELOG.md` lines 192–195 contradicted it | Corrected to **219** distinct IDs, one per row, `uniq -d` empty. The same error had already been caught and written up once in the CHANGELOG and was then lost when the figure was retyped |
+| 12 | Two further quoted phrases written in this batch sat next to unrelated line numbers and were read as citations: a phrase beside `preflight.mjs` line 105, and one beside `verify-tables.mjs` lines 71–82 | `verify-citations.mjs`, `NOT_FOUND` twice | Double quotes replaced with emphasis in both places. This is now the **third** occurrence of one class: prose quotation marks plus any nearby number are parsed as a citation |
+
+Defects 1–4 share one cause worth naming: this batch made 20 edits to `docs/ARCHITECTURE_DECISIONS.md`, which moved
+ADR-007, ADR-008 and ADR-010 body text by roughly 120 lines. Any document that cites an ADR **by line number** is
+therefore structurally fragile, and only the citation gate detects it. Defect 6 shows the gate's reach is
+narrower than a clean result implies: it validates a line number when a *quoted fragment* is attached to it, so a
+bare parenthetical cross-reference is unvalidated. `LINE_OFF 0` must not be read as a claim that every
+cross-reference in `docs/` resolves. Defect 8 is the reason the checker exists at all — a leading pipe eaten by an
+edit is invisible to a human skimming a long table. Defect 9 is the sharpest of the twelve, because the gate was
+**green** while the document was broken: uniformity inside a run says nothing about whether the run has a header.
+Defects 10 and 11 are the same failure in a different tool — the tool was a regular expression, and a too-narrow
+character class prints a clean, plausible, reproducible wrong number. Both are recorded in §0 of
+`docs/IMPLEMENTATION_PLAN.md` as the third rule of that table.
+
+Two properties of these outputs are recorded so a later reader does not mis-add them. First, the citation tool's
+header sentence says "carrying a line reference" while `summary.fragments` is in fact the whole scanned
+population; the identity that holds is `VERIFIED + SELF_RECORDING + PROJECT_RECORD + NO_LINE_REF = 426 + 10 + 15 + 55 = 506`, and `DEFINED_TERM` 4 is a **subset** of the 55, not a fifth exclusive class. The tool's console string
+is left byte-identical because earlier sections of this file and `docs/CHANGELOG.md` transcribe past runs
+verbatim; the explanation is a comment in `scripts/verify-citations.mjs` above the print statement. That quoted
+phrase is itself one of the no-reference fragments — this file's description of the tool adds a fragment to
+the tool's own count — which is why the totals move when prose about the gate is written, and why the totals are
+never used as evidence of anything. The movement in this batch is a concrete instance: 485 → 500 → 506 fragments
+and 174 → 180 → 192 tables, entirely from writing about the work. Second, the fixture row in §1.8 matters: a
+checker that has never failed is not yet a checker — and in this batch both checkers *did* fail, on defects this
+batch introduced, which is stronger evidence of their value than the fixture is. The fixture proves the table
+check detects the exact defect class §2 records, and it lives outside the workspace, so no test file was added to
+the repository to prove it.
+
+**Correction I-3, restated against the final numbers.** The figure this batch was asked to correct was a stale
+`NO_LINE_REF 42`. It was corrected to 41 on the authority of `docs/CITATION_VERIFICATION.json`, and the gate was
+then re-run — which is the only reason the value is now known to be **55** rather than merely not-42. The
+correction and the re-measurement are separate acts and both are recorded: a digit fixed by hand and never
+re-measured would have been a fourth count-drift incident.
+
+What neither gate proves: whether a claim is *true*, whether a table's cells are populated correctly, or whether
+any of this works at runtime. `LINE_OFF 0` means every quotation matches the line it cites; it does not mean the
+cited line supports the sentence built on it, which is a reading task the reviewer still owns.
+
+### 1.9 Pinned-release verification — read-only, no install, no Node upgrade
+
+Every fact in `docs/ARCHITECTURE_DECISIONS.md` §3, §3.2 and ADR-025 that concerns the **pinned** release was
+obtained by reading published artifacts and registry documents. Nothing was installed, nothing was written
+outside `docs/`, and no prerequisite was created. This section exists so those numbers can be re-produced rather
+than trusted.
+
+Two method notes that cost time and are worth recording. First, an early attempt wrote registry JSON to `/tmp`
+and then read it with `node -e`; Node on this host is a Windows binary, so `/tmp/...` resolved to `E:\tmp\...`,
+every file appeared `MISSING`, and the HTTP status was 200 — a false negative caused purely by a path-model
+mismatch between MSYS and Windows. The fix was to eliminate the files: pipe `curl` into `node -e` on stdin.
+Second, exit codes were captured **before** any pipe in every probe, because `cmd | head` reports `head`'s
+status and had already produced one bogus `rc=0` for a timed-out `docker info`.
+
+| # | Command (abridged where long) | Exit / HTTP | What it established |
+|---:|---|---|---|
+| 1 | `curl -s -o /dev/null -w '%{http_code}' https://registry.npmjs.org/payload/3.92.1` | **200** | the version-specific registry document is retrievable |
+| 2 | same URL piped into `node -e` on stdin | rc=0 | `engines.node = "^22.23.4 \|\| >=24.22.1"`; `peerDependencies = { "graphql": "^16.8.1" }` and nothing else; **32** dependencies; `zod` **absent**; `jose` present at **5.10.0** |
+| 3 | `curl -s -o /dev/null -w '%{http_code}' https://registry.npmjs.org/@payloadcms%2Fdb-postgres/3.92.1` | **200** | — |
+| 4 | same URL piped into `node -e` on stdin | rc=0 | **no `engines` field at all**; `peerDependencies = { "payload": "3.92.1" }`; dependencies are exact pins — `pg 8.20.0`, `@types/pg 8.20.0`, `drizzle-orm 0.45.2`, `drizzle-kit 0.31.7`, `@payloadcms/drizzle 3.92.1`, `uuid 13.0.2`, `prompts 2.4.2`, `to-snake-case 1.0.0`, `console-table-printer 2.12.1`. This is the evidence behind correction **I-1** and behind assumption **A-C1** (no server-version constraint is declared anywhere). |
+| 5 | `gh api 'repos/payloadcms/payload/contents/packages?ref=v3.92.1' --jq '.[].name'` | **rc=0**, 44 names | the package set at the exact tag this project pins |
+| 6 | `grep -Eic 'auth\|mfa\|otp\|2fa\|two.?factor\|webauthn\|token\|factor\|identity\|sso\|oidc\|passkey'` over those 44 | **0 hits** | no first-party identity/MFA package at the pinned tag — closes finding **F-C** |
+| 7 | `grep -c '^plugin-'` over the same list | **12** | the plugin set matches the plugins documentation page |
+| 8 | `gh api 'repos/payloadcms/payload/contents/packages' --jq '.[].name'` | **rc=0**, 45 names | default-branch comparison |
+| 9 | `comm -13` / `comm -23` between the two sorted lists | added: `codemod`, `oxlint-config`, `oxlint-plugin`, `tanstack-start`, `transformer-sharp` (5); gone: `eslint-config`, `eslint-plugin`, `richtext-slate`, `storage-uploadthing` (4) | `44 + 5 − 4 = 45 ✓`. Proves the tag and the default branch are **materially different**, which is why measurement 5 was necessary |
+| 10 | `node scripts/preflight.mjs` | **rc=1** — `7 checks: 1 FAIL, 2 WARN, 4 PASS` | fresh transcript in ARCHITECTURE_DECISIONS §7.1 |
+| 11 | `wsl -l -v` | rc=0 → `docker-desktop Stopped`, `Ubuntu Stopped` | finding **F-A**: the engine is stopped, not unhealthy |
+| 12 | `docker context ls`; `docker compose version` | rc=0 both | client-side configuration and CLI version answer without a daemon |
+| 13 | `docker version`; `docker info`; `docker ps -a`; `docker images` (each `timeout 30`/`40`) | **rc=124**, 0 bytes each | the engine does not answer at all → **B-09**, and A.5 cannot run |
+| 14 | `node -v`; `pnpm -v`; `git --version`; `git rev-parse --is-inside-work-tree` | `v24.19.0`; `11.21.0`; `2.56.0.windows.2`; `fatal: not a git repository` | **B-01** and **B-04** both still open, re-measured rather than assumed |
+
+Measured in the **earlier** pass on the same day (not re-run here, so no fresh exit code is claimed for them):
+
+| Probe | Result as recorded then |
+|---|---|
+| `payload-3.92.1.tgz` enumeration | **2831** entries; **302** under `/auth/`; shipped strategies are `dist/auth/strategies/local/*`, `dist/auth/strategies/jwt.js`, `dist/auth/strategies/apiKey.js`, `dist/auth/executeAuthStrategies.js`. Case-insensitive `mfa\|otp\|totp\|2fa\|two.?factor\|webauthn` → 12 hits, **all `forgotPassword` files** (the substring `otP` in `forg`**`otP`**`assword`), i.e. zero genuine second-factor modules |
+| `@payloadcms/next@3.92.1` | same `engines.node`; peer `next ">=15.2.9 <15.3.0 \|\| >=15.3.9 <15.4.0 \|\| >=15.4.11 <15.5.0 \|\| >=16.3.3 <17.0.0"`; peer `payload "3.92.1"`; peer `graphql "^16.8.1"` |
+| `@payloadcms/richtext-lexical@3.92.1` | same `engines.node`; peer `react`/`react-dom "^19.0.1 \|\| ^19.1.2 \|\| ^19.2.1"`; peer `payload "3.92.1"`; peer `@payloadcms/next "3.92.1"` |
+| `@payloadcms/plugin-cloud-storage@3.92.1` | no `engines`; peers on react/react-dom/payload |
+| `https://payloadcms.com/docs/installation` | **HTTP 404** |
+| `https://payloadcms.com/docs/databases/overview` | **HTTP 404** |
+| `https://payloadcms.com/docs/databases/postgres` | **HTTP 404** |
+| `https://payloadcms.com/docs/getting-started/installation` | **HTTP 200** — states the Node and Next.js ranges; **no database version range is stated on that page** |
+| `https://registry.npmjs.org/-/v1/search?text=scope:payloadcms` (and `scope%3Apayloadcms`) | `total: 0` both ways — the scope route is unavailable, so a registry-wide `@payloadcms/*` enumeration could **not** be obtained. Recorded as a limitation in ADR-025 rather than papered over |
+
+**What this section does not establish.** No installed tree exists, so none of the above is a statement about
+what `pnpm install` will actually resolve; the exact `graphql` 16.x patch and any Zod constraint deeper in the
+tree remain open (§3.2 A-C2, A-C3). And a manifest that declares no PostgreSQL version constraint is not a
+support statement — assumption A-C1 stays open until an 18.6 container has actually been migrated against.
+
+---
+
+## 2. Corrections — claims this window's measurements supersede
+
+The project's rule is that a retracted assertion is worth more than a quiet one. Four apply.
+
+### 2.1 The preflight summary line has flipped four times, and the tally alone hides why
+
+Four transcripts were captured in this working period — the first three of the same seven checks, the fourth of ten:
+
+| # | Summary | What made it differ | Where recorded |
+|---:|---|---|---|
+| 1 | `7 checks: 1 FAIL, 2 WARN, 4 PASS` | `WARN \| src/ \| empty — application not yet scaffolded (intentional)`; Docker answered normally | superseded text in `docs/ARCHITECTURE_DECISIONS.md` §7.1, kept as a historical transcript |
+| 2 | `7 checks: 1 FAIL, 1 WARN, 5 PASS` | `src/README.md` created → that check became PASS; Docker still PASS (`server reachable; compose: 5.3.1`) | the §1.1 block deleted by this edit, and §2.1's own earlier wording |
+| 3 | `7 checks: 1 FAIL, 2 WARN, 4 PASS` | Docker degraded to `WARN \| daemon did not answer within 20 s` (**B-09**); `.env` remains absent (out of scope by agreement) | §1.1 — the 31 October reading; **superseded by the 1 November re-run below it**, where Docker is PASS and the second WARN is the H-7 reconciliation row |
+| 4 | `10 checks: 1 FAIL, 3 WARN, 6 PASS` (1 November 2026, exit 1) | The **denominator moved**, which rows 1–3 cannot show: check 8 arrived with the compose contract (H-10), check 9 with the workflow structure contract (H-11), check 10 with the `pnpm run` dependency-check trap (H-12). Docker is `PASS`; the three WARNs are `.env` (B-03), the asset register (B-06) and the armed trap (B-10 / OD-7); the single FAIL is still Node 24.19.0 against `engines.node` (B-01) | this window; `docs/CHANGELOG.md` §K and §L; re-run the command in §9 rather than trusting this line |
+| 5 | `10 checks: 1 FAIL, 4 WARN, 5 PASS` (1 November 2026, exit 1) — the §2.2 batch's sweep | **Same ten checks, one extra WARN, and the cause is a timing window, not a state change.** The first preflight of the batch ran against a cold Docker Desktop: the engine did answer, but `docker info` on that first call took **113,053 ms**, so check 2 reported `daemon did not answer within 20 s`. Re-measured in the same minute: second call **1,928 ms**, `docker ps` rc=0, `postgres:18.6-alpine` still cached, and a preflight re-run immediately after returned transcript **4**'s tally (`1 FAIL, 3 WARN, 6 PASS`), exit 1 unchanged. Nothing else moved between the two runs. Read as: transcript 4 and transcript 5 are the *same* state sampled at different engine temperatures, and the WARN is the honest report of a 20-second budget being exceeded — preflight is not wrong, and the daemon is not down. Consequence for every row that cites `6 PASS`: cite the per-row output, and if Docker reads WARN, time `docker info` before concluding anything about B-09 | this window, measured while closing §2.2 |
+
+Transcripts 1 and 3 have the *same* tally for *different* reasons. That is the reason this
+report keeps the per-row output and not just the summary line: a count of FAIL/WARN/PASS
+is not evidence, the rows underneath it are. §2.1 previously asserted that transcript 2
+superseded transcript 1 and that "the only FAIL remains B-01" was the only thing that
+mattered — both true, but it presented Docker's PASS as stable. It was not. The current
+state is B-09, and B-09 blocks the database-provisioning row of §3 (items 9–12) and every
+ADR-019 privilege proof. **Both halves of that sentence have since been overtaken, and are kept to
+show what was true when written:** on 1 November the engine answered (transcript 4 in §1.1,
+`PASS | Docker | server reachable; compose: 5.6.1`), which removed the only prerequisite the
+privilege harness has, and the harness ran and passed (§1.5). §3 row 9 is still `Not run`, but not
+for the engine's sake — `docker-compose.yml` requires `.env` (B-03), which is absent by agreement.
+
+### 2.2 `scripts/copy-master-spec.mjs` prints a character count labelled "bytes", and a line count that is one too high — **CLOSED 1 November 2026: fixed, measured, and regression-tested**
+
+`scripts/copy-master-spec.mjs:266` reports `${written.length} bytes` where `written = fs.readFileSync(OUT,'utf8')`. `String.length` counts UTF-16 code units, so every typographic character (`’`, `“`, `≤`, `—`) is counted once while occupying 3 UTF-8 bytes. The same statement reports `${wl.length} lines` where `wl = written.split(/\r?\n/)`, and a split on a file that ends with a newline yields one extra empty element — the script's own comment at line 36 acknowledges exactly this for `bodyLines`. **The line reference in this section was itself stale:** an earlier revision named line 265, which is `const rel = …`; re-measured, the print statement is line **266**. **It is stale a second time, and that is the point of the warning:** in the fixed file the statement begins at line **284** of a 290-line file — the correction added 18 lines of comment above it and split the log over two lines — so line 266 now holds the comment that *describes* this defect. A line citation that quietly survives a refactor by landing on prose is more dangerous than one that fails loudly, which is why §1.4 cites the executed run and the suite, not a line number.
+
+| Figure as printed | Correct label | Measured on disk at the same instant |
+|---|---|---|
+| `255,561 bytes` | UTF-16 code units of the generated file | **257,099** actual UTF-8 bytes (`wc -c`) |
+| `4070 lines` | newline-terminated lines **plus one** empty trailing element | **4,069** actual lines (`awk 'END{print NR}'`) |
+| _earlier run: `255,492 bytes`_ | same mislabel | _257,024 at that instant — the pair drifts with §2.3_ |
+
+Any earlier citation of this file's size "as printed" (including the widely quoted 251,245 figure from the start of this window) inherits the same mislabel **and** the drift in §2.3. The `body byte-identical to source: YES` verdict is unaffected — it is a line-by-line comparison, not a length check.
+
+**Fix applied on 1 November 2026.** The tail of `scripts/copy-master-spec.mjs` now reads the generated file back as
+a `Buffer` and prints `writtenBuf.length` under the label `UTF-8 bytes`, and it derives the line count from
+`hasFinalNewline` rather than from `split`'s length — announcing which branch it took, `(final newline present)` or
+`(no final newline)`, so the reader can tell from the output rather than from the source. The recommended form in
+the previous version of this paragraph, `Buffer.byteLength(written,'utf8')`, was not used: the file is already
+re-read from disk for the byte-identical check, so taking the length of that same `Buffer` measures the artifact
+instead of the string that produced it. Nothing about what the tool *writes* changed — §1.4 records the same
+257,099 bytes on disk before and after.
+
+**Behavioural evidence, not a code read.** `node scripts/tests/copy-master-spec-output.test.mjs` builds a
+throwaway workspace in the OS temp directory (a `reference/` source, the companion DOCX the generator insists on
+reading, and an empty `docs/`), runs the generator with that workspace as its `cwd`, and compares what it printed
+to the file it actually wrote. Truth is computed a different way than the generator computes it — bytes from a
+`Buffer` read, lines from counting newline characters rather than splitting — because a test that re-evaluated the
+implementation's own expressions would only restate them. The committed copy is never the input and never the
+output; the suite does not regenerate `docs/MASTER_SPECIFICATION.md`.
+
+| Step | Command | Actual output |
+|---|---|---|
+| green | `node scripts/tests/copy-master-spec-output.test.mjs` | `11 passed, 0 failed`, exit **0** |
+| red | the same suite against the pre-fix formulas — only the two expressions reverted, labels left byte-identical, so a failure cannot be blamed on the wording | `4 passed, 7 failed`, exit **1**: `printed 13806 != disk 13980 bytes` and `printed 117 != real 116 lines` |
+| restore | `diff` between the pre-red backup and the file put back | **0 lines** |
+| after restore | the suite again | `11 passed, 0 failed`, exit **0** |
+
+**The red run's `4 passed` is as informative as its `7 failed`.** Three cases never touch the two expressions — the
+byte-identical verdict, the printed body-start line, and the alignment header — so their green through both builds
+is correct, not a gap. The fourth is the no-final-newline case, which failed on bytes but *passed* on lines:
+without a trailing newline the old `split` count is accidentally right, which is exactly the boundary a blind
+`-1` would break, and why the suite has a case for it rather than a comment about it.
+
+**One expectation of mine was wrong, and the correction is in the suite.** The first draft assumed a pure-ASCII
+source body would make a code-unit count correct. It does not: the provenance header this tool writes is itself
+full of em dashes and curly quotes, so `t.oldBytes < t.bytes` holds for an ASCII body too — the case now asserts
+that, and records that the defect was never body-dependent, so no "our source is ASCII" defence of the old label
+ever existed. Two further cases failed on the first green attempt for the same class of reason — a header
+assertion aimed at `stdout` (the header goes to the file, not the terminal) and a line count read as the body's
+rather than the emitted file's. All three were defects in the test, all three were fixed before any claim was made,
+and none of them was a defect in the generator.
+
+**Wiring, so the guard cannot rot.** `package.json` gains `test:gate:spec-copy` and the suite is the **seventh**
+entry in the `test:gates` chain; `.github/workflows/ci.yml` gains a `docs-gates` step that runs it with
+`node scripts/tests/…` directly, never through `pnpm` (the H-12 trap, §1.7). `node scripts/verify-workflow-structure.mjs`
+exits **0** over the edited file, and its W9 rule is precisely the claim that the `test:gates` chain and the
+pipeline steps have not drifted apart. What this closes is a reporting defect with a guard on the report; it
+validates no requirement of the product and changes no Level B result (§4).
+
+The same off-by-one class produced the `337`-line and `43`-line figures corrected in §1.7, and the `3,942`-line figure for the source specification corrected in ADR-018: an editor displays a file of *N* newline-terminated lines as *N+1*.
+
+### 2.3 The generated header is not stable while a parallel workstream edits the tool
+
+Within this window, the same command produced 251,245 → 255,434 → 255,492 reported "bytes", 4,042 → 4,069 → 4,070 lines, and 14 → 15 discrepancy rows, because `docs/MASTER_SPECIFICATION.md` is regenerated from a row list in `scripts/copy-master-spec.mjs` that another process was extending (ADR-018 and S-15 were added at the same time). The **verbatim body and its source SHA-256 never changed**, which is the property the tool exists to protect. Consequence for readers: cite the body by *source* line number (stable, SHA-`5b30b21e…`), never by line number inside the generated copy, and re-run the tool before trusting any size or row count.
+
+---
+
+## 3. Not run — everything that has not been executed, and what it must produce
+
+All statuses below are `Not run`. They are **not** `Pass`, `Fail`, or `Partial`. None can be run until B-01 clears and an install is authorized; none has been simulated, stubbed or asserted by inference.
+
+| # | Activity | Command that will run it | Status | Evidence it must produce | Blocked by |
+|---|---|---|---|---|---|
+| 1 | Dependency install | `pnpm install` | `Not run` | exit 0; `pnpm-lock.yaml` committed; the four `@payloadcms/*` packages + `payload` resolved to one identical version (ADR-002 lockstep); resolved tree written into ARCHITECTURE_DECISIONS §5.1, §5 marked superseded | **B-01**, B-02, B-03 |
+| 2 | Strict typecheck | `pnpm typecheck` (`tsc --noEmit`) | `Not run` | exit 0 under `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `useUnknownInCatchVariables` | 1 |
+| 3 | Lint | `pnpm lint` (`eslint .`) | `Not run` | exit 0, zero `any`/unsafe-assignment violations (rules already set to `error` in `eslint.config.mjs`) | 1 |
+| 4 | Format check | `pnpm format:check` (`prettier --check .`) — **the check-only script was added in this batch (I-10); previously only the writing `format` script existed.** Its check-only behaviour is evidenced in §3.1 below. | `Not run` — the command now exists, but Prettier itself is not installed | exit 0 and no file modified. Blocked by B-01/B-02 only (Prettier is a devDependency) | 1 |
+| 5 | Unit tests (domain, validators, state machines) | `pnpm test` (`vitest run`) | `Not run` | exit 0 with a non-zero test count — `passWithNoTests: false` makes an empty suite fail by design; each ADR-009 dimension covered | 1, and a first real test |
+| 6 | Integration tests (DB, hooks, access control, jobs, storage adapters) | `NDM_ALLOW_INTEGRATION=1 pnpm test` against `noujoude_test` only | `Not run` | positive **and negative** authorization cases; refusal of DDL as `ndm_runtime`; no test able to touch the development database (`tests/setup/env.ts` enforces this) | 1, 9 |
+| 7 | E2E journeys, both locales | `pnpm test:e2e` (`playwright test`) across the 4 projects `en-desktop`, `ar-desktop-rtl`, `en-mobile`, `ar-mobile-rtl` | `Not run` | exit 0 in CI (retries 2) and locally (retries 0); HTML reporter + traces archived; the six invariants listed in `playwright.config.ts` asserted, including the no-commerce invariant (no price, cart, checkout, seller or stock UI on any route) required by Appendix G.3, line 3702 | 1, Phases 2–4 |
+| 8 | Accessibility automation | `pnpm test:a11y` (`playwright test --grep @a11y`, axe-core) | `Not run` | axe violations = 0 at WCAG 2.2 AA on key public **and** Control Center pages; RTL composition checked on mobile too, not desktop-only | 1, Phases 3–4, 6 |
+| 9 | Database provisioning | `pnpm db:up` (`docker compose up -d postgres`) | `Not run` | container healthy via `pg_isready` healthcheck; `postgres:18.6-alpine` **pulled** — the tag was **already in the local cache on 1 November 2026** (`docker images` rc=0, 433 MB), so the 31 October "cache UNKNOWN because `docker images` cannot run" reading is superseded; the pull step still has never been exercised by *this* project. Port listening on `127.0.0.1:5432` only, verified by an external connection attempt being refused; `scripts/db/init-roles.sh` output present in the entrypoint log | **B-03** only — measured, not inferred: `docker compose config` with the seven variables **unset** (1 November 2026, **rc=1**) aborts with `required variable … is missing a value: set in .env` for `NDM_BACKUP_PASSWORD`, `NDM_MIGRATION_PASSWORD`, `NDM_REPORTING_PASSWORD`, `NDM_RUNTIME_PASSWORD`, `POSTGRES_DB`, `POSTGRES_SUPERUSER_PASSWORD` and `POSTGRES_SUPERUSER`, so the stack cannot start without `.env` and nothing was created by the probe. The same command with those seven supplied as **process-environment placeholders** (never written to a file) exits **rc=0** and renders `host_ip: 127.0.0.1`, `image: postgres:18.6-alpine` — the positive half is what turns the definition from "read by a human" into "validated by the engine". **B-09 no longer binds this row:** the engine answers (`docker info` rc=0, 1 November 2026). B-01 blocks it only if pnpm's engine check is enforced; no `.npmrc` exists to enable one. **H-10 closed here the same day:** the render exposed that the declared container name was already occupied by a stopped container on this host, which would have made `pnpm db:up` fail *after* the Owner created `.env`; the file now declares `ndm-postgres`, and the invariant is guarded by `scripts/verify-compose-config.mjs` (preflight check 8) with its own regression suite. |
+| 10 | Migrations | `pnpm migrate:create`, then `pnpm migrate` | `Not run` | committed migration files per Standard §3.4; fresh-database creation succeeds; **upgrade from the immediately preceding schema** succeeds; no schema-push path reachable from the CMS. **This is also the only empirical closure available for assumption A-C1** (PostgreSQL 18.6 ↔ the pinned adapter, ARCHITECTURE_DECISIONS §3.2) | 9, B-01 |
+| 11 | Production build | `pnpm build` (`next build`) | `Not run` | exit 0 with route manifest; build output not treated as feature proof (Directive §15) | 1–3 |
+| 12 | Restore test | backup + PITR restore procedure against the chosen provider once selected | `Not run` | a **measured** RPO/RTO in hours with dataset name, integrity checks, failures, corrective actions, reviewer (Master Spec G.11.3 line 3907). "A backup job reporting success is not proof of recoverability; only a tested restore is acceptable evidence" (line 3908) | 9, 10, **OID-19/OID-20** |
+| 13 | Performance measurement | route-level CWV harness over Home, The Museum, Country World, Collection, Artifact Detail, Story, Search and Control Center critical routes (Standard §9) | `Not run` | p75 LCP ≤2.5 s, INP ≤200 ms, CLS ≤0.1 — as *measurements*, with the device/network conditions recorded. Currently these are targets only (GAP-12: "measurements pending") | 11 |
+| 14 | Dependency scanning | `pnpm audit --audit-level=high` — **now authored as CI job `security-scans` in `.github/workflows/ci.yml`, and scheduled as Phase 2 work item 2.10 in `docs/IMPLEMENTATION_PLAN.md` §4 (coverage hole H-4).** It has never executed. `audit:assets` and `audit:docx-alignment` inspect files and documents, not dependencies, and are not a substitute. | `Not run` | zero unresolved high/critical, or a recorded Owner risk acceptance per severity | 1, B-04 (a repository must exist for the workflow to run) |
+| 15 | Secret scanning | **still nothing, anywhere.** `.github/workflows/ci.yml` deliberately does **not** contain a secret-scanning step, and says so in its own header ("WHAT IS DELIBERATELY NOT HERE"). Standard §12 check 8 therefore stays **UNMET** and is only *partially* advanced by row 14. Landing point: Phase 2 work item 2.10. | `Not run` | zero findings; a pre-commit/CI hook that cannot be silently disabled | B-04, tooling to be selected and authored |
+| 16 | ASVS review | manual verification against OWASP ASVS 5.0.0 **Level 2**, mapped to real routes and controls | `Not run` | control-by-control record with implementation location and test evidence; citing ASVS does not establish compliance (Master Spec §20 reference text) | Phases 2–7 |
+| 17 | WCAG audit (manual) | keyboard-only traversal and screen-reader pass (NVDA/VoiceOver) over key visitor and admin flows | `Not run` | a written record per flow, supplementing — not replaced by — axe automation (Standard §8, §2.2) | Phases 3–6 |
+| 18 | SEO checks | automated tests over canonical, reciprocal `hreflang`, sitemap, robots, redirects, localized OG, and `noindex` boundaries for drafts/private/restricted/preview (Master Spec G.9) | `Not run` | per-locale pass with the negative case proven: no `hreflang` emitted toward a missing or unpublished translation | Phases 4–6 |
+| 19 | AI red-team / disclosure tests | governed retrieval test suite (prompt injection, restricted-source disclosure, citation mismatch, hallucination, uncertainty) | `Not run` | all nine evaluation classes (S-13) executed; `Unauthorized Disclosure` treated as **release-blocking** (line 2095) | Phase 7, **OID-19** |
+| 20 | Telemetry verification | OTLP export with the nine minimum service indicators (Standard §10) | `Not run` | live trace/metric/log samples proving no inquiry content, credential or token appears in telemetry | 1, OID-19 |
+| 21 | Owner-input-dependent checks | — | `Not run` | any test asserting real artifact facts, rights, contact details or institutional identity | **OID-01…OID-21** |
+
+**Nothing in §3 has been run.** An empty result table for §3 is the correct state at the end of Phase 1; it is not a temporary embarrassment to be papered over.
+
+### 3.1 I-10 — the check-only formatting command: what was added, and exactly what is and is not demonstrated
+
+Two files changed for this item.
+
+1. `package.json` line 21 gains `"format:check": "prettier --check .",` alongside the pre-existing line 20
+   `"format": "prettier --write ."`. The writing script was left in place — it is the developer's fixing command
+   — and a **separate** non-writing command was added for gates.
+2. A new `.prettierignore` was created. This was not a style preference; it closes a live hazard discovered
+   while authoring the check command. `prettier --write .` parses Markdown and JSON, and this repository's
+   read-only source documents are Markdown under `reference/` with an 82-asset library under `Noujoude.photo/`.
+   With no ignore file, one well-intentioned `pnpm format` would rewrite files that Directive §3 places off
+   limits (Directive line 53, verbatim: *"Never modify, rename, overwrite, or delete original source files."*), trip the
+   `REFERENCE_INTEGRITY.json` DRIFT check in `scripts/preflight.mjs`, and invalidate every `line N` citation in
+   `docs/`. `.prettierignore` line 18 is `reference/`, line 21 is `Noujoude.photo/`, plus the generated evidence
+   artefacts and tool-output paths. Registered as risk **R-14** in `docs/IMPLEMENTATION_PLAN.md` §7.
+
+**Check-only behaviour — established on three legs, none of which is an execution.**
+
+| Leg | Evidence | Result |
+|---|---|---|
+| Structural, in this repository | `grep -n '"format' package.json` → line 20 `prettier --write .`, line 21 `prettier --check .`. `grep -c 'format:check.*--write' package.json` → **0**. `grep -n 'pnpm format' .github/workflows/ci.yml` → line 159 `run: pnpm format:check`, and **no** occurrence of the writing script anywhere in the workflow. | The gate command contains no write flag, and CI never invokes the writing one |
+| Upstream documentation (authoritative) | `https://raw.githubusercontent.com/prettier/prettier/main/website/versioned_docs/version-stable/cli.md`, **HTTP 200**, 9641 bytes: *"When you want to check if your files are formatted, you can run Prettier with the `--check` flag (or `-c`). This will output a human-friendly message and a list of unformatted files, if any."* Exit-code table: `0` = "Everything formatted properly", `1` = "Something wasn't formatted properly", `2` = "Something's wrong with Prettier". | `--check` is documented as reporting, not writing, and its exit codes are defined for pipeline use |
+| The tool's own failure message | Same document, the `--check` failure transcript ends with: *"[warn] Code style issues found in 2 files. Run Prettier with --write to fix."* | Decisive on its own: `--check` instructs the user to run a **different** command to fix the problem, which it would not need to do if it wrote files itself |
+
+The same document also endorses the ignore file directly: *"It's recommended to always make sure that
+`prettier --write .` only formats what you want in your project. Use a `.prettierignore` file to ignore things
+that should not be formatted."* So `.prettierignore` is the upstream-prescribed control for exactly the hazard
+found here, not an invention of this project.
+
+**What is NOT demonstrated, stated plainly.** `pnpm format:check` has **never been executed** on this machine.
+Prettier is a devDependency, `node_modules/` does not exist, and installing dependencies is outside this batch's
+authorization (B-02). Therefore: the command's exit code on this repository is **unknown**, and whether the
+current files are Prettier-clean is **unknown**. The check-only *behaviour* is established by documentation and
+by construction; the check-only *result* is pending the first install. Nobody should read this section as
+"formatting passes".
+
+---
+
+## 4. Release gate definition — Standard §12 required checks
+
+The twelve checks are quoted from `Noujoude_Technology_and_Security_Standard_EN.md` §12 (lines 266–279). Every one is **unmet**. The situation changed in one respect during this batch and is recorded precisely so it is not over-read: a CI pipeline definition **now exists** at `.github/workflows/ci.yml`, which closes coverage hole H-2's *authoring* half — and on 1 November 2026 it stopped being a file nobody had checked by machine, because `scripts/verify-workflow-structure.mjs` now enforces ten structural rules over it and exits **0** (coverage hole H-11). It has nevertheless **never executed**, its file header says `STATUS: AUTHORED. NEVER EXECUTED.`, no YAML *conformance* parser exists on this host — the structural gate is a contract over the block subset, not GitHub's parser — and there is no repository for it to run in (B-04). An authored pipeline enforces nothing. H-2 therefore moves from `no definition exists` to `definition authored, structurally checked, zero runs`, and the twelve checks stay unmet.
+
+| # | Required check | Command that will satisfy it | State today | Why unmet |
+|---|---|---|---|---|
+| 1 | Formatting and lint | `pnpm format:check` + `pnpm lint`, both now steps in CI job `quality` | ❌ **Unmet** | ESLint and Prettier have never run — neither is installed (B-02). The check-only format script now exists (I-10, §3.1), which removes the *tooling gap* but not the *execution gap* |
+| 2 | Strict TypeScript typecheck | `pnpm typecheck` | ❌ **Unmet** | no `tsc` execution possible without install |
+| 3 | Unit tests for domain and validation logic | `pnpm test` | ❌ **Unmet** | zero tests exist |
+| 4 | Integration tests for database, CMS hooks, access control, jobs, storage adapters | `NDM_ALLOW_INTEGRATION=1 pnpm test` | ❌ **Unmet** | no database, no code under test |
+| 5 | Playwright E2E for key public/admin routes in **both locales** | `pnpm test:e2e` | ❌ **Unmet** | no routes, no browsers launched |
+| 6 | Accessibility automated checks **plus manual audit records** | `pnpm test:a11y` + written manual record | ❌ **Unmet** | neither half exists (GAP-11 "implementation audit pending") |
+| 7 | Security checks mapped to ASVS controls and negative authorization tests | ASVS L2 mapping + negative authz suite | ❌ **Unmet** | no controls implemented to test (GAP-13 also instrumentation pending). The negative authorization *database* cases were authored in `run-privilege-tests.sh` and were blocked by B-09 (§1.5) when this row was written; they have **since executed** — 14 of 14 matched expectation for an authorization reason (1 November 2026, §1.5, `docs/A5_PRIVILEGE_EVIDENCE.txt`). That proves the grant design, not the application's own authorization controls, which remain unimplemented, so the row stays Unmet |
+| 8 | Dependency and secret scanning | dependency half: `pnpm audit --audit-level=high`, authored as CI job `security-scans`. Secret half: **nothing exists** | ❌ **Unmet — at best PARTIALLY authored** | Neither half has run. The secret-scanning half is **deliberately absent** from `ci.yml` and the absence is declared in that file's header, so this row cannot be quietly upgraded when the dependency half goes green. Landing point for both: Phase 2 work item **2.10** in `docs/IMPLEMENTATION_PLAN.md` §4 |
+| 9 | Production build | `pnpm build` | ❌ **Unmet** | never executed |
+| 10 | Database migration verification **and** restore test | `pnpm migrate` + restore procedure | ❌ **Unmet** | no migration exists and no project instance exists to restore. The 31 October basis ("image never pulled; the cache cannot be enumerated while B-09 stands") is superseded: `docker images` exits 0 and lists `postgres:18.6-alpine` (1 November 2026), so what binds this row is B-01/B-02/B-03 — not the engine |
+| 11 | SEO route and metadata checks | automated SEO suite | ❌ **Unmet** | no routes (GAP-15 "implementation tests pending") |
+| 12 | Performance measurements and regression checks | CWV harness at p75 | ❌ **Unmet** | nothing to measure; targets remain targets (GAP-12) |
+
+Standard §12 line 281 additionally forbids using mock functionality as release evidence, and §15 line 336 forbids silently downgrading accessibility, performance or security expectations. Accordingly: no check below is recorded as passing on the strength of a configuration file, a stub, or a planned behaviour.
+
+---
+
+## 4A. Product release gates — Master Spec §20.6 (lines 3133–3159)
+
+§4 above is the *engineering* gate: the twelve checks the Standard requires. The specification imposes a second, product-level gate structure — Gate 0 through Gate 5 at lines 3135–3157 — and closes it with a rule that this report exists to enforce, line 3159:
+
+> *"A gate may be marked Passed only with recorded evidence and an identified approver."* — `reference/Noujoude_Master_Specification_EN.md` line 3159
+
+Two obligations follow, and both are reporting obligations rather than coding ones. First, a gate needs **recorded** evidence, which in this document means a transcript or a measurement that a reader can re-produce (§9 lists the commands). Second, it needs an **identified approver** — a named human, not a role filled by the architect. Since no gate condition is met today, the table below records what artifact *would* be the evidence and *who* signs, so that a later entry can be checked against it rather than asserted.
+
+| Gate | Condition, verbatim from the cited line | Evidence artifact that would be recorded here | Identified approver (named, not inferred) | State |
+|---|---|---|---|---|
+| **Gate 0 — Product Baseline** (3137) | *"Master Specification adopted; requirement IDs assigned; scope and change-control authority established."* | Adoption record for `reference/Noujoude_Master_Specification_EN.md` (SHA-256 `5b30b21e…`); `docs/REQUIREMENTS_TRACEABILITY.md` ID column | **Owner** — Appendix E lists every approval item as `Pending Owner approval`, so adoption is unsigned | **Open.** IDs are assigned by this project; "adopted" is not recorded and cannot be self-declared. |
+| **Gate 1 — Institutional and Collection Readiness** (3141) | *"Official identity fields approved; actual Morocco inventory loaded; claims/evidence, image permissions, and required content reviewed; no invented collection information."* | `OWNER_INPUT_REGISTER.md` rows OID-01 … OID-07 marked `Provided` with the document each fact came from; artifact inventory with evidence links; rights per asset | **Owner** for identity and inventory; a **qualified rights reviewer** for image permissions (Master Spec line 2724) | **Open — blocked by Owner input.** Engineering cannot supply any of it; the only half this project can enforce is the "no invented" prohibition, which is untested because no content path exists. |
+| **Gate 2 — Experience and Design Readiness** (3145) | *"Public routes and page behavior complete; approved visual system applied; English and Arabic layouts reviewed; responsive and accessibility tests passed."* | Playwright + axe transcripts in §3, per locale and per viewport class; the Owner's visual-system approval (OID-18) | Owner (design approval) plus the named accessibility verifier | **Open — 0 routes exist.** No page-behaviour test has been executed. |
+| **Gate 3 — Administration and Data Readiness** (3149) | *"Canonical Control Center modules and essential screens available; permissions enforced; data relationships and validation tested; publication and revision workflows complete."* | Per-module positive **and** negative permission test transcripts for all twenty modules; migration and constraint evidence | Owner / designated administrator | **Open — no module exists.** Module 14 (roles) and Module 19 (audit) are prerequisites and are unbuilt. |
+| **Gate 4 — AI and Governance Readiness** (3153) | *"AI source scope, citation, uncertainty, privacy, and safety tests passed; legal/privacy policies approved; no restricted retrieval path remains."* | Red-team and evaluation transcripts covering the nine classes at lines 2085–2093, with `Unauthorized Disclosure` release-blocking; LO-03/LO-05 approvals | Legal / privacy reviewer, then Owner | **Open — no AI component exists** and no provider is selected (B-05/OID-19). `docs/AI_CURATOR_GOVERNANCE.md` is a contract with zero implementation. |
+| **Gate 5 — Production Readiness** (3157) | *"Security verification, performance, monitoring, backups, restore testing, SEO checks, and release regression are complete."* | ASVS L2 review record, CWV measured at p75, an **executed** restore test with measured RPO/RTO, §4's twelve checks green in CI | Owner (deployment authorization, OID-22) | **Open.** A restore has never been attempted, so the line-3908 rule — a successful backup job is not proof of recoverability — is unsatisfiable today by definition. |
+
+**What may not be done with this table.** No row may be marked Passed by tooling, by inference from a build succeeding, or by the architect. §20.7 line 3163 blocks the most likely shortcut: *"The product is not considered complete because all pages exist."* The §21.7 closure sequence (lines 3244–3253, mirrored in `docs/IMPLEMENTATION_PLAN.md` §4A.1) fixes the order the gates must be closed in, and its step 5 → step 7 dependency means *"Approve the physical ERD and data dictionary against this logical model."* (line 3250) has to be an approved artifact before *"Verify implementation against requirement IDs and test evidence."* (line 3252) can be recorded as satisfied anywhere in this file.
+
+---
+
+## 5. Integrity evidence that does hold today
+
+| Claim | Status | Basis |
+|---|---|---|
+| The 7 files under `reference/` are byte-identical to their Phase 0 baseline | ✅ **Verified repeatedly** | `docs/REFERENCE_INTEGRITY.json` (captured 2026-10-30T23:31:40Z) re-checked on every preflight run in this window |
+| The 82 audited originals under `Noujoude.photo/` are unmodified | ✅ **Verified — within a stated coverage limit** | per-file SHA-256 re-computed each run; 82/82 match. **The limit (hole H-7):** `scripts/preflight.mjs` iterates the rows of `docs/ASSET_INVENTORY_AUDIT.csv` and re-hashes each referenced path; it never enumerates the directory. It therefore proves *no audited asset changed* and does **not** prove *no unaudited asset appeared*. Measured this batch: the directory holds **85** files (`find Noujoude.photo -type f`, exit 0) against 82 catalogued, and the 3-file difference is documented and reconciled in §1.2 and `docs/MEDIA_AND_RIGHTS_GOVERNANCE.md` §6.5 — nothing is lost. The wider check exists but is a different command: `node scripts/audit-assets.mjs` reports `physicalFileCount` 85 against `catalogTotal` 82 plus an explicit `uncataloguedFiles` array. The script was **deliberately not modified** in this batch, because redefining a validation gate is outside a scope authorized to re-run documentation gates |
+| `docs/MASTER_SPECIFICATION.md` body is byte-identical to the authoritative Markdown | ✅ **Verified** | 0 misaligned lines; source SHA-256 `5b30b21e…47ecd5` |
+| The DOCX adds no requirement content the Markdown lacks | ✅ **Verified** | 337/337 headings, 0 vocabulary loss, 0 substantive misses |
+| Tooling cannot write into `reference/` or `Noujoude.photo/` | ⚠️ **Was an overclaim; now true for the scripts, and made true for Prettier in this batch** | Every project script's output path is under `docs/` (ADR-014), and `.gitignore` deliberately protects both trees from being hidden. **But** `package.json` shipped `"format": "prettier --write ."`, Prettier parses Markdown, and there was no ignore file — so a single `pnpm format` *would* have rewritten the read-only originals. That hazard was found while authoring the I-10 check command and closed by the new `.prettierignore` (lines 18 and 21). The ✅ previously recorded here was therefore not accurate as written; it is downgraded and re-earned rather than left standing. See §3.1 and risk **R-14** |
+| The ADR-019 append-only privilege boundary is enforced in a live database | ⚠️ **Demonstrated in a disposable container; still unverified in this project's database, which does not exist** | The 31 October position — four `scripts/db/` files authored and `sh -n` clean, the single execution attempt aborted before a container existed, no output — is superseded: on 1 November 2026, with the engine answering again (§1.1 transcript 4), `IMAGE=postgres:18.6-alpine sh scripts/db/run-privilege-tests.sh` completed with **exit 0**. 34 grant-state assertions and all 14 behavioural cases A–N matched; the transcript is `docs/A5_PRIVILEGE_EVIDENCE.txt`. What it does **not** establish: any claim about this project's real database, because `pnpm db:up` has still never run (§3 row 9, `Not run`, blocked by B-03 `.env`, not by the engine) and no Payload migration has ever been applied. The residual risk is now *measured* rather than assumed — the owner `ndm_migration` can drop the guard trigger and its `UPDATE` then succeeds (`VULNERABLE`) — and the detection half of the compensating control is proven (`verify-privileges.sh` fails on exactly the removed guard, and passes again once it is restored). The enforcement half is not: the CI job `db-privileges` has never run, so the residual risk stands **open, detected by design, and unmitigated in deployment** |
+| Audit immutability is behaviourally verified | ⚠️ **True of the design, in a throwaway container; false of this project** | On 1 November 2026 a live PostgreSQL 18.6 server **did** refuse the mutations: cases B–D, F–H, K–N of `run-privilege-tests.sh` pass because the statement is refused for an authorization reason, and the guard trigger plus `FORCE ROW LEVEL SECURITY` deny policies were observed doing it (`docs/A5_PRIVILEGE_EVIDENCE.txt`). What stays ❌ is the project's own claim: no database belonging to this build has ever refused anything, because none exists — `init-roles.sh` and `harden-append-only.sh` run only inside `pnpm db:up`, which cannot start (row 9 above, B-03). Standard §3.2 and Master Spec line 3822 therefore remain unsatisfied *for this museum*, and must not be marked compliant on the container evidence |
+| Originals are licensed / approved / integrated | ❌ **False, and never claimed** | 0 of 82 cleared, 0 approved, 0 integrated. Unchanged by this batch, which produced no new evidence about rights |
+
+---
+
+## 6. Targets are not measurements
+
+Recorded once, in the terms the sources use, so no reader mistakes a design constraint for an achievement: WCAG 2.2 AA is a *target* (GAP-11: implementation audit pending); LCP ≤2.5 s / INP ≤200 ms / CLS ≤0.1 at p75 are *targets* (GAP-12: measurements pending); OWASP ASVS 5.0.0 Level 2 is a *verification baseline*, not a compliance claim; RPO/RTO and the 99.5% availability figure are *proposed engineering baselines pending provider proof and Owner approval* (GAP-14). **No SLA may be published from the internal 99.5% objective** (Standard §11 line 262; Master Spec G.11.1 line 3887).
+
+---
+
+## 7. Post-release obligations that begin now
+
+Standard §11 requires restore tests *quarterly* and before major database or storage migrations, each recording measured RPO/RTO, integrity checks, failures, corrective actions and reviewer. Phases 0–9 have no calendar owner for that recurrence (coverage hole H-5), so it is registered here as an ongoing obligation: the first executed restore test belongs to Phase 8, and each subsequent quarter gets a new §1-style transcript in this file — never a restatement of an earlier one. The same applies to re-running ARCHITECTURE_DECISIONS §3's compatibility verification before any `@payloadcms/*` synchronized bump, any Next.js major, before adopting `pgvector`, and when `payload@4.x` leaves beta (D-02 may then resolve natively).
+
+---
+
+## 8. Release approval
+
+**No production deployment may occur without explicit, recorded authorization from the Owner.** That is a triple prohibition: Directive §17 line 325, Standard §12 line 281 and Standard §15 line 335; the Master Spec's own release gate closes at G.12 line 3929 with *"No critical/high security defect remains unresolved without explicit risk acceptance by the authorized Owner."*
+
+Current release readiness: **0%.** Nothing is deployable — there is no application, no schema, no content and no passing check. Recorded here rather than implied. This table is the **deployment-condition** view; the product Gate 0–5 evidence and approver records are §4A, and a deployment is not authorized by this table alone.
+
+| Condition | Requirement | Today |
+|---|---|---|
+| Owner factual inputs supplied | all 22 rows in `docs/OWNER_INPUT_REGISTER.md` `Provided`/`Rejected` | ❌ 22 `Outstanding` |
+| Rights and brand approval cleared | 82 assets rights-cleared and approved | ❌ 0 of 82 |
+| All twelve §12 checks green in CI | twelve-of-twelve | ❌ 0 of 12. A pipeline definition now exists (`.github/workflows/ci.yml`) but has **never executed** and there is no repository to run it in (B-04), so it enforces nothing |
+| Restore test executed | measured RPO/RTO recorded | ❌ not run |
+| SLA posture decided | Owner decision on what may be published | ❌ OID-20 |
+| Deployment authorization | explicit Owner approval | ❌ OID-22 |
+| P0 closure / P1 staging decision | per Master Spec G.12 line 3916 | ❌ not reached |
+
+Signature block — to be filled by the Owner only, and deliberately left blank:
+
+```
+Owner name / role: ______________________
+Decision:            ☐ Approve release   ☐ Approve with conditions   ☐ Reject
+Conditions / risk accepted: ______________________
+Date: ______________   Reference: TEST_AND_RELEASE_REPORT version: ______
+```
+
+No entry in this block may be written by tooling, by inference, or by the architect. Directive §17 line 320: "Do not fake records or metrics in production screens" — a fabricated approval here would invalidate every later gate.
+
+---
+
+## 9. Reproduction
+
+All of §1 is read-only against the protected trees and cheap to re-run.
+
+**Run these as `node scripts/<name>.mjs`, not as the `pnpm <name>` aliases, until OD-7 is set.** Measured 1 November
+2026: with `node_modules` absent by design (B-02), `pnpm run audit:workflow` did not execute the gate — pnpm verifies
+declared dependencies before running any script and started resolving the tree against the public registry. The
+command was killed; nothing landed in this directory, but packages were written to the machine store. `node
+scripts/preflight.mjs` check 10 reports whether that trap is still armed. See `docs/CHANGELOG.md` §L, hole **H-12**,
+blocker **B-10** and `.npmrc`, which sets no options because the project-scoped fix is measured not to exist.
+
+```sh
+node scripts/preflight.mjs            # expect exit 1 while B-01 stands; 10 checks: 1 FAIL, 3 WARN, 6 PASS
+                                      # check 8 is the compose contract, check 9 the workflow structure contract
+                                      # (both added 1 Nov 2026, both PASS), check 10 the `pnpm run` dependency-check
+                                      # trap (WARN until OD-7 — see the paragraph above); Docker is PASS on a warm
+                                      # daemon and WARN on a cold one — measured 113 s for the first `docker info`
+                                      # after Docker Desktop was idle, 1.9 s for the next (transcript 5 in §2.1)
+node scripts/audit-assets.mjs         # expect exit 0, 82 rows, 1 WRONG_FORMAT, 18 name/pixel mismatches
+node scripts/check-docx-alignment.mjs # expect exit 0, VERDICT: ALIGNED
+node scripts/copy-master-spec.mjs     # expect exit 0, "body byte-identical to source: YES", and the first
+                                      # line's `UTF-8 bytes` / `lines` figures to equal `wc -c` and
+                                      # `awk 'END{print NR}'` on the file it just wrote (§2.2)
+node scripts/verify-citations.mjs     # expect exit 0, LINE_OFF 0 / NOT_FOUND 0
+                                      # the class sum that holds is VERIFIED + SELF_RECORDING + PROJECT_RECORD
+                                      # + NO_LINE_REF == fragments; DEFINED_TERM is a subset, not a fifth term
+node scripts/verify-tables.mjs        # expect exit 0; the table and file counts move with every docs/ edit,
+                                      # so read the printed number rather than trusting one quoted in prose
+                                      # a uniform pipe count proves shape, not truth — see CHANGELOG §H
+node scripts/verify-compose-config.mjs  # expect exit 0 — ten static rules over docker-compose.yml
+node scripts/tests/verify-compose-config.test.mjs
+                                      # expect exit 0, 25 cases: 22 static fixtures (one red fixture per rule,
+                                      # the double-read and comment exemptions, several defects at once, and
+                                      # the real file green) plus three dynamic cases that need an engine
+                                      # (SKIP, not PASS, without one)
+node scripts/verify-workflow-structure.mjs
+                                      # expect exit 0 — ten structural rules over .github/workflows/ci.yml,
+                                      # then a second line that is a limit, not a footnote: it is a structural
+                                      # contract check, not a YAML conformance parser and not a CI run
+node scripts/tests/verify-workflow-structure.test.mjs
+                                      # expect exit 0, 32 cases: 21 red fixtures (one per rule, plus the shape
+                                      # and ordering defects), eight green assertions with one exemption per
+                                      # rule that can over-fire, the committed file green, the
+                                      # CI ↔ `pnpm test:gates` drift claim recomputed from package.json, and a
+                                      # case that renames a real gate script inside a copy of the workflow and
+                                      # requires the gate to fail it
+node scripts/tests/verify-tables.test.mjs
+                                      # expect exit 0, 14 cases (H-9) — the red fixtures are what stop the
+                                      # table checker being vacuous, so run it beside the checker, not instead
+node scripts/tests/preflight-asset-reconciliation.test.mjs
+                                      # expect exit 0, 22 checks (H-7), each driving the real reconciliation
+                                      # code against temp fixtures through preflight's --root seam
+node scripts/tests/verify-citations.test.mjs
+                                      # expect exit 0, 23 checks (H-8) over red and green citation fixtures
+node scripts/tests/preflight-pnpm-trap.test.mjs
+                                      # expect exit 0, 19 cases (H-12): spawns the real scripts/preflight.mjs
+                                      # with --root against a temp fixture and a stub `pnpm` on the child's
+                                      # PATH, one case per measured value of verify-deps-before-run. `prompt`
+                                      # and an unrecognised value are required to WARN — prompt refuses only
+                                      # when stdin is not a terminal, and junk falls through pnpm's switch.
+                                      # Two cases write the key into the fixture's own .npmrc and still expect
+                                      # WARN, because pnpm reads that key globally or not at all
+node scripts/tests/copy-master-spec-output.test.mjs
+                                      # expect exit 0, 11 cases (§2.2): the generator is run with a throwaway
+                                      # workspace as its cwd and its printed byte/line figures are compared to
+                                      # the file on disk — truth taken as Buffer length and as a newline count,
+                                      # never by re-running the expressions under test. Covers multi-byte and
+                                      # pure-ASCII bodies (wrong either way: the header carries em dashes), a
+                                      # body with no final newline, a CRLF body whose breaks must survive
+                                      # un-normalised, the printed body-start line against the real line, the
+                                      # alignment header with and without docs/DOCX_MD_ALIGNMENT.json, and a
+                                      # source whose opening lines duplicate the generated header — which must
+                                      # exit 1 and write nothing. The committed copy is never regenerated here
+env -u POSTGRES_DB -u POSTGRES_SUPERUSER -u POSTGRES_SUPERUSER_PASSWORD \
+    -u NDM_MIGRATION_PASSWORD -u NDM_RUNTIME_PASSWORD -u NDM_REPORTING_PASSWORD \
+    -u NDM_BACKUP_PASSWORD docker compose config
+                                      # expect exit 1 naming the missing variable — the :? guards biting
+                                      # docker compose config exits 0 instead only when those seven are
+                                      # present; supply them as placeholders in the child environment,
+                                      # never in a file, and nothing is created either way
+sh -n scripts/db/init-roles.sh        # expect exit 0
+sh -n scripts/db/harden-append-only.sh
+sh -n scripts/db/verify-privileges.sh
+sh -n scripts/db/run-privilege-tests.sh
+sh scripts/db/run-privilege-tests.sh  # REPRODUCED 1 November 2026, exit 0, transcript in
+                                      # docs/A5_PRIVILEGE_EVIDENCE.txt (no `IMAGE=` override is
+                                      # needed: postgres:18.6-alpine is now the script's default).
+                                      # This is what the `pnpm db:privilege-evidence` alias runs,
+                                      # and it is spelled out here on purpose — calling it through
+                                      # `pnpm` in this workspace IS the H-12 trap: pnpm resolves
+                                      # the whole dependency tree before the shell command is
+                                      # reached. Needs a working engine and nothing else — no Node
+                                      # upgrade, no install, no `.env`. Expect the 14 A–N cases,
+                                      # 34 grant-state rows, and SHOW server_version with the PG
+                                      # major labelled against the tag. It starts and removes its
+                                      # own container and volume; never point it at a project
+                                      # database.
+pnpm format:check                     # NOT reproducible here: Prettier is not installed (B-02).
+                                      # Do not run it for now either — this is the H-12 trap, so the
+                                      # alias resolves 669 packages before Prettier is ever reached.
+                                      # `--check` never writes; see §3.1 for the three legs of that claim
+```
+
+Environment and pinned-release probes added in this batch (§0, §1.9). Every exit code must be captured **before**
+any pipe, or `head`/`tee` will report its own status and hide a timeout:
+
+```sh
+wsl -l -v                                          # rc=0. **Not a daemon test** — on 1 Nov it reported
+                                                   # `docker-desktop Stopped` while `docker info` exited 0.
+docker context ls                                  # rc=0 — client-only, proves nothing about the engine
+docker compose version                             # rc=0 — client-only; v5.3.1 on 31 Oct, v5.6.1 on 1 Nov
+timeout 40 docker info                             # 1 Nov 2026: rc=0, server 29.9.2, 3 containers, 0 running.
+                                                   # 31 Oct 2026: rc=124, 0 bytes (that was B-09)
+timeout 40 docker images                           # 1 Nov: rc=0 and `postgres:18.6-alpine 433MB` is listed.
+                                                   # 31 Oct: rc=124, so cache state was UNKNOWN, not absent
+node -v; pnpm -v; git --version                    # v24.19.0 / 11.21.0 / 2.56.0.windows.2
+git rev-parse --is-inside-work-tree                # fatal: not a git repository  (B-04)
+curl -s -o /dev/null -w '%{http_code}' https://registry.npmjs.org/payload/3.92.1                       # 200
+curl -s -o /dev/null -w '%{http_code}' https://registry.npmjs.org/@payloadcms%2Fdb-postgres/3.92.1     # 200
+gh api 'repos/payloadcms/payload/contents/packages?ref=v3.92.1' --jq '.[].name' | wc -l                # 44
+gh api 'repos/payloadcms/payload/contents/packages' --jq '.[].name' | wc -l                            # 45
+```
+
+Before publishing any figure from this file, re-run it. Line-number citations are verifiable with `node scripts/show-lines.mjs <start>[/<start>-<end>]`, which reads `reference/Noujoude_Master_Specification_EN.md` directly — e.g. line 3702 is the commerce prohibition and line 3937 is the owner-input posture quoted in `docs/OWNER_INPUT_REGISTER.md` §0.

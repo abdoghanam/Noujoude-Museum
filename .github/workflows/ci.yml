@@ -1,0 +1,416 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Noujoude — CI gate definition.
+#
+# STATUS: **AUTHORED. NEVER EXECUTED.**
+#   This file has not been run by any CI system, and it cannot be yet:
+#     B-04  no Git repository exists (`git rev-parse` → "not a git repository"),
+#           so there is no remote, no push event and no runner to pick this up;
+#     B-01  the host Node is v24.19.0 and the pinned set needs >=24.22.1;
+#     B-02  `pnpm install` has never been authorized or run, so there is no
+#           `pnpm-lock.yaml` for `--frozen-lockfile` to check;
+#     Phase 2  no `src/payload/payload.config.ts` and no migration exists, so the
+#           compose-backed `db:harden` / `db:verify-privileges` half of the
+#           database job has nothing to harden yet (see the `armed` step).
+#   Do not describe this pipeline as operational, green, or enforcing until a real
+#   run transcript exists in docs/TEST_AND_RELEASE_REPORT.md. Authoring it is the
+#   artefact B-08 / coverage hole H-2 asked for; running it is a later gate.
+#
+# WHY IT EXISTS ANYWAY (the specific hole it closes):
+#   ADR-019 measures a residual risk rather than hiding it: the table owner
+#   `ndm_migration` CAN drop the append-only guard trigger and its RLS policies,
+#   and `scripts/db/run-privilege-tests.sh` prints `VULNERABLE` when it confirms
+#   that. The recorded mitigation is that `verify-privileges.sh` fails the build
+#   whenever the guard goes missing. Until this file exists, that mitigation named
+#   a runner that did not exist — see the readiness review finding I-5. The
+#   `db-privileges` job below is the mitigation, written down as a gate.
+#
+# WHAT IS DELIBERATELY NOT HERE:
+#   - No secret scanning. Standard §12 check 8 requires dependency AND secret
+#     scanning; no scanner is selected or authored (coverage hole H-4). The
+#     `security-scans` job runs the dependency half with pnpm's own built-in audit
+#     and prints an explicit notice for the missing half rather than faking it.
+#     Check 8 stays UNMET until a real scanner is added in Phase 2.
+#   - No deployment job of any kind. Production deployment requires explicit Owner
+#     authorization (OID-22; Directive §17 line 325; Standard §12 line 281).
+#   - No stored secrets are consumed. Every credential below is generated per run,
+#     used once, and discarded with the ephemeral runner.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: noujoude-ci
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+# One run per ref: a superseded push should not keep burning a runner.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # B-01's resolution, pinned so CI cannot drift onto an unsupported runtime.
+  # `payload@3.92.1` declares engines.node "^22.23.4 || >=24.22.1" — verified
+  # against the published artifact, not the docs prose (ARCHITECTURE_DECISIONS §3).
+  NODE_VERSION: '24.22.2'
+  PNPM_VERSION: '11.21.0'
+
+jobs:
+  # ── 1. Documentation-integrity gates ───────────────────────────────────────
+  # Dependency-free on purpose: these run on Node alone, so they are the only
+  # gates that can be green before B-01/B-02 clear. Each gate below is paired with
+  # a regression suite that proves its own red-ness (TEST_AND_RELEASE_REPORT §1.8),
+  # so a pass is not vacuous.
+  docs-gates:
+    name: Documentation integrity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # Read-only inputs must be byte-identical to their Phase 0 baseline.
+      # NOTE: this assumes reference/ and Noujoude.photo/ are committed and present
+      # in the checkout. Whether 82 binary assets belong in the repository is an
+      # Owner decision taken at B-04; if they are excluded, this step must become a
+      # guarded check instead of a hard one. Recorded, not silently assumed.
+      - name: Reference + asset integrity (preflight)
+        run: node scripts/preflight.mjs
+
+      - name: Citation attribution gate
+        # Writes docs/CITATION_VERIFICATION.json as its artefact. On an ephemeral
+        # runner that is discarded; it is deliberately NOT committed back.
+        run: node scripts/verify-citations.mjs
+
+      - name: Table shape gate
+        run: node scripts/verify-tables.mjs
+
+      # H-7 / H-8 / H-9 regression suites. Plain Node on purpose: they must be
+      # runnable before `pnpm install`, so they cannot depend on vitest. Each proves
+      # its own red-ness by re-implementing the pre-fix rule against the same fixture.
+      - name: H-9 table-checker regression (positive + negative)
+        run: node scripts/tests/verify-tables.test.mjs
+
+      - name: H-7 asset-reconciliation regression (positive + negative)
+        run: node scripts/tests/preflight-asset-reconciliation.test.mjs
+
+      - name: H-8 citation-gate regression (positive + negative)
+        # Runs the real scripts/verify-citations.mjs against throwaway fixture
+        # workspaces in a temp directory, so the classifier itself — not just its
+        # output on this repository — is under test. Without this step the citation
+        # gate above could regress to exit-0-always and CI would stay green.
+        run: node scripts/tests/verify-citations.test.mjs
+
+      - name: Local infrastructure contract (docker-compose.yml)
+        # Ten static rules over the compose file: pinned image, loopback-only publish,
+        # postgres:18 mount root, read-only script mounts, seven required secret guards,
+        # pg_isready healthcheck, no host-escape affordance, ndm- container name. Reads
+        # the file only — starts no container, creates no volume.
+        run: node scripts/verify-compose-config.mjs
+
+      - name: H-10 compose-contract regression (positive + negative + dynamic)
+        # 25 cases: 22 static fixtures — one red fixture per rule, the C3 double-read and
+        # comment exemptions, a multi-defect file, and the real file read green — plus
+        # three checks that need a container engine:
+        # `docker compose config` renders the real file, the secret guards abort when a
+        # value is missing, and the declared container name is free on this host.
+        # GitHub's ubuntu runners ship Docker, so the dynamic half runs here; on a
+        # machine without it the suite prints SKIP and still exits 0 on the static half.
+        run: node scripts/tests/verify-compose-config.test.mjs
+
+      - name: Workflow structure contract (this file)
+        # Ten structural rules over the workflow itself: block-YAML shape, unique keys, job and step
+        # shape, a needs-DAG that exists and has no cycle, every script a step runs is a real path,
+        # every `pnpm <name>` is a declared script, CI and `pnpm test:gates` have not drifted apart,
+        # and no literal secret is assigned anywhere. NOT a YAML conformance parser and NOT a run.
+        run: node scripts/verify-workflow-structure.mjs
+
+      - name: H-11 workflow-structure regression (positive + negative)
+        # 32 cases: 21 red fixtures (one per rule, and more than one where a rule has two forms),
+        # eight green assertions — the baseline, the four exemptions, the W9 both-directions pair,
+        # the multi-defect file — plus the real committed workflow read green, the pnpm test:gates
+        # drift claim checked from package.json, and a renamed gate script inside a copy of the real
+        # workflow proved caught. Without this step a silent mis-edit of the file above could make the
+        # gate exit 0 on anything, and CI would stay green for the wrong reason.
+        run: node scripts/tests/verify-workflow-structure.test.mjs
+
+      - name: H-12 pnpm-run-trap regression (positive + negative)
+        # 19 cases over preflight's check 10, each spawning the real
+        # scripts/preflight.mjs with --root against a throwaway fixture in TMP and a
+        # stub `pnpm` on the child's PATH: unset default, explicit `install`, the three
+        # measured non-installing values (error refuses; warn warns then RUNS; false runs
+        # silently), `prompt` — WARN, not PASS: it only refuses when stdin is not a
+        # terminal — an unrecognised value, an empty answer, absent pnpm, installed
+        # node_modules. The decisive cases write `verify-deps-before-run=error` into the
+        # fixture's own `.npmrc` and still require WARN, because pnpm reads that key only
+        # globally; a naive file rule is re-implemented and shown wrong both ways, and a
+        # wording case forbids claiming an install for a value that only falls through.
+        run: node scripts/tests/preflight-pnpm-trap.test.mjs
+
+      - name: Spec-copy output regression — the figures the generator prints (positive + negative)
+        # 11 cases over scripts/copy-master-spec.mjs, the tool that writes the file every
+        # `line N` citation in docs/ resolves against. Its stdout used to announce the copy
+        # with a UTF-16 code-unit count labelled "bytes" and a line count inflated by
+        # split's trailing empty element (defect: TEST_AND_RELEASE_REPORT §2.2). Each case
+        # builds a throwaway workspace in TMP, runs the generator with that as its cwd, and
+        # compares the printed figures to the file on disk — truth taken as Buffer length
+        # and as a count of newline characters, never by re-running the implementation's own
+        # expressions. Covers a multi-byte body, a pure-ASCII body (wrong either way, because
+        # the provenance header itself carries em dashes), a body with no final newline — the
+        # boundary that a blind "-1" would break — a CRLF body whose breaks must survive
+        # un-normalised, the printed body-start line against the real line, the alignment
+        # header both with and without docs/DOCX_MD_ALIGNMENT.json, and a source whose opening
+        # lines duplicate the generated header: the generator must exit 1 and write nothing.
+        # Fixtures only — this step never regenerates the committed copy.
+        run: node scripts/tests/copy-master-spec-output.test.mjs
+
+      - name: Shell syntax of the database scripts
+        # Syntax only. This is NOT the privilege proof and must never be reported
+        # as one — the behavioural matrix lives in the db-privileges job.
+        run: |
+          set -e
+          for f in scripts/db/*.sh; do
+            sh -n "$f"
+            echo "sh -n OK  $f"
+          done
+
+  # ── 2. Toolchain quality gate (Standard §2.3 step 9 / plan gate G0) ────────
+  # WILL FAIL until the minimum vertical slice of IMPLEMENTATION_PLAN §3 exists:
+  #   G0.2 typecheck has no source file to check (`src/` holds README.md only);
+  #   G0.3 `vitest.config.ts` sets passWithNoTests:false, so an empty suite fails
+  #        BY DESIGN — the fix is a real test, never a config change.
+  # That red state is information, not a defect in this file.
+  quality:
+    name: Install, lint, format, typecheck, test, build
+    runs-on: ubuntu-latest
+    needs: docs-gates
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # npm ships with Node, so this needs no third-party setup action.
+      - name: Install pnpm at the declared packageManager version
+        run: npm install -g "pnpm@${PNPM_VERSION}"
+
+      - name: Install dependencies
+        # --frozen-lockfile requires a committed pnpm-lock.yaml (B-02). It is the
+        # point of the gate: CI must not resolve a different tree than the one
+        # reviewed, and the four @payloadcms/* packages plus payload must stay on
+        # one identical version (ADR-002 lockstep).
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify the Payload lockstep constraint held
+        # Reads the installed tree directly rather than trusting a CLI flag form
+        # that cannot be exercised here. ADR-002: `payload` and the four
+        # @payloadcms/* packages must resolve to ONE identical version.
+        run: |
+          node -e '
+            const fs = require("fs");
+            const read = (p) => JSON.parse(fs.readFileSync(p, "utf8")).version;
+            const expected = "3.92.1";
+            const targets = {
+              "payload": "node_modules/payload/package.json",
+              "@payloadcms/db-postgres": "node_modules/@payloadcms/db-postgres/package.json",
+              "@payloadcms/next": "node_modules/@payloadcms/next/package.json",
+              "@payloadcms/richtext-lexical": "node_modules/@payloadcms/richtext-lexical/package.json",
+              "@payloadcms/plugin-cloud-storage": "node_modules/@payloadcms/plugin-cloud-storage/package.json",
+            };
+            let bad = 0;
+            for (const [name, file] of Object.entries(targets)) {
+              if (!fs.existsSync(file)) { console.log("MISSING  " + name); bad++; continue; }
+              const v = read(file);
+              console.log((v === expected ? "OK       " : "MISMATCH ") + name + " " + v);
+              if (v !== expected) bad++;
+            }
+            if (bad) { console.log("LOCKSTEP VIOLATION: " + bad + " package(s) not on " + expected); process.exit(1); }
+            console.log("lockstep holds: all five packages on " + expected);
+          '
+
+      - name: Formatting check (never writes)
+        run: pnpm format:check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck (strict)
+        run: pnpm typecheck
+
+      - name: Unit + integration tests
+        run: pnpm test
+
+      - name: Production build
+        # Directive §15: a successful build is proof the toolchain works. It is
+        # never accepted here as proof of a feature.
+        run: pnpm build
+
+  # ── 3. ADR-019 database privilege gate ─────────────────────────────────────
+  # Two halves with different readiness:
+  #   (a) the behavioural matrix — runnable as soon as a runner with Docker exists,
+  #       because the harness creates its own throwaway server and tables;
+  #   (b) the compose-backed harden + verify against the real migration stream —
+  #       armed only once Phase 2 produces a payload config and migrations.
+  db-privileges:
+    name: Append-only privilege enforcement (ADR-019)
+    runs-on: ubuntu-latest
+    needs: docs-gates
+    env:
+      # ADR-004's mandated image. Not 16-alpine: ALTER DEFAULT PRIVILEGES and
+      # information_schema visibility changed across that range and ADR-019 layers
+      # 1 and 3 depend on both (ARCHITECTURE_DECISIONS §7.2 Owner action 2).
+      IMAGE: postgres:18.6-alpine
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        run: npm install -g "pnpm@${PNPM_VERSION}"
+
+      # ── (a) behavioural matrix: 14 cases A–N, each attempted AS the role that
+      # would run it, plus verify-privileges.sh's grant-state assertions and its
+      # positive control. Self-contained: own container name (ndm-privtest-*),
+      # own volume, random per-run passwords, and it removes only what it created.
+      # It cannot reach a project or persistent database by construction.
+      - name: ADR-019 behavioural evidence (throwaway server)
+        run: |
+          set -o pipefail
+          IMAGE="$IMAGE" sh scripts/db/run-privilege-tests.sh 2>&1 | tee privilege-evidence.txt
+          rc=${PIPESTATUS[0]}
+          echo "harness exit code: $rc"
+          exit "$rc"
+
+      - name: Archive the privilege transcript as gate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: adr-019-privilege-evidence
+          path: privilege-evidence.txt
+          if-no-files-found: error
+
+      # ── (b) compose-backed enforcement against the real schema ──
+      - name: Detect whether the migration stream exists yet
+        id: armed
+        run: |
+          if [ -f src/payload/payload.config.ts ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "ARMED: payload config present — the harden/verify gate will run."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "NOT ARMED: src/payload/payload.config.ts is absent (Phase 2 has not started)."
+            echo "The db:harden / db:verify-privileges gate below is skipped, NOT passed."
+            echo "harden-append-only.sh would print 'nothing to harden' and exit 0 against an"
+            echo "empty database, and verify-privileges.sh would FAIL because a missing"
+            echo "relation is treated as a violation rather than as immutability holding."
+            echo "Skipping is honest; a green run against an empty database would not be."
+          fi
+
+      - name: Install dependencies for the migration step
+        if: steps.armed.outputs.exists == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate throwaway database credentials for this run
+        if: steps.armed.outputs.exists == 'true'
+        # Values are random per run, exported into the job environment for Compose
+        # variable substitution, never written into the repository and never
+        # promoted to a stored secret. They are not masked by GitHub, so no step
+        # below may echo them.
+        run: |
+          gen() { openssl rand -hex 24; }
+          {
+            echo "POSTGRES_DB=noujoude_ci"
+            echo "POSTGRES_SUPERUSER=noujoude_ci_admin"
+            echo "POSTGRES_SUPERUSER_PASSWORD=$(gen)"
+            echo "NDM_MIGRATION_PASSWORD=$(gen)"
+            echo "NDM_RUNTIME_PASSWORD=$(gen)"
+            echo "NDM_REPORTING_PASSWORD=$(gen)"
+            echo "NDM_BACKUP_PASSWORD=$(gen)"
+            echo "DATABASE_URI=postgresql://ndm_runtime@127.0.0.1:5432/noujoude_ci"
+            echo "DATABASE_URI_MIGRATION=postgresql://ndm_migration@127.0.0.1:5432/noujoude_ci"
+          } >> "$GITHUB_ENV"
+
+      - name: Start the local database (loopback only)
+        if: steps.armed.outputs.exists == 'true'
+        run: |
+          pnpm db:up
+          for i in $(seq 1 60); do
+            if docker compose exec -T postgres pg_isready -U "$POSTGRES_SUPERUSER" -d "$POSTGRES_DB" >/dev/null 2>&1; then
+              echo "postgres ready after ${i} attempt(s)"; exit 0
+            fi
+            sleep 2
+          done
+          echo "postgres never became ready"; docker compose logs postgres; exit 1
+
+      - name: Apply migrations as the migration role
+        if: steps.armed.outputs.exists == 'true'
+        run: pnpm migrate
+
+      # THE GATE ADR-019 NAMES. `db:harden` applies the per-table exception that
+      # ALTER DEFAULT PRIVILEGES cannot express; `db:verify-privileges` asserts the
+      # result and exits non-zero on any violation, so a grant widened by a later
+      # migration fails the build instead of surviving a deploy unnoticed.
+      - name: Harden append-only relations (ADR-019 layer 1-3)
+        if: steps.armed.outputs.exists == 'true'
+        run: pnpm db:harden
+
+      - name: Assert the privilege state — FAILS THE BUILD ON ANY VIOLATION
+        if: steps.armed.outputs.exists == 'true'
+        run: pnpm db:verify-privileges
+
+      - name: Re-run the behavioural matrix against the migrated schema
+        # (a) used a synthetic artifact/audit_event pair. This run exercises the
+        # real tables the migrations created, which is the stronger claim.
+        if: steps.armed.outputs.exists == 'true'
+        run: IMAGE="$IMAGE" sh scripts/db/run-privilege-tests.sh
+
+      - name: Stop and remove the CI database
+        if: always() && steps.armed.outputs.exists == 'true'
+        run: pnpm db:down
+
+  # ── 4. Security scanning ───────────────────────────────────────────────────
+  # Standard §12 check 8 is "dependency and secret scanning". Only the dependency
+  # half is expressible today. This job does not claim to satisfy check 8.
+  security-scans:
+    name: Dependency audit (secret scanning NOT YET IMPLEMENTED)
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        run: npm install -g "pnpm@${PNPM_VERSION}"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Dependency audit — high and critical must be zero or risk-accepted
+        # pnpm's own built-in advisory check; no new tool and no new dependency.
+        # A non-zero exit here is a real finding, not a flake: it must be resolved
+        # or carry a recorded Owner risk acceptance per severity (plan §3 row 14).
+        run: pnpm audit --audit-level=high
+
+      - name: NOTICE — secret scanning is not implemented (coverage hole H-4)
+        run: |
+          echo "=============================================================="
+          echo " Standard §12 check 8 is PARTIALLY met by this job."
+          echo "   dependency scanning : implemented (step above)"
+          echo "   secret scanning     : NOT IMPLEMENTED — no scanner selected,"
+          echo "                         no configuration authored, no baseline."
+          echo " This step exits 0 on purpose so the dependency half stays"
+          echo " visible and enforced. It must not be read as check 8 passing."
+          echo " Landing point: IMPLEMENTATION_PLAN §4 Phase 2 work item 2.10."
+          echo "=============================================================="

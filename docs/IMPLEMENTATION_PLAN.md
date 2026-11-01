@@ -1,0 +1,828 @@
+# Noujoude Digital Heritage Museum — Implementation Plan
+
+**Document ID:** NDM-PLAN-001
+**Version:** 0.1.0
+**Date:** 31 October 2026
+**Status:** Planning artefact. No item below this line is evidence of implemented behaviour.
+**Governing inputs:** `reference/Noujoude_Master_Execution_Directive_EN.md` §14 (phase sequence), §15 (evidence rule), §16 (docs), §17 (non-negotiables); `reference/Noujoude_Technology_and_Security_Standard_EN.md` §2.3, §11, §12, §13; Master Specification §20.6 release gates (lines 3133–3159), §20.7 completion rule (3161–3170) and §21.7 specification closure sequence (3244–3253), carried in §4A below; `docs/ARCHITECTURE_DECISIONS.md` (ADR-001 … ADR-025; blockers **B-01** and **B-09**); `docs/DATA_MODEL.md`; `docs/ARCHITECTURE.md`.
+
+---
+
+## 0. How to read this file
+
+Directive §17 line 318: *"Do not claim a feature is implemented without verifying behavior."*
+Directive §15 line 290: *"A route, React component, button, schema field, migration, or successful build alone is not proof of a completed feature."*
+
+Therefore every item here carries one of four labels, and nothing is promoted without a transcript:
+
+| Label | Meaning |
+|---|---|
+| `Executed` | Ran on this host; output recorded in `docs/TEST_AND_RELEASE_REPORT.md` |
+| `Planned` | Decided work with no execution yet |
+| `Blocked` | Cannot proceed; named blocker in §2 |
+| `Owner-gated` | Work can be built but not completed; named item in `docs/OWNER_INPUT_REGISTER.md` |
+
+**Workspace concurrency note (measured, and now discharged).** This file was first written while a parallel
+documentation workstream was active in the same workspace: `docs/ARCHITECTURE.md` (14,378 bytes, 01:52),
+`docs/DATA_MODEL.md` (57,189 bytes, 02:06), `docs/ARCHITECTURE_DECISIONS.md` growing to include ADR-018 (01:56),
+and the discrepancy log in `docs/MASTER_SPECIFICATION.md` growing from S-01…S-14 to S-01…S-15 (02:06). The note
+originally warned that every count below had to be re-measured before the plan could be treated as current.
+**That re-measurement was performed during the gap-closure batch (finding I-8)**, and the results are the figures
+now used in this file. That parallel workstream is no longer active, so the warning is retired rather than
+carried forward as permanent noise. **The two byte counts above are observations taken at the clock times shown,
+not current sizes** — both files have grown substantially since, and no current figure for any file should be
+taken from this paragraph. Current measurements live in §0's table and in `docs/TEST_AND_RELEASE_REPORT.md` §1.7,
+each with the command that produced it.
+
+Measurement method, recorded so any figure here can be re-produced rather than trusted — every count below came
+from one of these commands run against the live workspace on 31 October 2026:
+
+| Quantity | Command | Value |
+|---|---|---|
+| ADRs | `grep -c '^### ADR-' docs/ARCHITECTURE_DECISIONS.md` | **25** (IDs contiguous ADR-001…ADR-025, verified by `grep -o '^### ADR-[0-9]*'`) |
+| Documented Standard↔upstream discrepancies | `grep -c '^\*\*D-0' docs/ARCHITECTURE_DECISIONS.md` | **4** (D-01…D-04) |
+| Open compatibility assumptions | `grep -c '^\*\*A-C[0-9]' docs/ARCHITECTURE_DECISIONS.md` | **3** (A-C1…A-C3, new in this batch) |
+| Master Spec discrepancy log entries | `sed -n '65,80p' docs/MASTER_SPECIFICATION.md \| grep -cE '^[\|] S-[0-9]+'` | **15** rows, S-01…S-15 (line 88 of that file confirms the same set in prose). **This row previously read 16 and that was a measurement error, corrected in this batch.** The old command was `grep -o 'S-1[0-9]\|S-0[0-9]'` over the whole file, which also matches the *substring* `S-00` inside `VIS-001` (line 3215) and `OPS-001` (line 3241) — two unrelated acceptance-criterion IDs in Appendix G, not discrepancies. The corrected pattern anchors on the start of a table row. The backslash inside the bracket class is deliberate: it keeps the row separator escaped so this documentation table's own shape gate does not read it as an extra cell. **Method note for the next editor: an unanchored ID grep over this specification will produce phantom IDs, because Appendix G uses hyphenated prefixes ending in the same shape** |
+| Markdown files in `docs/` | `ls docs/*.md \| wc -l` | **12** |
+| All files in `docs/` | `ls -A docs/ \| wc -l` | **18** (12 `.md`, 4 `.json`, 1 `.csv`, 1 `.txt`) |
+| Executable scripts | `ls scripts/*.mjs scripts/db/*.sh \| wc -l` | **13** (9 `.mjs`, 4 `.sh`); **this row read 11 for two batches** because `verify-compose-config.mjs` (H-10) and `verify-workflow-structure.mjs` (H-11) were added without re-running the command in the middle column — the exact failure mode the rule below warns about |
+| `package.json` scripts | `node -e "console.log(Object.keys(require('./package.json').scripts).length)"` | **38** (grew 29 → 37 across the H-10 and H-11 batches, and +1 in the H-12 batch for `test:gate:pnpm-trap`; the count is a command output, not arithmetic — see rule four) |
+| Application source files | `find src -type f` | **1** — `src/README.md` |
+| Test files | `find tests -type f` | **1** — `tests/setup/env.ts` (a fixture guard, not a test) |
+| Requirement rows in the traceability matrix | `grep -cE '^[\|] REQ-' docs/REQUIREMENTS_TRACEABILITY.md` | **219** rows |
+| Distinct requirement IDs in the matrix | `grep -oE '^[\|] REQ-[^ \|]+' docs/REQUIREMENTS_TRACEABILITY.md \| sort -u \| wc -l` | **219** — one per row; `sort \| uniq -d` returns nothing. **This row previously read 206 and that was a measurement error, corrected in this batch.** The old pattern was `REQ-[A-Z]+-[0-9]+`, whose letter-only prefix class silently drops the 13 IDs that carry a digit inside the prefix: `REQ-A11Y-001…004` (4) and `REQ-I18N-001…009` (9). 219 − 13 = 206. The earlier prose explanation for the difference — that rows cross-reference other requirement IDs inside their cells — was invented, and is wrong: a whole-file `grep -o` of *all* `REQ-` mentions returns 209 total against 206 distinct under the same narrow pattern, so cross-references were never the cause. See the third rule below. *Rows* and *distinct IDs* remain two different questions; they happen to have the same answer here, and that must be measured, not assumed |
+| Physical files in `Noujoude.photo/` | `find Noujoude.photo -type f \| wc -l` | **85** = 82 catalogued (81 `PRESENT` + 1 `WRONG_FORMAT`) + 3 uncatalogued. The 3 are documented in `docs/MEDIA_AND_RIGHTS_GOVERNANCE.md` §6.5, not lost — see hole H-7 for why preflight's `82 of 82` PASS does not cover them |
+| Owner-input rows | `docs/OWNER_INPUT_REGISTER.md` | OID-01 … OID-22, all `Outstanding` |
+| Blockers | §2 below — count only the rows between the `## 2.` and `## 3.` headings, with `awk '/^## 2\./,/^## 3\./' docs/IMPLEMENTATION_PLAN.md \| grep -cE '^[\|] \*\*B-[0-9]'` | **B-01 … B-10** (10 rows; no gaps, no duplicates — see the ID-hygiene note). **Two ways to get this wrong, both measured:** an unscoped `grep -cE '^[\|] \*\*B-[0-9]'` over this file returns **14**, because §10.2 restates B-05…B-08 as index rows pointing back at §2 — the restatement is deliberate, double-counting it is not. And the pattern this row used to carry, `^[\|] \*\*B-0[0-9]`, silently matches nothing above B-09: it printed **9** the morning **B-10** was added, i.e. it was one row stale *and* blind to the reason. A counting pattern that cannot see the thing that broke it is hole H-9's lesson in a new costume |
+| Coverage holes | `grep -cE '^[\|] \*\*H-[0-9]' docs/IMPLEMENTATION_PLAN.md` | **H-1 … H-12** (12 rows; H-7, H-8 and H-9 closed 1 Nov, H-10 and H-11 found and closed the same day, **H-12 found the same day and still OPEN because its remedy is an Owner action** — OD-7) |
+| Risks | `grep -cE '^[\|] \*\*R-[0-9]+\*\*' docs/IMPLEMENTATION_PLAN.md` | **R-01 … R-14** (14 rows; R-14 added in this batch) |
+| Citation-gate output | `node scripts/verify-citations.mjs` | 12 files, **528** fragments; `VERIFIED 426`, `LINE_OFF 0`, `NOT_FOUND 0`, `SELF_RECORDING 10`, `PROJECT_RECORD 10`, `DEFINED_TERM 6`, `NO_LINE_REF 82`, of which **0** hold verbatim requirement text with no citation; exit **0**. Identity: 426 + 10 + 10 + 82 = 528. Bare references: **1,226** checked, 0 defects. The count moved 506 → 519 → 522 → 525 → 523 → 524 → 525 → 526 → 527 → 528 as this window's own prose grew and as quotations were converted to code spans; the gate went **red three times** on 1 Nov 2026 — in §4B.1, in §8's H-11 row, and in R-08 plus `docs/TEST_AND_RELEASE_REPORT.md` §1 — each time on a quoted fragment that inherited the `line N` reference sitting on the same physical row, and each repair is recorded in `docs/CHANGELOG.md` §K rather than quietly undone. **The H-12 batch stayed out of the red on every run:** the new rows quote code spans and measured command output, not `line N` references, including the §J supersession note and the §L value table added after the guard matrix was measured. The §M correction also stayed green, and its one-fragment delta falls entirely in `NO_LINE_REF` (81 → 82) — the class is printed by the tool; which sentence became it is not attributed |
+| Table-gate output | `node scripts/verify-tables.mjs` | `OK: 196 tables in 12 markdown files, each with a header, a delimiter row and a uniform column count`; exit **0**. **This figure was 192 before this batch and 193 partway through it**, which is how hole H-9 was found: §8's table had been split by a `---` between H-6 and H-7. The gate reported the split as a healthy table. Repaired, then swept for headerless runs across all twelve files → **0 orphans**. §4B.1 added the twelve-check mapping table → **194**, `docs/CHANGELOG.md` §L's measured `verify-deps-before-run` matrix table → **195**, and `docs/TEST_AND_RELEASE_REPORT.md` §2.2's red-green evidence table → **196** (one added, none removed, so the delta is attributable here in a way the fragment count is not). See the fourth rule below before trusting any figure in these last three rows |
+| Preflight output | `node scripts/preflight.mjs` | `10 checks: 1 FAIL, 3 WARN, 6 PASS`; exit **1** — the FAIL is `Node.js 24.19.0` vs `engines.node ">=24.22.1 <25"` (B-01). Check 8 is the `docker-compose.yml` contract, check 9 the CI workflow structure contract (both `PASS`), check 10 the `pnpm run` dependency-check trap (`WARN`, because the guard is the Owner's to set — hole H-12); the other two WARN lines are `.env` missing (B-03) and the `Noujoude.photo/` reconciliation (3 uncatalogued files — 1 image, 2 non-image manifests/notes — 1 `WRONG_FORMAT`, 18 `NAME/PIXEL` mismatches, catalog rows 82 against physical files 85: B-06 and the Owner's asset-governance work, not a defect in the checker) |
+| Workflow-gate output | `node scripts/verify-workflow-structure.mjs` | `OK: .github/workflows/ci.yml parses as block YAML and its 4 jobs name every step, reference real jobs, invoke scripts that exist, agree with pnpm test:gates, and carry no literal secret (10 rules)`; exit **0**. Its second line is a limit, not a footnote: the checker is a structural contract over the block subset, **not** a YAML conformance parser and **not** a CI run |
+| `pnpm run` guard state | `node -e "require('child_process').execSync('pnpm config get --global verify-deps-before-run',{stdio:'inherit'})"` (a config read; resolves and downloads nothing) | `undefined` → pnpm's built-in default `install` is in force, so the trap is **armed** and preflight check 10 prints `WARN`. (The same command also prints `[WARN] Using --global skips the package manager check for this project`; that line is pnpm's own notice, not a failure, and check 10 parses `undefined` from the output.) Remedy: OD-7; measured 1 Nov 2026. See hole **H-12** (§8), blocker **B-10** (§2) and `.npmrc` |
+
+A rule for anyone editing this file: these numbers are *outputs*, not prose. When a row changes, re-run the
+command in the middle column and paste the result — do not increment the figure by hand. Three separate
+count-drift incidents in this project's history (citation totals moving 483→485→486→485→**506**, table counts
+171→174→180→**192**, and a risk register claiming twelve empty provider fields where the Owner register listed
+nineteen) all came from hand-incrementing a number that a command could have printed.
+
+A third rule, added in this batch because two more incidents were found here — **and these two had a different
+cause.** Both were *pattern* errors, not arithmetic errors, and a pattern error is worse: it prints a clean,
+plausible, reproducible wrong number.
+
+- The discrepancy-log row reported **16** IDs `S-00…S-15`. `S-00` does not exist. `grep -o 'S-0[0-9]'` matched
+  the substring inside `VIS-001` and `OPS-001` in Appendix G. Real answer: **15** rows, S-01…S-15.
+- The distinct-requirement-ID row reported **206** against 219 rows, and explained the gap as cross-references
+  inside cells. The explanation was invented. `REQ-[A-Z]+-[0-9]+` silently drops `REQ-A11Y-*` (4) and
+  `REQ-I18N-*` (9); 219 − 13 = 206. Real answer: **219** distinct IDs, one per row, no duplicates. This exact
+  trap had already been caught and written up once before — `docs/CHANGELOG.md` lines 192–195 records the same
+  206-vs-219 error and its correct pattern — and the lesson was then lost when the figure was retyped into this
+  table. A recorded lesson that is not re-read is not a control.
+
+The defensive form for both: anchor the pattern to the start of a row, and include digits in any ID-prefix
+character class. When two different commands on the same file disagree, the disagreement is the finding.
+
+A fourth rule, learned the hard way in this batch: **the last three rows are self-referential.** Writing about a
+gate inside `docs/` changes the gate's own input, so those three figures are only ever correct as of the most
+recent run, and any edit to `docs/` invalidates them until the gates are re-run. They are recorded because a
+reproducible wrong-number is more useful than an unreproducible right one — but §4B is the acceptance authority,
+not this table. And an exit code of **0** from either gate is a statement about what that gate checks, not about
+the documents: hole H-9 is the proof, since the table gate passed a split, headerless table for a whole batch.
+
+---
+
+## 1. Current state — honest accounting
+
+| Area | Actual state | Evidence |
+|---|---|---|
+| Phase 0 — workspace & reference verification | **Complete.** Workspace inspected; all reference documents read in full; DOCX↔Markdown alignment measured, not assumed; `Noujoude.photo/` physically audited (82 catalog rows, one per expected asset); originals preserved and fingerprinted | `docs/ASSET_INVENTORY_AUDIT.csv`, `docs/asset-audit-summary.json`, `docs/DOCX_MD_ALIGNMENT.json`, `docs/REFERENCE_INTEGRITY.json` |
+| Phase 1 — architecture & foundations | **Complete at the specification and configuration level only.** 25 ADRs recorded (ADR-001 … ADR-025, counted by `grep -c '^### ADR-'` = 25); compatibility matrix re-verified against official sources (not inherited from the Standard's 30 Oct pass), with the pinned adapter's exact transitive pins recorded and PostgreSQL 18.6 compatibility held open as assumption A-C1; configuration authored; preflight gate built and executed. This batch added three artefacts: `.github/workflows/ci.yml` (authored, never executed), `.prettierignore` (closes risk R-14) and the `format:check` script (I-10) | `docs/ARCHITECTURE_DECISIONS.md` §3, §3.2, §4, §5, §6, §7; `package.json`, `tsconfig.json`, `eslint.config.mjs`, `vitest.config.ts`, `playwright.config.ts`, `docker-compose.yml`, `.env.example`, `.gitignore`, `.prettierignore`, `.github/workflows/ci.yml`, `scripts/*` |
+| Application initialization in `src/` | **Not done.** `src/` holds `README.md` only. No Next.js app, no Payload config, no collections, no components | directory listing (`find src -type f` → 1 file); preflight `PASS \| src/ \| contains README.md` |
+| Dependencies | **Not installed.** `pnpm install` has never been run; `node_modules/` and `pnpm-lock.yaml` do not exist | filesystem check; preflight exit 1 |
+| Database | **Not provisioned for this project.** No container or volume belonging to this build was started, no roles created, no migration written, no schema. **Re-measured 1 Nov 2026, which corrects the 31 Oct reading:** the engine now answers (`docker info` exit 0, server 29.9.2; `docker compose version` → 5.6.1) and `postgres:18.6-alpine` is in the local cache (433 MB), so the image-presence value that §2's B-09 recorded as **UNKNOWN** is now **PRESENT**. The one ADR-019 evidence run that aborted on 31 Oct **has since completed, with exit 0**, on 1 Nov 2026 (`docs/A5_PRIVILEGE_EVIDENCE.txt`) | `pnpm db:up` never executed; `pnpm db:privilege-evidence` → exit 0 on 1 Nov 2026 against a throwaway container and volume, both removed by the run; probe tables in `docs/ARCHITECTURE_DECISIONS.md` §7.2.1 (current) and §7.2.2 (historical) |
+| CI | **Authored, structurally checked, never executed.** `.github/workflows/ci.yml` exists with four jobs; no YAML conformance parser exists on this host, so `scripts/verify-workflow-structure.mjs` enforces ten structural rules over it (exit 0, hole H-11) — that is a contract, not a run; and there is no repository to run it in | file header `STATUS: **AUTHORED. NEVER EXECUTED.**`; `docs/TEST_AND_RELEASE_REPORT.md` §1.7 |
+| Tests | **None exist.** Zero unit, integration, e2e or a11y specs. `tests/setup/env.ts` is a fixture guard only | `find tests -type f` → one file |
+| Public routes / Control Center | **Zero implemented** | no `src/app` |
+| Git | **No repository.** `git rev-parse --is-inside-work-tree` → `fatal: not a git repository`; Directive Phase 1's "Git checkpoint" is unmet | command output, re-measured 31 Oct 2026 |
+| Content | **Zero facts available.** 82/82 assets recorded as `Rights Status: UNKNOWN` or `Awaiting Rights Review`; 82/82 `Brand/Curatorial Approval: Not Approved`; no artifact, story, institutional or contact facts exist. **Unchanged by this batch**, which produced no new rights evidence and modified no asset | `docs/ASSET_INVENTORY_AUDIT.csv` columns 12 and 13; preflight `PASS \| Noujoude.photo/ integrity \| all 82 audited assets match their recorded SHA-256` |
+
+Net: the build has a verified evidence layer and an unexecuted application layer. Nothing product-facing exists.
+
+---
+
+## 2. Gate table — what blocks, what unblocks, who acts
+
+| ID | Blocking condition | Blocks | What unblocks it | Who acts | Verification of release |
+|---|---|---|---|---|---|
+| **B-01** | Host Node.js **v24.19.0** violates `package.json` `engines.node: ">=24.22.1 <25"`; `payload@3.92.1` and `@payloadcms/next@3.92.1` declare `engines.node "^22.23.4 \|\| >=24.22.1"` (ADR-002/ADR-003, ARCHITECTURE_DECISIONS §2) | `pnpm install`; therefore typecheck, lint, test, build, migrations, all runtime phases (2–9) | Install **Node 24.22.2** (current newest 24.x, LTS *Krypton*). No silent workaround, no `--engine-strict=false` escape hatch | **Owner / environment operator.** Not an architect action; the ADR explicitly declines to bypass it | `node scripts/preflight.mjs` exits 0 on the Node line; `node -v` reports `v24.22.2` |
+| **B-02** | Chosen scope of this batch excluded dependency installation and application code | Everything B-01 also blocks, even after B-01 clears | Authorize the install step; then run §3 gate G0 | **Owner** (scope authorization), **architect** (execution) | `pnpm-lock.yaml` exists and is committed; four G0 commands exit 0 |
+| **B-03** | `.env` does not exist (`.env.example` is present and populated only with placeholders) | `pnpm db:up`, migrations, any runtime | Copy `.env.example` → `.env`, fill local dev secrets. `.env` is git-ignored; never commit it | Environment operator; architect supplies the template | preflight `.env` line moves WARN→PASS |
+| **B-04** | No Git repository | Directive Phase 1 line 251 "Git checkpoint"; Standard §12 line 281 "Commit only coherent working milestones"; any reviewable diff history | `git init` + first checkpoint commit of the Phase 0/1 artefacts. Deliberately not performed here: initializing a repository is a user-visible decision the ADR left open (ARCHITECTURE_DECISIONS §7 item 6) | **Owner / environment operator** decision; architect performs the commits | `git log --oneline` shows a checkpoint; `git status` clean |
+| **B-05** | Object-storage vendor, AI provider/model, hosting/region, email/SMTP, backup target all unselected | Phases 5 (media pipeline), 7 (AI Curator), 8 (backup/restore, telemetry export), 9 (release) | Owner selections + cost acceptance — `OWNER_INPUT_REGISTER.md` OID-19, OID-20 | **Owner** | provider records in `docs/SECURITY_AND_PERMISSIONS.md` / `MEDIA_AND_RIGHTS_GOVERNANCE.md`; adapter tests against the chosen vendor |
+| **B-06** | Rights and approval for all 82 assets unresolved | Phase 4/5 public media; any published artifact imagery | Owner-supplied rights statements and approvals (OID-15, OID-16, OID-17) | **Owner** | `docs/ASSET_INVENTORY_AUDIT.csv` rights/approval columns populated by an Owner record, not by tooling |
+| **B-07** | Institutional facts absent (legal identity, location, founder story, contact details, accreditation claims) | About / Contact / footer / policy routes publish real text; Module 16 institutional profile | Owner facts (OID-01 … OID-07, OID-21) | **Owner** | `docs/OWNER_INPUT_REGISTER.md` rows flip to `Provided` with the source document named |
+| **B-08** | **CI pipeline is now AUTHORED, structurally machine-checked, and has never run.** `.github/workflows/ci.yml` exists with four jobs (`docs-gates`, `quality`, `db-privileges`, `security-scans`) and declares `STATUS: **AUTHORED. NEVER EXECUTED.**` in its header. Two things still prevent a run: there is no repository (B-04), and the file has never been seen by GitHub's own parser — no YAML parser exists on this host, so what was substituted is the ten-rule structural contract of hole **H-11** (`scripts/verify-workflow-structure.mjs`, exit 0), which is a contract over the block subset, **not** a YAML conformance check | Standard §12's twelve required checks have a *definition* but no *runner that has run*; the release gate is still unenforceable in practice | A green run of the pipeline on a real commit, with the transcript recorded in `docs/TEST_AND_RELEASE_REPORT.md`. Note the file's own honesty rule: job `quality` **will fail** until the minimum vertical slice exists, and the fix for a red G0.3 (`pnpm test`) is a real test, never a config change | Architect (vendor selection under delegated authority — `docs/OWNER_INPUT_REGISTER.md` §5 records the CI vendor as explicitly **not** an Owner input); **Owner** for B-04, which gates the first run | a green run of the pipeline on a commit; transcript in the test report |
+| **B-09** | **CLEARED IN THIS ENVIRONMENT BY OBSERVATION, 1 Nov 2026 — not a closed Owner decision, and re-check before relying on it.** The container engine now answers: `docker info` exit 0 (server 29.9.2, Compose 5.6.1) and `postgres:18.6-alpine` is present in the local cache (433 MB). The blocker as minted on 31 Oct read: `wsl -l -v` → `docker-desktop **Stopped**` with every daemon command at **rc=124 / 0 bytes**, while client-only commands answered normally; earlier the same day the engine was **Running and returning `500 Internal Server Error`** on `/containers/create`. Both signatures are preserved in `docs/ARCHITECTURE_DECISIONS.md` §7.2.1 (current) and §7.2.2 (historical) because they need different remedies, and because an engine that is up now is not evidence it stays up | What it blocked: `pnpm db:up`, every migration, and the ADR-019 privilege proof (`pnpm db:privilege-evidence`, i.e. task A.5). **A.5 has now run — exit 0, all 14 A–N cases matching** — so this row no longer blocks anything that is still open. What still blocks `pnpm db:up` and Phase 2 entry is **B-03** (`.env`, OD-3) and **B-01/B-02**, not the engine. Assumption **A-C1** (PostgreSQL 18.6 compatibility) also stays open: the run proves 18.6 *serves* the ADR-019 grant/trigger/RLS design, not that Payload's migration stream runs on it | Nothing further for A.5. For a real instance: keep the engine running, authorize the `.env`, then `pnpm db:up` | **Owner / environment operator** owns the engine's continued availability; nothing here was started by this project | `docker info` exits 0 (✔ measured 1 Nov 2026); preflight Docker line reports `PASS \| Docker \| server reachable; compose: 5.6.1` (✔ measured); `pnpm db:privilege-evidence` prints the 14 A–N cases (✔ measured, 1 Nov 2026). A.5 needed **only** this cleared — not B-01, not B-02, not B-03 (finding F-B, now demonstrated rather than asserted) |
+| **B-10** | **`pnpm run <script>` installs before it runs, and no project-scoped setting stops it.** Measured 1 Nov 2026 when the documented read-only command `pnpm run audit:workflow` never reached the script: pnpm 11.21.0 first checks whether the dependencies declared in `package.json` exist and, finding `node_modules` absent — the *agreed* state until OD-2 — began an install against the public registry (`Progress: resolved 669 …`). Killed. The workspace gained nothing: no `node_modules`, no `pnpm-lock.yaml` (re-checked after the kill). Packages were written to the machine-level content-addressable store at `E:\.pnpm-store\v11` (`pnpm store path`), which is outside this project and outside this batch's authority to clean. Four remedies were tested here, not reasoned about from documentation, and all four failed or were unavailable; see hole **H-12** (§8) and `.npmrc`, which deliberately sets no options | Every `pnpm <name>` entry point in `docs/` — `test:gates`, the five `audit:*` and gate commands, `db:up`, `typecheck`, `lint`, `format:check` — is a latent unauthorised dependency install until the guard is set, which is the action OD-2 withholds. The `docs-gates` CI job is **not** exposed: it invokes `node scripts/…` directly and was verified to contain no `pnpm` call; the other three jobs install explicitly first, so the check is what they want | One of two Owner actions, both machine-level: `pnpm config set verify-deps-before-run error --global` (once per machine) or per shell `pnpm_config_verify_deps_before_run=error pnpm run <script>`. Measured form: refuses in about two seconds with `[ERR_PNPM_VERIFY_DEPS_BEFORE_RUN]`, exit 1, nothing resolved, nothing downloaded. Until one is set, this phase executes its checks as `node scripts/<name>.mjs`, which is what `docs/TEST_AND_RELEASE_REPORT.md` §9 prints | **Owner / machine administrator** (OD-7). Writing a machine-level pnpm config from inside this batch is the kind of environment change the standing constraints reserve to the Owner | `node scripts/preflight.mjs` check 10 prints `PASS \| pnpm run deps-before-run` instead of the current `WARN \| … TRAP ARMED: verify-deps-before-run is install (built-in default)`, and `pnpm run audit:workflow` then exits 0 on the gate's own `OK:` line rather than on a `Progress:` line. Neither is observable until the Owner acts; the WARN is the honest present state (**10 checks: 1 FAIL, 3 WARN, 6 PASS**, exit 1, measured) |
+
+**ID hygiene note (a collision this window created and fixed).** The container-engine blocker was first
+written into `docs/ARCHITECTURE.md`, `docs/TEST_AND_RELEASE_REPORT.md` and `docs/CHANGELOG.md` as **B-03**,
+which is already this table's `.env` blocker. Duplicating an ID across two meanings is precisely the defect
+class this register exists to prevent, so the engine blocker was renumbered to **B-09** and **31 references**
+across seven documents were re-pointed (ARCHITECTURE 5, ARCHITECTURE_DECISIONS 5, CHANGELOG 4,
+TEST_AND_RELEASE_REPORT 11, SECURITY_AND_PERMISSIONS 3, DATA_MODEL 2, REQUIREMENTS_TRACEABILITY 1 — counted
+with `grep -o`), leaving the `.env` rows and the unrelated `RB-03`/`RB-09` risk IDs untouched. The register
+(§2) is the authority for what an ID means; a document outside it must not mint one.
+
+**Sequencing fact:** B-01 is the only blocker that blocks *everything else technical*. **B-09 briefly blocked the
+whole database and privilege-proof track on its own** — it sat in front of `pnpm db:up`, every migration, and the
+ADR-019 evidence run, so clearing B-01 alone would not have unblocked Phase 2's first work item. That is now
+history for the evidence run: B-09 cleared by observation on 1 Nov 2026 and A.5 executed. **The binding blocker on
+the database track is B-03** (`docker compose config` exits 1 on seven unset `.env` secrets), with B-04/B-08 behind
+it. B-05/B-06/B-07 block
+*content and publishing*, not engineering. Directive §18 line 333 requires continuing all work that does not
+depend on an external credential, Owner fact, legal approval or hosting commitment — so B-01 and B-04/B-08 are
+the critical path; the Owner facts are a parallel track that must never be used as an excuse to stall
+engineering. B-09 is the first blocker in this register that was created by the environment changing *during*
+the work rather than being discovered at the start, which is why §2's heading count moved from one to two in
+`docs/ARCHITECTURE_DECISIONS.md` — and back to one again on 1 Nov 2026, the same heading measured twice.
+
+**Finding F-B — one prerequisite that must NOT be added to A.5.** The ADR-019 behavioural matrix
+(`scripts/db/run-privilege-tests.sh`, task A.5) is pure POSIX shell driving the `docker` CLI, `timeout` and `od`;
+every SQL statement is executed by `psql` **inside** the container. It reads no `package.json`, resolves no Node
+module, never invokes `node` or `pnpm`, and generates its own throwaway credentials per run without writing them
+to a file. Its **only** hard prerequisite was therefore **B-09** — and B-09 has since cleared by observation, so
+the prerequisite no longer exists. It does **not** require the Node upgrade (B-01),
+does **not** require `pnpm install` (B-02), and does **not** require `.env` (B-03). Any schedule that places A.5
+behind B-01 is wrong, and this note exists so the error is not reintroduced: the A.5 evidence run is available
+the moment the Owner starts the container engine, and it is the single cheapest piece of real security evidence
+in the entire plan.
+
+### 2.1 The Gate 0 → Owner → ERD → traceability order is a sequence, not a cycle (I-9)
+
+Three ordering constraints interact, and read carelessly they look circular. They are not. Stated explicitly:
+
+1. **Gate 0 — Product Baseline** (Master Spec line 3137): *"Master Specification adopted; requirement IDs
+   assigned; scope and change-control authority established."* Approver: **Owner** (§4A below).
+2. **B-04 — Git initialization** is an Owner/environment decision, and it gates the first CI run (B-08), which
+   gates the enforceability of Standard §12.
+3. **§21.7 closure sequence** (lines 3244–3253): step 5, line 3250, *"Approve the physical ERD and data dictionary
+   against this logical model."* must precede step 7, line 3252, *"Verify implementation against requirement IDs
+   and test evidence."* — because verifying a requirement's implementation location against a schema that has
+   not been physically approved would certify something that is about to change (§4A.1).
+
+The apparent cycle is: *Gate 0 needs the Owner, the Owner needs the traceability record to adopt sensibly, and
+the traceability record (step 7) needs the physical ERD (step 5), which needs Phase 2, which needs Gate 0.*
+The resolution is that **Gate 0 does not require completed traceability.** Its three conditions are adoption,
+ID assignment, and change-control authority. Requirement **IDs are already assigned** — `docs/REQUIREMENTS_TRACEABILITY.md`
+exists and carries them. Adoption and change-control authority are Owner acts that need the *specification*, not
+the *implementation record*. Step 7's verification is a **later** obligation that consumes Gate 0's output; it
+does not feed it.
+
+So the graph is a directed acyclic one with two kinds of root node:
+
+```
+ROOT (Owner / environment, no predecessor)          ENGINEERING (has predecessors)
+──────────────────────────────────────────          ────────────────────────────────
+OD-4  git init + first checkpoint (B-04)   ───────▶ CI first run (B-08) ──▶ Standard §12 enforceable
+OD-1  Node upgrade (B-01)                  ──┐
+OD-2  authorize pnpm install (B-02)        ──┼────▶ G0.1 install ──▶ G0.2/G0.3/G0.4 ──▶ Phase 2 work
+OD-5  start the container engine (B-09)    ──┘                                    │
+OD-3  create .env (B-03)                 ─────────▶ pnpm db:up ──▶ pnpm migrate ─┤
+                                                                                  ▼
+OD-6  adopt the Master Specification                          step 5: physical ERD approved (Owner + architect)
+      + change-control authority (Gate 0) ──────────────────────────────────────▶ │
+                                                                                  ▼
+                                                            step 7: verify against requirement IDs
+
+OD-7  arm the pnpm run guard (B-10) ──▶ every documented `pnpm <name>` stops being a latent install
+        (one machine-level command; independent of the others — diagnostics run meanwhile as
+         `node scripts/<name>.mjs`, which is what §9 of the test report prints)
+```
+
+Two properties of that graph are the point of writing it down. **First**, every chain terminates in an Owner or
+environment action — there is no node whose predecessor set includes itself, so there is no cycle and nothing
+here may be described as one. **Second**, the only edge that runs *from* engineering *back toward* an Owner
+decision is a reporting edge, not a dependency edge: the Owner is better informed after step 5 than before it,
+but Gate 0 does not wait for step 5. Conflating "informs" with "depends on" is exactly how a sequence gets
+mis-drawn as a cycle.
+
+Practical consequence, and the reason this subsection exists: **OD-5 (start the container engine) and OD-6
+(adopt the specification) are not on the same chain.** OD-5 unlocks A.5 immediately, with no other prerequisite;
+OD-6 unlocks Gate 0. An Owner who can only do one thing today should do OD-5, because it produces real
+behavioural security evidence at zero cost and zero scope change.
+
+**What 1 November 2026 changed about that paragraph.** OD-5 was never performed by the Owner, and it did not have
+to be: the engine answered on a routine re-probe (`docker info` rc=0, server 29.9.2, compose 5.6.1), the image
+`postgres:18.6-alpine` was already cached, and A.5 executed with exit 0 (`docs/A5_PRIVILEGE_EVIDENCE.txt`). So the
+advice to do OD-5 first is **spent** — it produced its evidence, and no Owner action was the reason it was
+possible. Two things follow, and neither is a softening of the other. First, OD-5 leaves the Owner queue: what
+remains under it is an *availability expectation* (Phase 2 entry re-probes the engine rather than inheriting this
+reading, which is the third state change this engine has gone through in two days). Second, the analysis was
+right about the chain and wrong about who had to pull the trigger; the chain itself — A.5 needing B-09 alone —
+held exactly as written, which is the reason finding F-B was recorded.
+
+---
+
+## 3. Phase 2 gate G0 — the Standard §2.3 step-9 preflight
+
+Standard §2.3 lists nine pre-scaffolding steps; step 9 (line 77) is: *"Run a clean install, typecheck, test, and production build before proceeding."* This is the **first gate of Phase 2**: no domain model is written until it passes.
+
+| # | Command | Must produce | Honest caveat |
+|---|---|---|---|
+| G0.1 | `pnpm install` | exit 0; `pnpm-lock.yaml` written; the four `@payloadcms/*` packages + `payload` resolve to the **identical** version (ADR-002 lockstep constraint); `engines` respected | Fails today at B-01. Also re-verify ARCHITECTURE_DECISIONS §3 before installing (§8 re-verification trigger) |
+| G0.2 | `pnpm typecheck` | exit 0 with `strict: true`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes` active (tsconfig.json) | Meaningless until at least one source file exists |
+| G0.3 | `pnpm test` | exit 0, ≥1 real test executed | **`vitest.config.ts` sets `passWithNoTests: false`** — an empty suite fails by design. Good: it forbids a hollow green gate. Consequence: G0 needs a first genuine domain assertion (a state-machine or validator test), not a placeholder |
+| G0.4 | `pnpm build` | exit 0; production bundle emitted | Needs a minimal app shell (`src/app/layout.tsx` + one route). Directive §15: a successful build alone is not proof of a feature; it is only proof the toolchain works |
+
+Gate release evidence: all four transcripts appended verbatim to `docs/TEST_AND_RELEASE_REPORT.md` §3 with exit codes, and the resolved tree written into ARCHITECTURE_DECISIONS §5.1 (marking §5 "candidate pinned set" superseded).
+
+Minimum vertical slice required *before* G0 can be attempted (this is the true first work item of Phase 2):
+1. `src/app/layout.tsx`, `src/app/[locale]/page.tsx` rendering a hard-coded non-factual string and no media.
+2. `src/payload/payload.config.ts` with localization `en`/`ar` and no collections.
+3. One real unit test in `src/domain/` (e.g. locale-slug validation) that can fail.
+4. `pnpm db:up` against `postgres:18.6-alpine` and a connectivity check as the `ndm_runtime` role — never as the bootstrap superuser (ADR-005).
+
+---
+
+## 4. Phase-by-phase plan
+
+Phase numbers follow Directive §14. Directive §14 line 239 says "Execute in dependency-aware batches. Do not stop after planning."
+
+### Phase 2 — Domain and database
+**Objective:** the museum's logical domain model becomes a physical, migrated, constrained schema: countries, collections, artifacts, stories, sources, claims, evidence, provenance, rights, assets, translations, workflows, roles, revisions, audit, inquiries, AI sources.
+**Entry criteria:** B-01 cleared; a reachable container engine (**measured cleared, 1 Nov 2026: `docker info`
+exits 0, server 29.9.2** — the criterion is re-probed at Phase 2 entry, not inherited); G0 passed; Git repository
+exists (B-04); `.env` present (B-03 — **now the binding gate on `pnpm db:up`**, verified by `docker compose config`
+exiting 1 on seven unset secrets).
+**Work items**
+- 2.1 Collections/globals for the 16 entity families named in Master Spec §8.2 (line list at 1030–1051), each with the eight separate state dimensions of ADR-009 — no single `status` field (Master Spec line 1524).
+- 2.2 **`OwnershipStatement` + `AuthenticityAssessment` + structured `ConditionReport`** (ADR-011; spec gap S-04 at lines 1019–1020 / 1291–1295). Specification *completion*, not extension.
+- 2.3 **`PublicationRecord` keyed by (entity, locale)** carrying state, timestamps, publisher, scheduled time, route/slug version (ADR-008, resolving D-02; Master Spec line 1352). Per-locale editorial+publication state is mandatory (line 1453) and cannot rest on `experimental.localizeStatus`.
+- 2.4 `ArtifactCountryRelationship` with the controlled type list *Issued In / Produced In / Originated In / Found In / Associated With / Used In* (ADR-012, S-06 line 1376); MediaAsset↔RightsRecord join (S-05, line 1373).
+- 2.5 Country exhibition state as **six** values (ADR-010: lines 1613–1617 + 3723), with `Hidden / Not Public` suppressing navigation, search, sitemap and AI exposure.
+- 2.6 Indexes/constraints/FK deletion rules per Standard §3.3; `pg_trgm` + native FTS for search (ADR-006, S-08). No `pgvector` column, and the `VECTOR(768)` figure is explicitly not adopted (ADR-007, S-07).
+- 2.7 Seed **only non-factual structural data**: the six country records with truthful states, the eight collection categories, the eleven canonical roles (§17.2 A–K). No artifact, no claim, no image, no institution fact.
+- 2.8 `pnpm generate:types` committed output; every schema change a committed migration (Standard §3.4).
+- **2.9 Rate limiting gets a home or the hint is deleted** (I-6; closes coverage hole H-1 and risk R-10). Standard §5 line 174 requires rate limits on authentication, contact forms, search, AI, upload and public expensive routes. `.env.example:75` already declares `RATE_LIMIT_REDIS_URL=` with no service, no package, no version and no ADR behind it. This item therefore has a strict order: **(a)** author the ADR that selects the rate-limit store and its failure mode — what happens to a protected route when the store is unreachable (fail-open is a security defect; fail-closed is an availability defect; the ADR must choose and say why) — and only **(b)** then write rate-limit code. `@payloadcms/kv-redis` is recorded in ADR-025's measurement as a *candidate input*, not a decision, and must not be installed by default just because it was found. **(c)** Whichever path is chosen, the declared-but-absent state is not an acceptable exit: either the service exists in `docker-compose.yml` and the key resolves, or `RATE_LIMIT_REDIS_URL` is removed from `.env.example`. Acceptance evidence: an ADR number in `docs/ARCHITECTURE_DECISIONS.md`, a `grep -n 'RATE_LIMIT' .env.example docker-compose.yml` transcript showing declaration and provider agree, and one executed test proving a burst is throttled and that the unreachable-store mode behaves as the ADR states.
+- **2.10 Dependency scanning *and* secret scanning — both halves, or the check stays unmet** (I-6; closes coverage hole H-4, Standard §12 item 8, Standard §5 line 178). The two halves are separated deliberately so this item cannot be closed by doing only the easier one. **Half A — dependency scanning:** authored as CI job `security-scans` (`pnpm audit --audit-level=high`) in `.github/workflows/ci.yml`, **never executed**; it additionally needs the vulnerability-response process named in `docs/SECURITY_AND_PERMISSIONS.md` — who triages, within what window, and what blocks a release. **Half B — secret scanning:** **NOT IMPLEMENTED.** No scanner is referenced anywhere in the workspace and `ci.yml` declares that absence in its own header rather than silently omitting the step. Selection is an engineering default under Standard §13, not an Owner input; `docs/OWNER_INPUT_REGISTER.md` §5 says so explicitly. Acceptance evidence: two green run transcripts in `docs/TEST_AND_RELEASE_REPORT.md` (one per half), plus one deliberate seeded false-positive test proving the secret scanner actually fails a build — an untested scanner is an unverified control, and per the standing rule a step existing in a YAML file is not evidence of behaviour.
+- **2.11 The `payload_revisions` append-only decision — measured before it is taken** (I-6; carries ADR-019's open question forward). `scripts/db/init-roles.sh` lists only `audit_event` in `NDM_APPEND_ONLY_TABLES`, so Payload's own revision table is deliberately *not* guarded yet. That is a decision deferred, not an oversight, and it must not stay deferred silently: the reason is that the guard trigger interacts with Payload's version-retention pruning, which **has not been measured**. Taking the decision without measuring it would either (a) break pruning and grow the table without bound, or (b) leave editorial history rewritable. This item therefore requires, in order: measure how `payload_revisions` behaves under a configured `versions.retention` (does Payload delete rows, does it need `DELETE`, what does it do when `DELETE` is revoked), record the measurement in `docs/ARCHITECTURE_DECISIONS.md` as an extension of ADR-019 or as a new ADR, and only then add or permanently exclude the table from `NDM_APPEND_ONLY_TABLES`. Acceptance evidence: the measured transcript, the ADR text, and — if the table is guarded — a re-run of `scripts/db/run-privilege-tests.sh` showing the guard applied and the pruning behaviour still correct.
+**Exit criteria — verifiable evidence**
+- `pnpm migrate` exits 0 against a freshly created database **and** against a copy at the immediately preceding schema — Standard §3.4 line 124: *"Test fresh database creation and upgrade from the immediately preceding schema."*
+- `docs/DATA_MODEL.md` entity table maps 1:1 onto migration files by name; each row cites the Master Spec line that requires it.
+- A negative test proves a runtime-role connection is refused DDL (`ndm_runtime` has no CREATE), and that no page renders `publication_state` from anything other than `PublicationRecord`.
+- `pnpm typecheck` + `pnpm build` still exit 0 after each migration batch.
+- A constraint-violation test shows an artifact cannot be published with an unapproved rights record.
+- Items **2.9, 2.10 and 2.11** each show their own acceptance evidence above. None of the three may be closed by a document existing: 2.9 needs an executed throttle test, 2.10 needs two green scan runs plus one seeded-false-positive failure, 2.11 needs a measured retention transcript. This is the anti-disappearance guarantee I-6 asks for — a requirement that has a phase number, a work item and an exit test cannot fall out of the execution sequence unnoticed.
+**Depends on:** B-01, G0. **Blocks:** Phases 3–8 (all of them read the schema).
+
+### Phase 3 — Design system
+**Objective:** tokens, typography, RTL/LTR primitives, public and admin layouts, accessibility baseline, image handling, state components.
+**Entry criteria:** Phase 2 exit; `docs/ARCHITECTURE_DECISIONS.md` unchanged on ADR-016 (Lexical, sanitized).
+**Work items:** canonical tokens from `Noujoude_Asset_and_Brand_Requirements_EN.md` §3 (HEX values carried as *proposed* pending OID-18); typography roles §4 with the French/Arabic family pairs and their licence dependency; CSS logical properties only; `dir="rtl"` driven by locale, not by a toggle; reduced-motion paths; image component that refuses any asset whose rights state is not cleared.
+**Exit criteria:** Storybook-free but test-backed — axe pass on every primitive in both directions; keyboard traversal reaches every control; a Playwright check asserts no `left/right` physical properties in layout code paths; visual diff against the Owner's approved frames (Owner-gated: OID-18 — the primitives ship, the *sign-off* cannot).
+**Depends on:** Phase 2. **Blocks:** Phase 4.
+
+### Phase 4 — Public experience
+**Objective:** the canonical §4.2 route map (lines 410–426) exists as real, permission-checked, bilingual pages: Home, The Museum, Worlds directory, Country world, Collections directory, Collection detail, Artifact detail, Stories, Story detail, AI Curator, Search, About, Contact, Privacy, Terms.
+**Entry criteria:** Phase 3 exit. Phase 5 must supply any record that renders as fact.
+**Work items:** locale-prefixed routing (not cookie-only); Morocco-first exhibition; the other five worlds rendered *truthfully* per their state — Directive §5 line 93: "Do not fabricate content to make six equal-size exhibitions"; safe language-switch fallback when a target translation is unpublished (line 512 forbids silent substitution); empty/unavailable states that are honest rather than decorative.
+**Exit criteria:** Playwright journeys green in all four configured projects (`en-desktop`, `ar-desktop-rtl`, `en-mobile`, `ar-mobile-rtl`); a test asserts every page that would display an Owner fact displays a *withheld* marker while that fact is `Outstanding`; `hreflang` is emitted only toward published reciprocals; draft/preview/restricted URLs are refused server-side and `noindex`ed; **invariant: no route renders price, cart, checkout, purchase, seller or stock UI** (Directive §4 lines 73–77; Master Spec Appendix G.3, line 3702).
+**Depends on:** Phase 3; partial dependency on Phase 5 for content-bearing pages.
+
+### Phase 5 — Content and assets
+**Objective:** full records, claims/evidence, sources, rights, images, localization, validation and readiness states.
+**Entry criteria:** Phase 4 exit; OID-08 … OID-17 supplied for anything published.
+**Work items:** media ingest with original→derivative lineage and checksums; alt-text workflow; claim-level evidence linkage; translation workflow with per-locale review; rights gating before any public render.
+**Exit criteria:** for each published artifact: every factual claim links to ≥1 evidence record with a reviewer and approval state; zero assets render publicly whose `Rights Status` is not a cleared value; `docs/MEDIA_AND_RIGHTS_GOVERNANCE.md` matches the CSV row-for-row; the 18 name/pixel defects and 1 `WRONG_FORMAT` asset are either replaced by Owner-supplied originals or explicitly recorded as unusable.
+**Depends on:** Phase 2 (schema), Phase 3/4 (surfaces), **B-06/B-07** for real content. **This phase is `Owner-gated` end to end: the workflow can be built and tested with withheld fixtures; it cannot be completed without Owner facts.**
+
+### Phase 6 — Control Center
+**Objective:** all twenty modules of Master Spec §16.1–16.20 with genuine screen behaviour, per-module acceptance, permissions, previews, workflows, audit, recovery (§16 sequence in §5 below; Appendix G.8 gates at lines 3804–3823).
+**Entry criteria:** Phase 2 state dimensions exist; Phase 3 admin layout exists. **Plus, for the Module 14 MFA criterion only (I-7): OID-19 closed** — the Owner has selected an identity-provider instance and accepted its recurring cost, and that instance is reachable from the test environment. Module 14's role/permission half does *not* wait on OID-19 and stays in wave 1; its MFA half is gated by name so that no acceptance test is ever scheduled against an unselected provider. Until OID-19 closes, Phase 6 can progress and Module 14 can be *partially* accepted, but Phase 6's exit criteria cannot be reported as fully met — see §6's Module 14 gate cell and risk R-11.
+**Exit criteria:** per module — the G.8 acceptance gate is met by an executed test, and **both** a positive-permission and a negative-permission test pass (Standard §4.2 line 153: "Test positive and negative access cases for all twenty Control Center modules"; Directive §15 line 292). Master Spec line 3840: "A visible button is not accepted as an implemented feature." Boundary tests must prove the CMS cannot reach arbitrary SQL, shell, source editing, environment files, keys, or infrastructure controls (Directive §8; G.7).
+**Depends on:** Phase 2; interleaves with Phases 4–5.
+
+### Phase 7 — AI Curator
+**Objective:** source-grounded, permission-gated retrieval — not a chatbot.
+**Entry criteria:** Phase 2 publication records + AI-knowledge-eligibility dimension; OID-19 provider selection.
+**Work items:** knowledge-source registry; retrieval behind an explicit access check keyed to `PublicationRecord` (ADR-017); exclude inquiries, PII, drafts, restricted artifacts, private notes, credentials; citations, uncertainty handling, conflicting-source disclosure, out-of-scope refusal, prompt-injection defense, human escalation, evaluation classes, versioning, provider abstraction behind a server-side adapter.
+**Exit criteria:** red-team suite passes; `Unauthorized Disclosure` is a release-blocking defect (Master Spec line 2095); the nine evaluation classes of S-13 (lines 2085–2093) each have at least one executed case; a test proves the AI cannot approve, verify or publish content.
+**Depends on:** Phase 2, 5, 6; **B-05** for the provider.
+
+### Phase 8 — Quality and operations
+**Objective:** test suites, security review, accessibility audit, performance, backup/restore, telemetry, SEO.
+**Work items:** run the twelve Standard §12 checks in a real CI (B-08); ASVS 5.0.0 Level 2 review; WCAG 2.2 AA automated + manual; Core Web Vitals measurement at p75 (LCP ≤2.5s, INP ≤200ms, CLS ≤0.1 — targets, not claims); OpenTelemetry traces/metrics/logs with no sensitive content; encrypted daily DB backup + PITR; **quarterly restore tests** with recorded measured RPO/RTO; rate limits on auth/contact/search/AI/upload (see hole H-1).
+**Exit criteria:** every check has a transcript in `docs/TEST_AND_RELEASE_REPORT.md`; failures are recorded as failures, never omitted; restore tests prove recovery by restoring, because "a backup job reporting success is not proof of recoverability" (Master Spec line 3908).
+**Depends on:** Phases 2–7; B-05.
+
+### Phase 9 — V1 release readiness
+**Objective:** P0 closed, P1 implemented or explicitly staged in an Owner-approved decision, deferred items recorded, Owner approval obtained for facts, rights, legal policies, hosting and deployment.
+**Exit criteria:** G.12 gate list (lines 3918–3929) each evidenced; **no production deployment without explicit Owner authorization** (Directive §17 line 325; Standard §12 line 281; ADR-level prohibition).
+**Depends on:** everything, plus OID-22.
+
+---
+
+## 4A. Release gates (Master Spec §20.6, lines 3133–3159) and the specification closure sequence (§21.7, lines 3244–3253)
+
+The gates below are the **product's** readiness gates, quoted verbatim from the specification. They are a different object from §2's B-01 … B-08 table, which lists *engineering blockers*: a blocker can be cleared and a gate still be unpassed, and Gate 1 can never be cleared by engineering at all because its conditions are Owner facts. Both views have to be satisfied, so each gate row names the blockers that stand in front of it.
+
+The governing rule is line 3159, quoted exactly: *"A gate may be marked Passed only with recorded evidence and an identified approver."* No gate in this table is marked Passed, and none can be marked Passed by the architect alone — the approver column names who must sign, and `docs/OWNER_INPUT_REGISTER.md` is where that signature is recorded.
+
+| Gate | Condition (verbatim source line) | Evidence that would satisfy it | Identified approver | Blockers ahead of it | State at this baseline |
+|---|---|---|---|---|---|
+| **0 — Product Baseline** (3137) | *"Master Specification adopted; requirement IDs assigned; scope and change-control authority established."* | The adopted specification file with a recorded adoption date; `docs/REQUIREMENTS_TRACEABILITY.md`'s ID column (219 rows, IDs assigned by this project); change-control authority stated in Appendix E / §20.8 | **Owner** (adoption) — IDs and authority text are project work | B-04 — but see the note in the next cell: this is a **durability** dependency, not a precondition on the decision itself | **Not Passed — two of three conditions are project work and one is Owner work.** Requirement IDs exist; adoption has not been recorded. Appendix E's approval rows are all `Pending Owner approval`, so "adopted" cannot be asserted. **Sequencing note (I-9, proved in §2.1): Gate 0 does *not* depend on completed traceability, and does *not* depend on step 5 (physical ERD).** Its three conditions are adoption, ID assignment and change-control authority; IDs are already assigned, and adoption consumes the *specification*, not the implementation record. Step 7's verification is a later obligation that **consumes** Gate 0's output rather than feeding it. B-04 matters because an adoption recorded outside version control is an adoption with no durable, attributable checkpoint — the Owner may still decide, but the evidence would be unanchored. The full no-cycle proof, including the DAG separating Owner-root nodes from engineering nodes, is §2.1. |
+| **1 — Institutional and Collection Readiness** (3141) | *"Official identity fields approved; actual Morocco inventory loaded; claims/evidence, image permissions, and required content reviewed; no invented collection information."* | `OWNER_INPUT_REGISTER.md` rows OID-01 … OID-07 flipped to `Provided` with the source document named; artifact records loaded with claim-level evidence; rights per asset; the "no invented" half is enforced by the withheld-marker tests | **Owner** (identity, inventory) + qualified rights reviewer for image permissions (line 2724) | B-06, B-07 — and it cannot be cleared by engineering at all | **Blocked by Owner Input.** Every condition except "no invented collection information" requires a fact this project is forbidden to supply. |
+| **2 — Experience and Design Readiness** (3145) | *"Public routes and page behavior complete; approved visual system applied; English and Arabic layouts reviewed; responsive and accessibility tests passed."* | Phase 4 exit criteria; axe + Playwright transcripts in `docs/TEST_AND_RELEASE_REPORT.md`; the Owner's visual-system approval (OID-18) | Owner (design approval) + accessibility verifier | B-01, B-02, B-03, then Phases 2–3 | **Not Implemented** — no routes, no tokens approved, zero tests exist. |
+| **3 — Administration and Data Readiness** (3149) | *"Canonical Control Center modules and essential screens available; permissions enforced; data relationships and validation tested; publication and revision workflows complete."* | §6's twenty-module wave table, each with G.8 acceptance + positive **and** negative permission tests; migration + constraint evidence from Phase 2 | Owner / designated administrator | B-01, B-02, B-03, B-09; ADR-008 and ADR-011 schema items | **Not Implemented** — Module 14 and Module 19 do not exist, so nothing is enforceable yet. |
+| **4 — AI and Governance Readiness** (3153) | *"AI source scope, citation, uncertainty, privacy, and safety tests passed; legal/privacy policies approved; no restricted retrieval path remains."* | Phase 7 exit: nine evaluation classes each executed, red-team suite, `Unauthorized Disclosure` treated as release-blocking; LO-03/LO-05 legal and privacy approval | Legal / privacy reviewer + Owner | B-05 (provider), OID-19, plus Gate 3's publication records | **Not Implemented** — `docs/AI_CURATOR_GOVERNANCE.md` is a contract with zero implementation, and no model is selected. |
+| **5 — Production Readiness** (3157) | *"Security verification, performance, monitoring, backups, restore testing, SEO checks, and release regression are complete."* | The twelve Standard §12 checks green in CI **with transcripts**, ASVS L2 review, CWV measured at p75, an executed restore test with recorded RPO/RTO | Owner (deployment authorization, OID-22) | B-01, B-02, B-03, B-05, B-08, B-09 | **Not Implemented** — the report's §4 table shows 0 of 12 checks met and no pipeline exists to run them. |
+
+**§20.7's completion rule (lines 3161–3170) is read together with these gates**, because it forbids the shortcut the gate list invites: *"The product is not considered complete because all pages exist"* (line 3163). A green Gate 2 would still not be completion.
+
+### 4A.1 The closure sequence is an ordering constraint, not a checklist
+
+§21.7 (3244–3253) fixes the order in which the specification can be closed. Steps 1–2 are Owner-fact work, steps 3–6 are Owner approvals, and only steps 7–8 are verification. Two consequences for the plan as written above:
+
+| §21.7 step | Verbatim (line) | Where it lives in this plan | Owner input | Honest state |
+|---|---|---|---|---|
+| 1 | *"Confirm the institutional identity inputs."* (3246) | Gate 1; Phase 4's suppressed-output tests | OID-01 … OID-07, OID-21 | Outstanding — engineering proceeds against placeholders |
+| 2 | *"Build and verify the actual artifact inventory and rights register."* (3247) | Phase 2 schema + Phase 5 ingest; the physical audit already run | OID-08 … OID-17 | Audit done (82/82 verified); the register's rights columns are Owner content, not tooling output |
+| 3 | *"Approve final editorial content in each locale."* (3248) | Phase 5 workflows; Gate 1/2 | per-locale review | No content exists to approve |
+| 4 | *"Approve design tokens, logo assets, font licenses, and responsive rules."* (3249) | Phase 3; §6 Module 03 | OID-18 | Tokens carried as `proposed`; fonts unresolved for AR |
+| 5 | *"Approve the physical ERD and data dictionary against this logical model."* (3250) | Phase 2 exit; `docs/DATA_MODEL.md` is explicitly a logical model (ADR-007/§8 item 2) | Owner + architect | Not started — no migration has produced a physical schema |
+| 6 | *"Approve legal/privacy notices for the real entity and jurisdiction."* (3251) | Gate 4; LO-03 … LO-05 | Legal review | Blocked; jurisdiction is itself an Owner fact |
+| 7 | *"Verify implementation against requirement IDs and test evidence."* (3252) | This register + `docs/TEST_AND_RELEASE_REPORT.md` | named verifier per row (Appendix C line 3594) | Not reached — there is no implementation to verify |
+| 8 | *"Resolve all P0 defects and record Owner acceptance."* (3253) | Phase 9; G.12 (3918–3929) | **Owner** | Not reached |
+
+**Sequencing decision recorded here:** steps 1–2 and 4–6 sit on the Owner's parallel track, so engineering work on Phases 2–4 is scheduled *underneath* them rather than after them — which is what Directive §18 line 333 requires. The one genuine ordering constraint that must not be worked around is step 5 before step 7: verifying an implementation against requirement IDs is meaningless until the physical data model has been approved, because every permission, publication and rights test reads that schema. `docs/DATA_MODEL.md` therefore stays labelled a logical contract until step 5 completes.
+
+**And the constraint that is *not* an ordering constraint (I-9):** step 5 does **not** precede Gate 0, and step 7 does not feed Gate 0. Read together the three ordering rules in play — Gate 0's Owner approver, B-04's Git checkpoint, and step 5 before step 7 — look circular: *Gate 0 needs the Owner; the Owner needs the traceability record to adopt sensibly; the traceability record needs the physical ERD; the ERD needs Phase 2; Phase 2 needs Gate 0.* It is not circular, and §2.1 above proves it rather than asserting it: Gate 0's conditions are adoption, ID assignment and change-control authority, IDs are already assigned, and adoption consumes the specification rather than the implementation record. The step 5 → step 7 edge is a **later** obligation consuming Gate 0's output. §2.1 draws the resulting graph, shows that no node's predecessor set includes itself, and identifies the only engineering-to-Owner edge as a *reporting* edge rather than a dependency — conflating "informs" with "depends on" is precisely how a sequence gets mis-drawn as a cycle. **No dependency cycle exists in this plan and none may be described as existing.** The practical consequence, restated from §2.1: OD-5 (start the container engine) and OD-6 (adopt the specification) are on *different* chains, so an Owner able to do only one thing today should do OD-5 — it unlocks A.5 immediately with no other prerequisite.
+
+---
+
+## 4B. Phase 1 formal acceptance — two levels, measured separately
+
+Phase 1 is being reported against **two distinct acceptance levels**, because collapsing them is how a
+documentation-only milestone gets mistaken for a working one. The levels answer different questions and neither
+substitutes for the other.
+
+**The five-way distinction that governs every row below.** A work item is reported as exactly one of:
+
+1. **Documentation/configuration completed** — the artefact exists and its content is correct as far as reading
+   it can establish.
+2. **Tests authored but not executed** — a test or harness exists, has never run, and therefore proves nothing
+   about behaviour.
+3. **Tests executed and passed** — a transcript with an exit code exists in `docs/TEST_AND_RELEASE_REPORT.md`.
+4. **Application initialized and verified** — dependencies installed, server started, real behaviour observed.
+5. **Formally accepted by the Owner** — a named approver has signed, per Master Spec line 3159: *"A gate may be
+   marked Passed only with recorded evidence and an identified approver."*
+
+Category 1 is the ceiling this batch reaches for almost everything. Nothing in this plan may be described as
+category 3, 4 or 5 without a transcript or a signature.
+
+**Clarification required by the instruction (§4).** The figure **17/18** quoted in earlier status updates came
+from the **internal session task ledger** — the working to-do list used to sequence this batch. It counted
+*session work items completed*, not acceptance criteria satisfied. **It is not formal Phase 1 acceptance and
+must never be presented as such.** The only acceptance numbers that mean anything are the two matrices below,
+each row of which names the command that produced it.
+
+### Level A — documentation and configuration baseline
+
+Level A asks: *does the written and configured baseline exist, and is it internally consistent?* It is measured
+entirely by commands that need no dependencies, no server and no database. Measured **31 Oct 2026** in this batch;
+the earlier reading of **9 PASS / 5 FAIL of 14** came from the in-session Engineering Readiness and Owner Decision
+Review against this same baseline, and is superseded by the re-run below rather than edited.
+
+| # | Level A item | Measuring command | Result at this re-run | Class |
+|---|---|---|---|---|
+| A1 | Physical asset audit reproduces | `node scripts/audit-assets.mjs` | **exit 0** — 82 catalog rows, 81 `PRESENT` + 1 `WRONG_FORMAT`, 18 name/pixel mismatches, 85 physical files / 6,467,873 bytes, 3 uncatalogued, `sourceVerification` 82 of 82, `catalogParseDrift` empty | 1 |
+| A2 | Master Specification copy is byte-identical to source | `node scripts/copy-master-spec.mjs` + `node scripts/tests/copy-master-spec-output.test.mjs` | **exit 0** — 257,099 UTF-8 bytes / 4,069 lines (final newline present), each printed figure re-checked against `wc -c` and `awk 'END{print NR}'` on the file the tool wrote; `body byte-identical to source: YES (misaligned lines: 0)`; source SHA-256 `5b30b21e…`; 15 discrepancy header rows. The reading this row carried before — `255,561 bytes / 4,070 lines` — was the §2.2 mislabel, and it is the *same file*: the byte count is the UTF-16 code-unit count of it and the line count is that count plus split's trailing empty element. Guarded now by 11 cases, red-verified at `4 passed, 7 failed` against the pre-fix formulas (`docs/TEST_AND_RELEASE_REPORT.md` §2.2) | 1 |
+| A3 | DOCX ↔ Markdown alignment | `node scripts/check-docx-alignment.mjs` | **exit 0** — `VERDICT: ALIGNED`; 0 DOCX vocabulary missing from Markdown; 0 Markdown-only word types; 3 paragraph diffs, 0 substantive | 1 |
+| A4 | Citation integrity | `node scripts/verify-citations.mjs` | **exit 0** — 12 files, 528 fragments; `VERIFIED 426`, `LINE_OFF 0`, `NOT_FOUND 0`, `SELF_RECORDING 10`, `PROJECT_RECORD 10`, `DEFINED_TERM 6`, `NO_LINE_REF 82`, and **0** fragments holding verbatim requirement text with no citation. Identity: 426 + 10 + 10 + 82 = 528. Bare references: 1,226 checked, 0 defects. **This row regressed mid-batch and was repaired** — see the note below the table | 1 |
+| A5 | Table-shape integrity | `node scripts/verify-tables.mjs` | **exit 0** — `OK: 196 tables in 12 markdown files, each with a header, a delimiter row and a uniform column count`. It exited **1** twice first, catching malformed rows this batch introduced, and it once returned **193 while still exiting 0** — which is how hole **H-9** was found (§8's own table had been split by a thematic break). See the note below the table | 1 |
+| A6 | Aggregate preflight | `node scripts/preflight.mjs` | **exit 1** — `10 checks: 1 FAIL, 3 WARN, 6 PASS`. The single FAIL is `Node.js 24.19.0` against `engines.node ">=24.22.1 <25"` (B-01) — an environment fact, not a documentation defect. The three WARNs are the deliberately absent `.env` (B-03), the asset-governance register (3 uncatalogued files, one wrong format, eighteen name/pixel rows) that only the Owner can settle, and check 10's `pnpm run` dependency-check trap (B-10/H-12, remedy OD-7). Docker is **PASS** (`server reachable; compose: 5.6.1`), as are the two contracts added on 1 Nov 2026: check 8 `docker-compose.yml` and check 9 the CI workflow structure | 1, with an environment FAIL |
+| A7 | `reference/` read-only tree unchanged | preflight check 5 | **PASS** — 7 files match baseline SHA-256 checksums | 1 |
+| A8 | `Noujoude.photo/` reconciled both ways | preflight check 6 | **WARN by design** — every catalogued original matches its recorded SHA-256, and the check now also enumerates the directory: `catalog rows 82, physical files 85`, with 1 uncatalogued image, 2 uncatalogued metadata files, 1 WRONG_FORMAT and 18 NAME/PIXEL rows surfaced. Integrity failures (MODIFIED / MISSING / contradicted) are FAIL; governance findings are WARN pending the Owner. The old coverage limit — the check read only the CSV rows — is hole **H-7**, closed 1 Nov 2026 | 1 |
+| A9 | Database role scripts are syntactically valid | `sh -n` on all four `scripts/db/*.sh` | **exit 0 ×4** — `init-roles.sh`, `harden-append-only.sh`, `verify-privileges.sh`, `run-privilege-tests.sh` | 1 |
+| A10 | `.env.example` present, declares no real secret | `grep -cE '^[A-Z0-9_]+=$' .env.example` | **19** empty values, 4,148 bytes; every provider and password field is blank by design | 1 |
+| A11 | Compose declares the mandated image | `grep -n 'image:' docker-compose.yml` | line 12: `image: postgres:18.6-alpine`. Declared ≠ pullable, but **present in the local cache since 1 Nov 2026**: `docker images` exits 0 and lists the tag at 433 MB, superseding the reading that cached presence was **UNKNOWN** because the daemon would not answer. **Re-measured 1 Nov 2026, `docker compose config` exits 0** with the seven secrets supplied as process-environment placeholders, and exits 1 naming the missing variable when they are not — the definition is machine-validated, the start is still blocked by B-03 alone. Its compatibility with the pinned adapter is still assumption **A-C1** | 1 |
+| A12 | `package.json` declares the toolchain contract | `node -e` read of `engines` / `packageManager` / script count | `engines.node ">=24.22.1 <25"`, `engines.pnpm ">=11"`, `packageManager pnpm@11.21.0`, **37** scripts — counted by `node -e "Object.keys(require('./package.json').scripts).length"`, not by arithmetic over an older reading. This window added four of them (`audit:compose`, `test:gate:compose`, `audit:workflow`, `test:gate:workflow`) and extended `test:gates` from three chained suites to five; the 29-script reading predates all of it. 11 `dependencies` + 7 `devDependencies` declared and **0 installed** | 1 |
+| A13 | A check-only formatting command exists and read-only trees are protected | `grep -n 'format' package.json`; `.prettierignore` inspection | **PASS structurally** — `format:check` = `prettier --check .`; `.prettierignore` (**45** lines, 14 patterns, 2,709 bytes, re-measured 1 Nov 2026) covers `reference/` at line 18 and `Noujoude.photo/` at line 21. **The command has never been executed** (B-02); Level A credit is for the artefact, not for a formatting result | 1 |
+| A14 | A CI pipeline definition exists | `.github/workflows/ci.yml` inspection + `node scripts/verify-workflow-structure.mjs` | **PASS as authored, and now structurally machine-checked** — **416** lines / **22,226 bytes** / **45 step items** (37 named + 8 bare action steps) / four jobs (re-measured 1 Nov 2026 after the §2.2 spec-copy suite joined `docs-gates`, following the compose, workflow and pnpm-trap contracts and their suites; earlier readings of 336/16,374, 337/15,727, 368/18,410, 370/18,563, 386/19,799, 399/20,787 are corrected in `docs/TEST_AND_RELEASE_REPORT.md` §1.7, and the step counts there are *named* steps — the bare `actions/…` steps were never counted, which is a pattern error of the class §0 warns about). No tabs, no CR bytes, final newline present — measured by a Node byte scan, **not** with `grep -c $'\r'`, which reports every line on this host's Git Bash and is a false-positive trap. The claim *"not machine-validated (no YAML parser on this host)"* was re-measured rather than inherited — python, python3, `perl -MYAML`, `perl -MYAML::Tiny`, ruby and PowerShell `ConvertFrom-Yaml` all fail — and then **replaced** by ten structural rules that run without one (hole **H-11**, §8). Still: **never executed**, and no repository exists to run it in (B-04) | 2 for its *checks*, 1 for the file |
+
+**Level A result at this re-run: 14 of 14 items present and internally consistent; 12 clean PASS, 1 (A6) failing
+on an environment fact outside this batch's authority, and 1 (A8) deliberately at WARN because it now reports the
+asset-governance findings the Owner has not settled.** Movement against the earlier 9 PASS / 5 FAIL reading is
+explained item by item and is not a wholesale upgrade:
+
+- **A13 moved FAIL → PASS** because I-10 added `format:check` and `.prettierignore`. It moved on *artefact*
+  evidence only; no formatting run has ever happened.
+- **A14 moved FAIL → PASS(as authored)** because I-5 authored `ci.yml`, and moved again on 1 Nov 2026 to
+  *as-authored-and-structurally-checked* when the H-11 gate started reading it back. Its twelve checks remain 0 of 12 in
+  Level B, so this is precisely the case the five-way distinction exists to stop being over-read.
+- **A8 moved PASS → WARN**, which is a *downgrade of the message, not of the work*. The old PASS was true of the
+  CSV rows only; the check now reconciles the directory as well, so it can see what the old one could not
+  (hole H-7). A gate that cannot see a defect is not a gate that has cleared one.
+- **A6's FAIL is unchanged in kind** — it has failed on the Node version in every reading, and preflight is
+  designed to keep failing until B-01 clears.
+- The remaining items were already PASS and were re-measured rather than inherited.
+
+**A4's mid-batch regression, disclosed rather than hidden.** The first post-edit run of `verify-citations.mjs`
+returned **`LINE_OFF 4` and `NOT_FOUND 1`**, not zero. Four of the five were line-number drift into
+`docs/ARCHITECTURE_DECISIONS.md`, whose 20 edits in this batch moved ADR-007/008/010 body text by roughly 120
+lines and broke three citations in `docs/AI_CURATOR_GOVERNANCE.md` (221→341, 228→348, 250→369) and one in
+`docs/DATA_MODEL.md` (227–228→348). The fifth was self-inflicted: §2.1 above quoted a *paraphrase* of Master
+Spec line 3252 inside quotation marks, which the gate correctly treated as a verbatim citation it could not
+find; it was replaced with the exact sentence and its own line number. All five were repaired and the gate
+re-run to `LINE_OFF 0 / NOT_FOUND 0`. One further defect of the same class was found by hand, **not** by the
+gate: `docs/MEDIA_AND_RIGHTS_GOVERNANCE.md` cited `ARCHITECTURE_DECISIONS.md line 243` for ADR-009's
+consequence, which now sits at lines 362–363. The gate cannot see it because it only validates line numbers
+attached to a *quoted fragment*; a bare line reference between project documents is unvalidated. That is a
+standing limitation of A4 and is recorded as such rather than treated as a clean pass.
+
+**A second regression round, also disclosed.** After §4B, §8 and §10 were written, the gate reported two further
+defects — both inside text this batch had just added, which is exactly why the gates are re-run rather than
+trusted:
+
+- The new **H-7** row quoted Directive §3's asset rule without a line reference. The gate identified the source
+  itself (Directive line 54) and classified the fragment as verbatim requirement text carrying no citation; the
+  reference was added.
+- The new **H-8** row described the shape of a bare cross-reference *inside quotation marks*, in a sentence that
+  also mentioned the number 243. The gate correctly paired the quoted phrase with that number and reported
+  `NOT_FOUND`. The quotation marks were removed, because the phrase described a pattern rather than quoting one.
+
+`verify-tables.mjs` failed twice for the same self-inflicted reason and caught it: the new §0 measurement rows
+embedded `grep` patterns containing a literal pipe **inside code spans**, and a Markdown table cell cannot carry
+an unescaped pipe even within backticks. Both rows were reworded.
+
+The closing pass of this batch produced four more findings, and all four are recorded rather than smoothed over:
+
+- `verify-citations.mjs` reported `NOT_FOUND` **twice more**, both times on a phrase this batch had just written in
+  quotation marks next to an unrelated number — once beside `preflight.mjs` line 105, once beside
+  `verify-tables.mjs` lines 71–82. The quotation marks were replaced with emphasis. That is the third occurrence of
+  one class, so the class is now named: **in `docs/`, prose quotation marks plus any nearby number are parsed as a
+  citation.** Quote only what you mean to cite.
+- `verify-tables.mjs` returned **193 tables and exited 0**. The extra "table" was §8's own H-7 and H-8 rows, which
+  had been separated from the table by a `---` thematic break and were therefore rendering without a header row. The
+  rule was moved below H-8, the run re-merged, and the count returned to **192**. A hand-run sweep for headerless
+  pipe-led runs across all twelve `docs/` files then returned **0 orphans**, so no second instance exists. The gate
+  blind spot is registered as hole **H-9**: it checks that a run is *uniform*, never that it *has a header*.
+- Two figures in §0's measurement table were **wrong**, and both were wrong for the same reason — a too-narrow
+  regular expression, which prints a clean, plausible, reproducible wrong number. The discrepancy-log row claimed
+  16 IDs `S-00…S-15`; `S-00` never existed and was a substring match inside `VIS-001` and `OPS-001`. The real answer
+  is **15**. The distinct-requirement-ID row claimed **206** against 219 rows and offered an invented explanation;
+  `REQ-[A-Z]+-[0-9]+` drops `REQ-A11Y-*` and `REQ-I18N-*`, and the real answer is **219**, one per row. That second
+  error had already been caught and written up once in `docs/CHANGELOG.md` lines 192–195, then lost when the figure
+  was retyped here — **a recorded lesson that is not re-read is not a control.**
+
+The final state of that batch was `LINE_OFF 0`, `NOT_FOUND 0`, `192 tables`, both gates exit 0; the same two gates on
+the 1 November re-run print `LINE_OFF 0`, `NOT_FOUND 0` and **195** tables, exit 0 — and the sequence of failures is
+kept here because a gate that has never caught anything is not yet a gate. It is also kept here because **three of
+the twelve defects in `docs/TEST_AND_RELEASE_REPORT.md` §1.8.1 were never reported as a failure by any gate**: one
+surfaced as a count moving under a green gate (defect 9, H-9) and two were found by hand re-measuring (defects 10
+and 11, the phantom `S-00` and the 206-vs-219 error). A green gate is a statement about what that gate checks. The
+full twelve-row defect table with its repair column lives there; this note is the summary, not the record.
+
+### Level B — executable Phase 1
+
+Level B asks: *does anything actually run?* The twelve rows are the Standard §12 required checks, reproduced with
+their state in `docs/TEST_AND_RELEASE_REPORT.md` §4. **Level B is 0 of 12 and this batch does not change it.**
+
+| # | Standard §12 check | State | Binding blocker |
+|---|---|---|---|
+| B1 | Formatting and lint | ❌ 0 — never executed | B-02 |
+| B2 | Strict TypeScript typecheck | ❌ 0 — never executed | B-02 |
+| B3 | Unit tests | ❌ 0 — zero tests exist | B-01, B-02 |
+| B4 | Integration tests (DB, hooks, access control, jobs, storage) | ❌ 0 — no project DB and no application code; the DB-privilege harness is not an integration test of this project's stack | B-02, B-03 |
+| B5 | Playwright E2E, both locales | ❌ 0 — no routes | B-02, Phases 2–4 |
+| B6 | Accessibility automated + manual audit records | ❌ 0 — neither half exists | B-02, Phase 3 |
+| B7 | ASVS-mapped security checks + negative authorization tests | ❌ 0 — the negative DB authorization cases **have now executed** (14 of 14, 1 Nov 2026, exit 0, `docs/A5_PRIVILEGE_EVIDENCE.txt`), but against a disposable container, not this project's database, and the ASVS mapping of the application layer has no code to map | B-02, B-03 |
+| B8 | Dependency **and** secret scanning | ❌ 0 — dependency half authored as CI job `security-scans`; secret half **NOT IMPLEMENTED anywhere** | B-04, B-08; Phase 2 item 2.10 |
+| B9 | Production build | ❌ 0 — never executed | B-01, B-02 |
+| B10 | Migration verification **and** restore test | ❌ 0 — no migration exists; no project instance to restore. The image itself is present locally since 1 Nov 2026 | B-01, B-02, B-03 |
+| B11 | SEO route and metadata checks | ❌ 0 — no routes | Phase 4 |
+| B12 | Performance measurement and regression checks | ❌ 0 — nothing to measure | Phase 8 |
+
+**Level B result: 0 of 12.** Improved documentation, new scripts and an authored pipeline are all category 1 or
+category 2 work; none of them is category 3. Level B stays at zero until a dependency install, a database and a
+build have actually happened — and per the instruction, **Level B may not be marked complete merely because
+documentation and scripts have been improved.**
+
+### 4B.1 Where the boundary actually falls, and which phase owns each of the twelve checks
+
+The question this subsection answers is narrow and has been avoided until now: **which Directive §14 phase owns
+the work that makes each Standard §12 check possible?** Without it, "Phase 1 is not accepted" can be read either
+as "Phase 1 is unfinished work the architect abandoned" or as "Phase 1 is finished and something else is owed".
+The Directive's own wording decides, quoted at its lines: **Phase 0** is *"Inspect the exact workspace / Read all
+reference files in full / Verify DOCX/Markdown substantive alignment / Inventory original assets / Preserve
+originals"* (lines 241–246). **Phase 1** is *"Record ADRs and package compatibility matrix / Initialize
+application in `src/` / Establish scripts, types, linting, tests, environment examples, Git checkpoint"*
+(lines 248–251). **Phase 2** is *"Model countries, collections, artifacts… / Create migrations, constraints,
+indexes, and seed only non-factual structural data"* (lines 253–255).
+
+**Two consequences that must not be smoothed over.** First, *"Initialize application in `src/`"* is a **Phase 1**
+line, not a Phase 2 one — so Phase 1 is not merely awaiting review, it is **structurally incomplete**, and the
+thing that completes it is OD-2 (authorize `pnpm install`), which the agreed scope of this build explicitly
+excluded. The §0 status row for Phase 1 claims the specification and configuration level only, and that qualifier
+is the whole claim: it is accurate because §0 restricts itself to that level. Second, *"Git checkpoint"* is also a
+**Phase 1** line (251) and it is unmet for the
+same non-architect reason (OD-4). Phase 1 therefore has two unmet items that no amount of documentation can
+close; everything else it asks for exists and is measured.
+
+| # | Standard §12 check (line 268–279) | Phase that owns the **work** | Phase that owns its **first green run** | Why that phase |
+|---|---|---|---|---|
+| 1 | Formatting and lint | **1** | 1, once OD-1+OD-2 land | `eslint.config.mjs` and both format scripts are "Establish scripts… linting" (§14 line 251); there is nothing to lint until `src/` has content |
+| 2 | Strict TypeScript typecheck | **1** | 1, same | "Establish scripts, **types**" is a Phase 1 line; `tsconfig.json` is authored and `tsc` has never run |
+| 3 | Unit tests for domain and validation logic | **1** (the harness) + **2** (the domain) | 2 | The test command and config are Phase 1; a *domain* assertion needs a domain, which is Phase 2 line 254 |
+| 4 | Integration tests (database, hooks, access control, jobs, storage) | **2** | 2, then 6 and 7 | Migrations and constraints are §14 line 255; access-control and storage integration only become testable in Phases 6–7 |
+| 5 | Playwright E2E, both locales | **4** | 4 (public), 6 (admin) | Routes are Phase 4 (§14 line 261); Control Center journeys are Phase 6 (line 267) |
+| 6 | Accessibility automated + manual audit records | **3** | 4 | The accessibility baseline is a Phase 3 line (258); it can only be *measured* against real pages in Phase 4 |
+| 7 | ASVS-mapped security checks + negative authorization tests | **2** (data layer) + **6** (module permissions) + **8** (verification) | 8 | The negative DB cases exist and have run in isolation (A.5); ASVS mapping of the application layer is Phase 8 "security verification" |
+| 8 | Dependency **and** secret scanning | **2** — work item **2.10** | 2 | Deliberately scheduled here by hole H-4; the dependency half is authored as CI job `security-scans`, the secret half is **not implemented anywhere** and 2.10 must build it |
+| 9 | Production build | **1** | 1, once OD-1+OD-2 land | G0.4; an app shell is the Phase 1 "initialize application" line |
+| 10 | Migration verification **and** restore test | **2** (migrations) + **8** (restore) | 8 | "Create migrations" is Phase 2 (255); restore testing is Phase 8, and both halves of the check are owed before Gate 5 |
+| 11 | SEO route and metadata checks | **4** | 4 | No route exists to hold metadata before Phase 4 |
+| 12 | Performance measurements and regression checks | **8** | 8 | Targets are GAP-12 pending; measurement needs the built routes and the p75 harness |
+
+**What this table changes about the acceptance question.** Of the twelve checks, **five are owned by Phase 1 or
+by Phase 1's tooling** (1, 2, 3-partial, 9, and 8's dependency half) and **seven are owned by Phases 2–8**. That
+is the precise reason Level B reads 0 of 12 while Level A reads 14 of 14: Phase 1 cannot make Level B green, and
+a Phase 1 acceptance review that demanded Level B green would be demanding the wrong phase's work. **The correct
+statement is that Phase 1 owes its two §14 items — initialize `src/`, Git checkpoint — and nothing else**, and
+both are Owner decisions (OD-2, OD-4).
+
+### What Phase 1 acceptance therefore is, stated without ambiguity
+
+| Claim | True today? | Basis |
+|---|---|---|
+| Phase 1 documentation and configuration baseline is complete and internally consistent | **Yes, with A6's environment FAIL noted** | Level A, 14 rows re-measured with commands and exit codes |
+| Phase 1 tests are authored | **Yes for everything that exists**: 14 database-privilege cases A–N plus a residual-risk probe, and **seven** regression suites for the project's own gates — 14 cases (H-9 tables), 22 checks (H-7 asset reconciliation), 23 checks (H-8 citations), 25 cases for the `docker-compose.yml` contract (H-10: 22 static fixtures over 10 rules, each with its own red fixture, plus the double-read and comment exemptions, the multi-defect case, the real file, and three dynamic cases that need a container engine), 32 cases for the CI workflow structure contract (H-11: 21 red fixtures, one per rule plus shape and ordering defects, eight green assertions including one exemption per rule that can over-fire, the committed file green, and a case that renames a gate script inside a copy of the real workflow), **19** cases for preflight's `pnpm run` dependency-check trap (H-12: each spawns the real `scripts/preflight.mjs` against a temp `--root` fixture with a stub `pnpm` on the child's PATH, so the committed code path — `execSync` plus the output parse — is what is under test; the unset default, an explicit `install`, the three values measured not to install (`error` refuses, `warn` warns then runs the script, `false` runs it silently), `prompt` — which is a WARN and not a PASS because it only refuses when stdin is not a terminal — an unrecognised value, an empty answer, an absent pnpm and an installed `node_modules`; two cases that write `verify-deps-before-run=error` into the fixture's own `.npmrc` and still require WARN, because pnpm reads that key only globally; a case that forbids the unrecognised-value line from claiming an install is coming, because the measured behaviour there is a silent fall-through; and a naive file-reading rule re-implemented inside the suite and shown wrong in **both** directions), and **11** cases for the specification-copy generator's own reported figures (§2.2: the generator is run with a throwaway workspace as its `cwd`, and the bytes and lines it announces are compared to the file on disk — truth computed as a `Buffer` length and as a count of newline characters, so the test cannot restate the implementation; multi-byte and pure-ASCII bodies, no-final-newline and CRLF boundaries, the printed body-start line against the real line, the alignment header with and without its JSON input, and a source that duplicates the generated header, which must exit 1 and write nothing). All seven run 1 Nov 2026 with exit 0 — 14, 22, 23, 25, 32, 19 and 11 | `scripts/db/run-privilege-tests.sh`; `scripts/tests/verify-tables.test.mjs`; `scripts/tests/preflight-asset-reconciliation.test.mjs`; `scripts/tests/verify-citations.test.mjs`; `scripts/tests/verify-compose-config.test.mjs`; `scripts/tests/verify-workflow-structure.test.mjs`; `scripts/tests/preflight-pnpm-trap.test.mjs`; `scripts/tests/copy-master-spec-output.test.mjs` |
+| Phase 1 tests have been executed and passed | **No** | Level B, 0 of 12. The A.5 harness has been executed and passes (exit 0, 1 Nov 2026) but it verifies a *designed privilege boundary in a throwaway container*, not this project's stack; none of the twelve Standard §12 checks has a passing run, because there is no dependency install, no project database and no build. **A.5 is no longer blocked by B-09 — that half of the earlier basis is superseded** |
+| The application has been initialized and verified | **No** | `src/` contains one README; 0 dependencies installed |
+| Phase 1 is formally accepted by the Owner | **No** | No signature exists; Master Spec line 3159 forbids marking a gate Passed without one |
+
+**Phase 1 is therefore NOT accepted.** It is documented, configured, and — as of 1 November 2026 — tested to the
+limit of what this build may run without an Owner: the A.5 privilege matrix and the **seven** gate regression suites
+(14, 22, 23, 25, 32, 19 and 11 cases) have executed with exit 0. What still moves Level B is no longer available to
+engineering alone. Every remaining Phase 1 item is gated on an explicit Owner decision: **OD-1** (upgrade Node —
+B-01), **OD-2** (authorize `pnpm install` — B-02), **OD-3** (create `.env`; measured consequence: `docker compose
+config` exits 1 on seven unset secrets, so nothing database-side can start — B-03), **OD-4** (`git init` and the
+first checkpoint; without it the authored CI pipeline has no runner and B-08 cannot close), **OD-6** (adopt the
+specification and name the change-control authority — Gate 0), and **OD-7** (arm the `pnpm run` guard, so that the
+documented `pnpm <name>` entry points stop resolving the dependency tree before they run a check — B-10/H-12; one
+command, and the only Owner action on this list that costs nothing and installs nothing). **OD-5 is spent**: the
+engine answered on a routine re-probe and A.5 ran with no Owner action at all (§2.1). Phase 1 is therefore
+**blocked exclusively by Owner Decisions**, and per
+Master Spec line 3159 the acceptance signature is itself one of them.
+
+---
+
+## 5. Critical path and parallelism
+
+```
+B-01 Node upgrade ─► B-03 .env ─► pnpm install ─► G0 (typecheck/test/build)
+                                                  │
+                                                  ▼
+                                     Phase 2 domain + migrations   ◄── SERIAL, everything depends on it
+                                                  │
+                        ┌─────────────────────────┼──────────────────────────┐
+                        ▼                         ▼                          ▼
+               Phase 3 design system     Phase 6 Control Center     RIGHTS/CURATOR
+                        │                spine (modules 14, 19, 16)  PARALLEL TRACK
+                        ▼                         │                 (OID-01…OID-21;
+               Phase 4 public routes ◄────────────┤                 nothing runs until
+                                                  ▼                 they land, but the
+                                          Phase 5 content workflow  workflow is built now)
+                                                  │
+                                                  ▼
+                                          Phase 7 AI Curator (needs B-05)
+                                                  │
+                                                  ▼
+                                          Phase 8 quality/ops (needs B-08 CI)
+                                                  │
+                                                  ▼
+                                          Phase 9 release (needs OID-22)
+```
+
+**Serial (cannot be parallelised):** B-01 → install → G0 → Phase 2 schema → Phase 3 primitives → Phase 4 routes, because each consumes the previous layer's contracts. Phase 6's authorization spine (Modules 14, 19, 16) is also serial ahead of every other module, since "frontend hiding is not authorization" (Directive §8 line 158) and every module gate depends on server-side enforcement existing first.
+
+**Parallel (safe to run concurrently once Phase 2 exits):** content-model workflows vs. public presentation; the ten non-AI modules vs. media pipeline; accessibility automation authoring vs. component build; the Owner-fact chase (OID register) vs. all engineering.
+
+**Two specification-completion items must land before content editing is "real":**
+1. **`OwnershipStatement` / `AuthenticityAssessment` / `ConditionReport` — ADR-011 (spec gap S-04).** The requirement is mandatory (Master Spec lines 1019–1020 and 1291–1295) and the screen is mandatory (Appendix G.8 line 3809) — yet §16.6's lettered screen list (lines 2425–2465, A–K) contains **no** ownership or authenticity screen, and no entity or field defines either concept anywhere in the data model. Without them, the prohibition "A general 'Verified' badge must not imply that the object's authenticity or ownership has been established" (line 723) has nowhere to store an approved conclusion, and §8.13's requirement to use precise vocabulary ("documented", "attributed", "not established") could not be enforced. Content entered before this lands would have to be re-modelled.
+2. **`PublicationRecord` per-locale state — ADR-008 (spec conflict S-02, driven by D-02).** Publishing is the gate on all public output and on AI eligibility (ADR-017). If publication were derived from an entity-level `publication_state` field — or worse, from Payload's `experimental.localizeStatus`, which Standard §2.3/§15 forbid in production — then English and Arabic could not hold independent states (line 1453), drafts could leak into public retrieval, and every downstream permission test would be testing the wrong mechanism.
+
+Both are Phase 2 work items 2.2 and 2.3 and are named there as the first two schema deliverables.
+
+---
+
+## 6. Control Center — the twenty modules as a delivery sequence
+
+Module names are verbatim from Master Spec §16.1–16.20 (lines 2259–2666). The wave order below is a dependency decision (engineering default, Standard §13), not a re-numbering; the canonical numbering stays authoritative in `docs/REQUIREMENTS_TRACEABILITY.md`. Every module ships with: its G.8 acceptance gate executed, a positive-permission test, and a negative-permission test.
+
+**Rule added in this batch (I-7) — an acceptance criterion may never be scheduled against an input that does not exist.** Where a gate depends on an Owner input that is still `Outstanding` in `docs/OWNER_INPUT_REGISTER.md`, the criterion is *staged behind that OID by name* rather than placed in a wave that cannot satisfy it. This is not a weakening: the requirement still binds, and the module cannot be reported as accepted until the staged item closes. It prevents the worse failure — a schedule that shows a green box next to a test that was never runnable, or a red box that everyone learns to ignore. Module 14's MFA criterion is the current instance; the gate cell below states it explicitly so the deferral cannot be lost.
+
+| Wave | Module | Why here | Acceptance gate (evidence required) |
+|---|---|---|---|
+| 1 | **14 Users, Roles & Permissions** | Nothing else is enforceable without it | **Two-part gate, deliberately split (I-7).** *(i) Acceptable now, in wave 1:* all eleven canonical roles (§17.2 A–K) and the action vocabulary (§17.3) resolvable; negative test: a lower role cannot escalate. *(ii) Staged behind OID-19, and not schedulable before it:* MFA enforced for Owner/privileged per **ADR-025** — the factor comes from the identity provider, and the test is that a first factor without a second yields no session. That test **cannot be written or executed until the Owner has selected an IdP instance** (OID-19 / B-05), so scheduling it in wave 1 would schedule a guaranteed-blocked acceptance criterion. It is therefore recorded as a **deferred gate item with a named prerequisite**, not as a wave-1 obligation; hole H-3 and risk R-11 track it. Until (ii) closes, Module 14's overall status is *partially accepted* and must be reported that way — never as accepted. |
+| 1 | **19 Audit & Activity Center** | Every later module must emit into it | Audit records append-only to ordinary roles (G.8 line 3822); diff view shows actor/target/state |
+| 1 | **16 System & Institutional Settings** | Locale defaults and identity placeholders must exist before content | Institutional profile editable but public output suppressed while OID-01/03/04/06 are `Outstanding`; no secret/infra control exposed (G.7) |
+| 2 | **15 Publishing & Revision Control** | `PublicationRecord` (ADR-008) becomes operable | Per-locale publish/unpublish, schedule, emergency withdrawal; test: publishing EN does not publish AR |
+| 2 | **12 Language & Translation Center** | Translation state gates the switcher fallback | Coverage dashboard, stale-source alert, locale publish gate; test: no `hreflang` to an unpublished locale |
+| 3 | **04 Museum Worlds Management** | Six worlds and their truthful states | All six exist as records; Morocco open, others show only their real state; `Hidden / Not Public` absent from nav/search/sitemap/AI |
+| 3 | **05 Collections Management** | Taxonomy + relationship integrity | Counts derive from eligible published artifacts only (line 3808) |
+| 3 | **06 Artifact Management** | The core record; needs ADR-011 screens | Union of §16.6 A–K and G.8 screen set (S-12); claims/evidence, provenance, condition, **ownership/authenticity**, media/rights, locale+publication all present and tested; negative test: blanket "Verified" impossible |
+| 3 | **07 Stories & Editorial Studio** | Depends on artifacts/worlds/collections | Source review present; story cannot cite an ineligible record |
+| 4 | **08 Media & Asset Library** | Rights join model (ADR-012) + lineage | Original preserved; derivatives traceable; nothing with uncleared rights reaches public render; usage map accurate |
+| 4 | **03 Brand & Visual Identity Studio** | Needs OID-18 to be *approved*, editable before | Only approved assets/tokens usable (line 3806); unapproved palette stays `proposed` |
+| 5 | **10 Navigation & Footer Studio** | Needs real routes to validate against | No duplicate/invalid internal routes; private routes not linkable; footer contact block empty until OID-06 provided |
+| 5 | **11 SEO & Metadata Center** | Needs publication + navigation | Draft/private/restricted excluded from sitemap; localized OG, canonical, reciprocal hreflang validated by test |
+| 6 | **13 Forms & Inquiries Center** | PII boundary | Inquiry PII role-restricted, excluded from search index and AI knowledge; retention/deletion enforced (OID-21 for the legal retention period) |
+| 6 | **17 Analytics & Insights** | Needs telemetry real | Every metric names source, window, and definition (line 3820); **no invented numbers** — unavailable renders as unavailable |
+| 6 | **18 Notifications & Alerts** | Needs real detectors | Alerts originate from actual detected conditions (line 3821) |
+| 6 | **20 Archive & Recovery Center** | Needs B-05 backup target | Restore is permission-checked and creates a new evidence trail (line 3823); retention view reflects the accepted policy, not the tool default |
+| 7 | **09 AI Curator Command Center** | Phase 7 | Only approved public knowledge indexable; test console + evaluation queue + rollback; cannot self-approve |
+| 8 | **01 Executive Overview** | Last, because it aggregates | Every metric derives from actual records or a configured source; "unavailable is not zero" (line 3804) — the eight state dimensions are never averaged into one completion percentage (S-10) |
+
+Shared interaction contract per G.8.1 (lines 3829–3838) applies to all twenty: loading/empty/error/restricted/success/validation states, confirmation for consequential actions, permission-aware controls with server-side enforcement, keyboard and focus support, localization of labels and validation, audit events for privileged operations.
+
+---
+
+## 7. Risk register
+
+| ID | Risk | Evidence | Impact | Mitigation / behaviour until closed |
+|---|---|---|---|---|
+| **R-01** | **B-01 Node v24.19.0** blocks install, hence every runtime phase | `node -v` = v24.19.0; preflight `FAIL \| Node.js 24.19.0 \| VIOLATES engines.node ">=24.22.1 <25"`, exit 1 | Whole schedule; single highest-priority external dependency (ADR-003) | One named environment action (upgrade to 24.22.2). No `--force`, no engine bypass, no downgrade of the pinned set to accommodate the host |
+| **R-02** | **Zero of 82 assets has cleared rights** | CSV col 12: 72× `UNKNOWN — no rights statement supplied in reference/`, 10× `Awaiting Rights Review`; col 13: 82× `Not Approved — no approval record supplied` | No imagery can legally or truthfully be published; Phase 5 cannot complete | Media layer refuses to render uncleared assets by construction; rights workflow + Module 08 built now; OID-15/16/17 chase in parallel. Never infer a licence from a filename (Asset Requirements §9 lines 204–212) |
+| **R-03** | **The 10 additional assets are AI-generated, unapproved, and have no retained source original** | `_manifest.json` lines 21–23: 10× `ai_generated: true`, `approval_state: "Pending Human Approval"`, `rights_state: "Awaiting Rights Review"`; all 10 `source_png` values checked absent from the filesystem; files live in `_pending_review_AI_generated/` | Country/category heroes cannot ship; original→derivative lineage required by Directive §10 is broken at the root | They stay in the pending folder and out of public output; the lineage rule "AI-generated illustrative visuals must never be presented as original artifact photographs" (Directive §10 line 194) is enforced in code; OID-17 asks for approval *and* the rights position *and* the missing originals |
+| **R-04** | **Resolution quality defect across the brand set** | 18 catalogued filenames contain `_1024`; **0 of them reach 1024 px**: 16 are 512×512, `logo_stacked_vertical_1024x1536` is 341×512, `logo_wordmark_1024x768` is 512×384 | Hero/brand fidelity, LCP targets, and any certificate or print use; filenames actively mislead | Audit CSV records measured pixels, not declared ones (18 `NAME/PIXEL MISMATCH` notes); image component derives real dimensions; no code trusts a filename; Owner supplies true masters |
+| **R-05** | **`WRONG_FORMAT` asset**: `NDM-AST-041 vintage_collector_desk_16x9.jpg` | CSV row 42: status `WRONG_FORMAT`; magic bytes `RIFF….WEBP`; real MIME `image/webp`; 512×290; extension says JPEG | Upload/serve paths that trust extensions would mis-label it; Standard §6 forbids treating an extension change as sanitization | Detected by magic-byte check, recorded as `WRONG_FORMAT`; ingestion validates MIME + magic bytes + dimensions; never auto-renamed |
+| **R-06** | **Provider/vendor selection open** — object storage, AI provider+model, hosting/region, SMTP, backup target, OTLP endpoint, and now the identity provider instance | `.env.example` has 19 empty values (`grep -cE '^[A-Z0-9_]+=$'` → 19, re-measured 31 Oct 2026), of which 14 are provider/endpoint selections and 5 are the local role passwords; no vendor is *selected* by any ADR — ADR-025 names self-hosted Keycloak only as a zero-cost candidate and commits to nothing, and it adds no `OIDC` key (`grep -c 'OIDC' .env.example` → 0) | Phases 5, 7, 8, 9 stall; RPO/RTO feasibility unprovable | Interfaces are vendor-neutral by ADR; adapters written against contracts; OID-19 is the ask; nothing fakes a provider in test beyond the inert fixture env in `tests/setup/env.ts` |
+| **R-07** | **Availability numbers could be mistaken for a published SLA** | Standard §11 line 262 is explicit: *"Do not publish an SLA based solely on this internal objective."* Master Spec G.11.1 line 3887 states the 99.5% objective as internal; `reference/Noujoude_Gap_Closure_Register_EN.csv` row GAP-14 records the numeric targets as "Closed as proposed baseline; provider proof/Owner approval pending" | Legal/commercial exposure if a page publishes 99.5% or an SLA | No SLA, uptime promise or recovery guarantee may appear in public copy or in Module 16 defaults. Only `docs/OWNER_INPUT_REGISTER.md` OID-20 can change this, with provider evidence |
+| **R-08** | **CI pipeline now AUTHORED, structurally machine-checked, and still never executed; the twelve release checks still have no runner that has run** | `.github/workflows/ci.yml` exists (**416 lines / 22,226 bytes / four jobs / 45 step items, 37 named plus 8 bare action steps**, re-measured 1 Nov 2026) and carries the header `STATUS: **AUTHORED. NEVER EXECUTED.**`. Its earlier reading in this very row — `not machine-validated, structure verified by reading only` — was superseded the same day: no YAML parser exists on this host (re-measured, not inherited), so `scripts/verify-workflow-structure.mjs` checks ten structural rules over the block subset instead (hole **H-11**, §8). There is also no repository for it to run in (B-04) | Standard §12 line 281 remains unenforceable in practice. The improvement is real but narrow: the twelve checks are now *expressed as pipeline steps*, which is what B-08 asked for, the steps are now *cross-checked* against the scripts and `pnpm` names they name, and an authored pipeline still enforces nothing until it runs | B-08; hole H-2 moves from `no definition exists` to `definition authored, structurally checked, zero runs`. Verification of release is a **green run transcript**, not the file's existence and not the structural gate |
+| **R-09** | **No Git repository** — Directive Phase 1 requires a checkpoint; history/integrity of the authored config is unproven | `git rev-parse --is-inside-work-tree` → `fatal: not a git repository` (re-measured 31 Oct 2026) | No diff review, no revert safety, no milestone discipline. It also means every file authored in this batch is unversioned and unrecoverable if overwritten | B-04; recommend `git init` + checkpoint of Phase 0/1 artefacts before Phase 2 |
+| **R-10** | **Rate-limit backend declared but undelivered** | `.env.example:75 RATE_LIMIT_REDIS_URL=`; no Redis/Valkey service in `docker-compose.yml`, no version in ARCHITECTURE_DECISIONS §5, no ADR | Standard §5 rate limits on auth/contact/search/AI/upload have no implementation home | hole H-1: **landing point now named** — Phase 2 work item **2.9** (§4) requires an ADR before any rate-limit code, and requires the `.env.example` hint to be either delivered or deleted. Must not be left declared-but-absent |
+| **R-11** | **MFA: mechanism decided by ADR-025 and its premise now verified against the pinned release; the provider instance and the implementation remain open** | Required by Standard §4.1 line 134, Directive §13 and Master Spec lines 2889 and 3104 (SEC-001). The evidence this row formerly carried — that no ADR covered MFA and that `grep mfa docs/*.md` hit only a restatement in DATA_MODEL.md — is superseded rather than deleted: ADR-025 decides the mechanism. The second caveat it carried — that the monorepo enumeration read the *default branch* while the project pins `payload@3.92.1` — is **also now closed**: `gh api '…/contents/packages?ref=v3.92.1'` returns rc=0 with **44** packages and **0** identity/MFA/OTP keyword hits, and the published `payload-3.92.1.tgz` ships no second-factor module (2831 entries; the 12 keyword hits are all `forgotPassword` false positives). What survives: the measurement is dated; the `@payloadcms` npm **scope** could not be enumerated (registry search returned `total: 0`); still 0 dependencies installed (B-02); no `OIDC` key anywhere in `.env.example` (deliberate — ADR-025 decision 5 refuses to declare what is not implemented); and no identity provider exists for this project (B-05) | Module 14's acceptance tests now have honest preconditions, but no real second factor can be tested until the Owner selects an IdP instance; a provider outage locks staff out of the Control Center, which is the availability cost ADR-025 states plainly | hole H-3 closed at the mechanism level; the IdP instance and its recurring cost are added to OID-19; ADR-025's negative tests are Phase 2 work and none has been executed. **Module 14's MFA acceptance criterion is now staged behind OID-19** (I-7 — see §4 Phase 6 entry criteria and §6's Module 14 row): an acceptance test that depends on an unselected provider must not be scheduled |
+| **R-12** | **Content vacuum could tempt placeholder leakage** | Zero Owner facts supplied; Directive §5 line 93 forbids fabricating six equal exhibitions | Fake records/metrics on public pages would poison the build's central claim | Withheld-by-construction: pending/unverified/restricted records excluded from public output and from AI retrieval (Directive §9 line 186); the "unavailable" state is a first-class UI state |
+| **R-13** | **Evidence drift**: reference inputs are read-only by rule, not by permission | `docs/REFERENCE_INTEGRITY.json` fingerprints 7 files; preflight re-verifies each run | Silent editing of a source document would invalidate every citation | Preflight fails on DRIFT; the `Noujoude.photo/` check re-hashes all 82 audited assets on every run. **The rule was not, however, enforced against every tool** — see R-14, which is the case where a read-only tree was genuinely reachable by a shipped command |
+| **R-14** | **`pnpm format` could rewrite the read-only source tree.** `package.json` ships `"format": "prettier --write ."`; Prettier parses Markdown; `reference/` holds the authoritative Markdown originals and `Noujoude.photo/` the asset library. Before this batch there was **no `.prettierignore`**, so one well-intentioned format run would have modified files Directive §3 places off limits | Found by inspection while authoring the I-10 check command, not by an incident. Confirmed against upstream guidance, which recommends exactly this control: *"It's recommended to always make sure that `prettier --write .` only formats what you want in your project. Use a `.prettierignore` file to ignore things that should not be formatted."* (prettier/prettier `website/versioned_docs/version-stable/cli.md`, HTTP 200) | A single command would have (a) breached the read-only rule, (b) tripped preflight's `REFERENCE_INTEGRITY` DRIFT check, and (c) invalidated every `line N` citation in `docs/`, since citations are addressed to those exact bytes | **CLOSED in this batch** by the new `.prettierignore` (`reference/` line 18, `Noujoude.photo/` line 21, plus generated evidence artefacts and tool-output paths) and by adding a non-writing `format:check` script that CI uses instead of `format`. Residual: the ignore file must be extended whenever a new read-only or generated path appears — ARCHITECTURE_DECISIONS §8 now carries that as a re-verification trigger |
+
+---
+
+## 8. Coverage holes found while planning
+
+These are requirements in the Directive or Standard that — as measured at planning time — had **no owner, artefact or command anywhere in the workspace**. They are recorded here rather than quietly absorbed. The "Where it now lives" column carries each hole's current state: a row that names an ADR has gained an *artefact*, not an implementation, and H-3 is closed at the **mechanism** level only — no provider, no dependency and no passing MFA test exists.
+
+| ID | Requirement and source | Measured absence | Where it now lives |
+|---|---|---|---|
+| **H-1** | Rate limiting on authentication, contact forms, search, AI, upload and public expensive routes (Standard §5 line 174; Directive §13) | `.env.example` declares `RATE_LIMIT_REDIS_URL`, but no such service exists in `docker-compose.yml`, no package/version appears in the candidate pinned set, and no ADR selects one | **Explicit landing point: Phase 2 work item 2.9 (§4).** That item requires an ADR selecting the store *before* any rate-limit code, and requires the `.env.example` hint to be either delivered or deleted — the declared-but-absent state is not an acceptable outcome. Risk R-10 tracks it. `@payloadcms/kv-redis` exists upstream (ADR-025's measurement) and is recorded as a **candidate input, not a decision** |
+| **H-2** | "Required checks" 1–12 of Standard §12 must run in **CI**; Directive §14 Phase 8 and §16 doc list both omit any CI/operational runbook document | As first measured: no pipeline definition file of any kind existed. **Now:** `.github/workflows/ci.yml` exists and expresses the checks as four jobs, and since 1 Nov 2026 a dependency-free structural gate reads it back (H-11, ten rules, exit 0) — but it has **never executed**, no YAML *conformance* parser exists on this host, and there is no repository to run it in (B-04) | Phase 2 work item **2.10** (§4) owns the scanning half; the pipeline bootstrap itself is B-08. Vendor selection is an engineering default under Standard §13 — no source document names a vendor, and `docs/OWNER_INPUT_REGISTER.md` §5 records "the CI vendor" as explicitly **not** an Owner input. H-2 is therefore **partially closed**: authored and structurally checked, not operational. Verification of release is a green run transcript in `docs/TEST_AND_RELEASE_REPORT.md`, never the file's existence and never the structural gate |
+| **H-3** *(mechanism closed 31 Oct 2026 by ADR-025; instance and implementation open)* | MFA mandatory for Owner and privileged accounts. Standard §4.1 line 134: *"Administrative users must use strong authentication. MFA is mandatory for Owner and privileged administrative accounts. If the selected identity mechanism does not natively provide suitable MFA, integrate a reputable maintained provider or implementation and record the decision."* Master Spec repeats it at line 2889 and as SEC-001 at line 3104 | As first measured: no ADR decided the mechanism and no dependency existed in the pinned set. Now measured: **ADR-025 decides the mechanism** (OIDC-compatible IdP enforcing the factor, consumed through `auth.strategies`), **its premise is verified against the pinned release** (44 packages at tag `v3.92.1`, 0 identity hits; no second-factor module in `payload-3.92.1.tgz`), and the remaining absences are deliberate — 0 installed dependencies (B-02), no `OIDC` key in `.env.example` (`grep -c 'OIDC' .env.example` → 0), no IdP instance (B-05), and no executed MFA test of any kind | Mechanism: `docs/ARCHITECTURE_DECISIONS.md` ADR-025. Re-verification of Payload's documented auth capability is an ARCHITECTURE_DECISIONS §8 trigger condition. Instance + recurring cost: OID-19. Implementation and its negative tests: Phase 2 Module 14 — **with the acceptance criterion staged behind OID-19** (I-7), so no test is scheduled against an unselected provider |
+| **H-4** | Dependency scanning and secret scanning as a required CI check (Standard §12 item 8) and "dependency audit and vulnerability response process" (Standard §5 line 178) | `package.json`'s only `audit:*` scripts are `audit:assets` (physical file inventory) and `audit:docx-alignment` (document alignment) — neither inspects dependencies; no secret scanner is referenced anywhere | **Explicit landing point: Phase 2 work item 2.10 (§4).** Its two halves are deliberately separated so the row cannot be closed by doing only the easy one: (a) dependency scanning is **authored** as CI job `security-scans` running `pnpm audit --audit-level=high`, never executed; (b) secret scanning is **NOT IMPLEMENTED** and `ci.yml` declares that absence in its own header. Standard §12 check 8 therefore stays **UNMET** until both halves run, and `docs/TEST_AND_RELEASE_REPORT.md` §4 row 8 records it that way |
+| **H-5** | Quarterly restore tests with recorded measured RPO/RTO (Standard §11 line 259; Master Spec G.11.3 lines 3906–3907) | Phases end at V1 release; a *recurring* cadence has no phase, no owner, and no calendar artefact | Phase 8 establishes the first executed restore test; the recurring cadence is recorded as a post-release operational obligation in `docs/TEST_AND_RELEASE_REPORT.md` §7, not silently dropped |
+| **H-6** | Directive §15 traceability columns (requirement ID, source section, source lines, V1/future, implementation location, tests, evidence, status) | As first measured, `docs/REQUIREMENTS_TRACEABILITY.md` did not exist and no phase named the moment it would start being filled — which risked a big-bang rewrite at release. **Correction:** the file now exists (73,301 bytes) and carries the ID/source columns. What is still absent is the *implementation-side* columns — implementation location, tests, evidence — because no implementation exists to point at | Filled incrementally from Phase 2 onward, one row per requirement per batch; the status axis conflict (Appendix C vocabularies vs Directive §15's five values) is already resolved as S-15 in `docs/MASTER_SPECIFICATION.md` §2. The ordering constraint that governs when those columns may be filled is §4A.1 below: physical ERD approval (step 5) precedes verification against requirement IDs (step 7) |
+| **H-7** *(found in this batch, 31 Oct 2026)* | The asset library is read-only and must never gain or lose a file unnoticed. Directive §3 forbids modifying originals; Directive line 54, verbatim: *"Never overwrite or delete originals. Inventory all files and preserve checksums."* | `scripts/preflight.mjs`'s `Noujoude.photo/` check iterates the **rows of `docs/ASSET_INVENTORY_AUDIT.csv`** and re-hashes each referenced path. It reports `all 82 audited assets match their recorded SHA-256`. It never enumerates the directory, so it proves *no audited asset changed* and does **not** prove *no unaudited asset appeared*. Measured this batch: the directory holds **85** files while the audit covers **82**; the 3-file difference is already documented and reconciled (`docs/TEST_AND_RELEASE_REPORT.md` §1.2, `docs/MEDIA_AND_RIGHTS_GOVERNANCE.md` §6.5), so this is **not** a lost asset — it is a gate whose coverage is narrower than its PASS message implies | **Closed 1 November 2026.** Preflight's asset check now walks **both** sides: it enumerates `Noujoude.photo/`, re-derives each container format and pixel size through `scripts/lib/image-signature.mjs` and `scripts/lib/asset-declarations.mjs`, compares them against the row, and reports directory entries the catalog does not account for. The PASS message can no longer over-state itself. The live reading re-run on 1 Nov is `catalog rows 82, physical files 85` with **1** uncatalogued image, **2** uncatalogued metadata files, **1** WRONG_FORMAT and **18** NAME/PIXEL mismatches recorded at **WARN**, because those are governance findings reserved to the Owner, while a MODIFIED original, a MISSING original or a row the file contradicts is a **FAIL**. Regression: `scripts/tests/preflight-asset-reconciliation.test.mjs` — 22 cases, exit 0 — and every negative fixture is additionally run through the pre-H-7 reader, which exits 0 on a shifted-column healthy row; the suite prints that as `regression proven`. |
+| **H-8** *(found in this batch, 31 Oct 2026)* | Every citation in `docs/` must resolve to the line it names — the whole evidence model of this workspace is line-addressed | `scripts/verify-citations.mjs` validates a line number **only when it is attached to a quoted fragment**. A bare cross-reference of the form *(`ARCHITECTURE_DECISIONS.md` line 243)* with no quotation is invisible to it. One such stale reference existed and was found **by hand, not by the gate**: `docs/MEDIA_AND_RIGHTS_GOVERNANCE.md` cited line 243 for ADR-009's consequence, which this batch's edits moved to lines 362–363 (corrected). The gate reported `LINE_OFF 0` both before and after that correction, which is exactly why the hole matters | **Closed 1 November 2026.** `scripts/verify-citations.mjs` now validates quote-less references as their own pass and prints the count in the run summary: `BARE REFERENCES (no quotation on the line): 1225 checked, 0 defect(s) [1225 resolve]`, exiting **1** on any reference that does not resolve. Label binding is strict-adjacency, so a number can only be claimed by a quotation that actually sits on its line or the line above or below it inside the same block; fenced blocks and parenthetical single numbers are excluded; and the four non-defect classes (SELF_RECORDING, PROJECT_RECORD, DEFINED_TERM, NO_LINE_REFERENCE) keep project-record values from burying real findings. Regression: `scripts/tests/verify-citations.test.mjs` — 23 cases, exit 0 — including a fixture that reproduces the original hole, where the pre-H-8 classifier saw the stale quote-less reference and said nothing. **One limit is now documented instead of assumed away**: a quotation of *this same file's own wording* cannot be verified by the gate, because the scanned document is deliberately excluded from its own source set. The gate caught a live instance of that on 1 Nov 2026 in §4B.1 below; the honest repair was to paraphrase it out of citation position rather than teach the tool to grade its own homework |
+| **H-9** *(found in this batch, 31 Oct 2026)* | The documentation tables in `docs/` must actually render as tables. A Markdown table needs a header row **and** a separator row; a run of pipe-led lines with neither is a fragment that renders as loose text or a headerless grid | `scripts/verify-tables.mjs` detects a table as *a maximal run of lines starting with a pipe* (its lines 71–82) and then checks only that every row in the run has the same separator count. It never checks that the run has a separator row. **A live instance was found in this batch:** §8's own table had been split by a `---` thematic break inserted between H-6 and H-7, so H-7 and H-8 formed a second, headerless "table" directly under the §8 heading. The gate reported `OK: 193 tables … every row with a uniform separator count` and exited **0**. Two consequences: the rendered document was wrong, and the **192** figure recorded at the end of the previous batch was not a measurement of the file as it then stood — the same file state returns 193. Both were repaired: the `---` moved below H-8, the run re-merged, and the gate returns **192** again with a swept orphan count of **0** | **Closed 1 November 2026.** `scripts/verify-tables.mjs` now requires three things of every run — a header row, a delimiter row, and a uniform column count — and skips pipe-led runs inside fenced blocks. Its summary reads `OK: 194 tables in 12 markdown files, each with a header, a delimiter row and a uniform column count`. The split-table fixture that exposed the blind spot is now a hard failure, and the suite additionally applies the pre-H-9 rule to the same fixture, printing `regression proven: the pre-H-9 pipe-count rule would have exited 0 on this fixture`. Regression: `scripts/tests/verify-tables.test.mjs` — 14 cases, exit 0. The table count itself moves honestly as the batch adds tables (**192 → 193 → 194**), which is why the gate's message names the three structural rules rather than presenting the number as a health score |
+| **H-10** *(found and closed 1 Nov 2026)* | The local infrastructure the Owner selected has to actually start. Directive §14 Phase 1 lines 248–251; the agreed Docker Compose path; ADR-004 | `docker-compose.yml` had **never been rendered by a Compose engine**: every claim about it in `docs/` rested on `sh -n` and a human read. Rendering it on 1 Nov 2026 exposed a defect no text review had found — the declared container name collided with a stopped container that already owns that name on this host (`docker ps -a` rc=0 lists `noujoude-postgres`, `noujoude-postgres2`, `noujoude-postgres3`, all `postgres:16-alpine`, all Exited 137). The Owner would have created `.env`, run `pnpm db:up`, and been met with a name conflict, and the colliding containers are explicitly not this project's to start, reuse or remove | **Closed by changing only this project's file.** The container is now `ndm-postgres` — the prefix every role, script and throwaway container here already uses — chosen so it is neither taken nor inside the `noujoude-postgres*` protection glob that `scripts/db/run-privilege-tests.sh` guards; leaving the field out was rejected for that reason, since Compose would generate `noujoude-postgres-1`. Nothing else addresses the container by name: `db:status`, `db:harden`, `db:verify-privileges` and CI all go through the **service** name. The class is gated rather than remembered — `scripts/verify-compose-config.mjs` (10 static rules, wired in as preflight check 8 and `pnpm audit:compose`) plus `scripts/tests/verify-compose-config.test.mjs` (25 cases, exit 0) assert the pinned image, the loopback-only publish, the postgres:18 mount root, the read-only script mounts, the seven required secret guards, a `pg_isready` healthcheck, no host-escape affordance, and a free `ndm-` container name. Its dynamic half proves Compose renders the real file with placeholder values **and** aborts when a secret is missing. **This is not** `pnpm db:up` having run: B-03 still blocks the start, and no container, volume or network was created by any of this work |
+| **H-11** *(found and closed 1 Nov 2026)* | The pipeline that is supposed to enforce Standard §12 has to be a file a machine can read. Directive §14 Phase 1 line 250; plan R-08, B-08 | `.github/workflows/ci.yml` carried the sentence `not machine-validated — no YAML parser exists on this host` in four documents, and the sentence was re-measured rather than inherited (python, python3, `perl -MYAML`, `perl -MYAML::Tiny`, ruby, PowerShell `ConvertFrom-Yaml`: all fail; no cached image carries one). So a 370-line, four-job definition was trusted entirely on a human read that also mis-counted it — the documents reported 33 steps, which is what counting lines that begin `      - name:` returns, while the file also held eight bare `actions/…` steps with no `name:` line at all (41 step items then; **43** now, 35 named). A step invisible to the pattern is a step nobody reviewed — the weakest evidence class available, and precisely the class H-10 had just shown can hide a defect that stops the Owner's first command | **Closed with a structural gate, not with a parser.** `scripts/verify-workflow-structure.mjs` (449 lines) enforces ten named rules over the file — W1 byte facts, W2 root shape, W3 block structure (dedent must reach an open column, no duplicate key, no unparseable line, no empty block scalar), W4 job shape, W5 step shape, W6 the `needs:` DAG exists and is acyclic, W7 every script a step *executes* exists, W8 every `pnpm <name>` is declared, W9 CI and `pnpm test:gates` have not drifted, W10 no literal secret in a shell line or an `env:` mapping. It reads the block subset this repository uses and prints, as its own second output line: `NOTE: this is a structural contract check, not a YAML conformance parser and not a CI run.` Regression: `scripts/tests/verify-workflow-structure.test.mjs` — **32 cases, exit 0** — 21 red fixtures, eight green assertions including one exemption per rule that could over-fire, the committed file green, and a case that renames a gate script **inside a copy of the real workflow** and requires the gate to fail it. Wired as `pnpm audit:workflow`, `pnpm test:gate:workflow`, preflight **check 9**, and two `docs-gates` steps, so the file now checks itself. **Two corrections this gate made about itself, recorded because they are the interesting part:** its first pass flagged `src/payload/payload.config.ts` as a missing script, which is an existence probe and not an invocation (W7 narrowed, exemption case added); and W10 initially saw only shell assignments, missing the `env:` mapping form where a hard-coded credential actually lands (extended). **What did not change:** B-08 stays open, Standard §12 is still 0 of 12, and whether GitHub's own parser accepts this file is answerable only by running it after OD-4 |
+| **H-12** *(found 1 Nov 2026; remedy is an Owner action, so the hole stays OPEN)* | A command that reads as a check must not perform an unauthorised write. Directive §5 and the standing constraint *"Do not run `pnpm install` … until OD-2 is explicitly approved"*; the same constraint is why `node_modules` is absent | Every documented entry point in this repository is written as `pnpm <name>`, and in this workspace **`pnpm run` never reaches the script**. The first time the H-11 gate was invoked that way it resolved 669 packages against the public registry instead of checking a workflow file. Nothing in `docs/` warned about it, and the obvious project-scoped fixes do not exist here. Four were measured on the installed pnpm 11.21.0 rather than inferred: **①** `verify-deps-before-run=error` in `.npmrc` — **ignored**, because that key is one of the 67 pnpm reads only from the *global* config file (its `pnpmConfigFileKeys` list in `dist/pnpm.mjs`); proved two ways, since the install still happened with the line present **and** a control line `registry=https://registry.example.invalid/` placed in the same file *was* honoured (`ENOTFOUND`), so the file is read and only this key is not; **②** `pnpm run --no-verify-deps-before-run <script>` and `pnpm --no-… run <script>` → `[ERROR] Unknown option: 'verify-deps-before-run'`, exit 1 — no CLI form exists; **③** `engine-strict=true` (a key this file *can* set) → the deps check runs first, so the engine complaint stayed a WARN and the install still started; **④** `pnpm config get verify-deps-before-run` → `undefined`, no `~/.npmrc` and no `%LOCALAPPDATA%\pnpm\config\rc`: the built-in default `install` is in force | **Surfaced, not silently worked around.** `.npmrc` now carries the measurement and sets **no options on purpose** — a settings file that looks like a guard and is not one is the exact defect class H-9, H-10 and H-11 were about. `scripts/preflight.mjs` gained **check 10**, which reads the global value (`pnpm config get --global`, a pure config read that resolves and downloads nothing) and classifies each value by what was **measured** rather than by its name — every value of the key was run through the per-shell lever in a temp fixture (declared dependency, no `node_modules`, no lockfile, stdin closed) over a project `.npmrc` pointing the registry at `registry.example.invalid`, which is the one key this file *can* set and which therefore guarantees that a value which does install dies on `ENOTFOUND` instead of reaching the machine store. Result: `error` **PASS** (exit 1, refuses, nothing resolved); `warn` **PASS** but described as *warns and then runs the script*, because that is what it does; `false` **PASS** (exit 0, script runs, nothing fetched); `prompt` **WARN**, not PASS — it exited 1 here only because stdin was not a terminal, and pnpm's prompt defaults to yes, so at a keyboard it is one Enter away from the install; an unrecognised value **WARN**, with the wording forbidden from claiming an install is coming, since measured behaviour there is a silent fall-through (the switch in `runDepsStatusCheck` covers install/prompt/error/warn **and has no default case**); `install` and unset the armed `WARN` — the present state is `WARN … TRAP ARMED: verify-deps-before-run is install (built-in default)`, one of the **3 WARN** in `10 checks: 1 FAIL, 3 WARN, 6 PASS` (exit 1). `docs/TEST_AND_RELEASE_REPORT.md` §9 prints `node scripts/<name>.mjs` for every read-only gate, so a reviewer following the report cannot trip the install. **What remains:** OD-7, the Owner setting `pnpm config set verify-deps-before-run error --global` or using the per-shell `pnpm_config_verify_deps_before_run=error`; the machine-level store at `E:\.pnpm-store\v11` keeps the packages the killed run downloaded, and removing them is likewise an Owner call outside this directory. The `pnpm <name>` aliases stay declared in `package.json` — they are correct once OD-2 lands, and removing them would break the CI jobs that install first |
+
+---
+
+## 9. Out of scope — stated so it is never re-proposed
+
+- **No commerce of any kind in V1.** Master Spec Appendix G.3, line 3702: *"No commerce framework, payment provider, cart schema, order schema, or sales analytics is to be installed for V1."* This plan therefore contains **zero** commerce work items — no cart/order/payment schema, no price field, no sales analytics — not even as deferred or "hidden/API-only" variants (prohibited explicitly at lines 3692–3698). A test asserts the absence (Directive §4 lines 73–77; invariant 1 in `playwright.config.ts`).
+- No Prisma, no second ORM or migration system (Directive §7; Standard §15; ADR-002).
+- No microservices, no Kubernetes, no `pgvector`, no external search engine in V1 (ADR-001, ADR-006, ADR-007).
+- No canary/alpha/beta/RC dependency, and no use of an experimental CMS flag to carry a mandatory requirement (D-02, ADR-008).
+- No production deployment, and no publication of an SLA, without explicit Owner authorization.
+- No editing, moving or deleting anything under `reference/` or `Noujoude.photo/`; tooling writes only into `docs/`.
+
+---
+
+## 10. Consolidated outstanding-gap and decision register
+
+**One register, one entry point.** Everything that is not closed is listed here, and every entry carries the same
+nine fields so that no item can be closed by ambiguity about what closure means. This section is an **index with
+a status**, not a copy: where an item is defined in detail elsewhere, the entry names that location and states
+only what a reader needs in order to act. The authorities are —
+
+| ID prefix | Defined in | What that document owns |
+|---|---|---|
+| `B-01 … B-10` | §2 above | The blocker ID itself. **§2 is the authority for what a blocker ID means; no other document may mint one** |
+| `R-01 … R-14` | §7 above | Risk statement, evidence, consequence and mitigation |
+| `H-1 … H-12` | §8 above | Requirement, measured absence and landing point. H-7, H-8, H-9, H-10, H-11 and H-12 are all **blind spots in this project's own validation gates**, found while closing them — four of them (H-9, H-10, H-11, H-12) in the two-day batch that ended 1 Nov 2026. **H-12 is the only one whose remedy cannot be written here at all** — it is a machine-level Owner action (OD-7) |
+| `OID-01 … OID-22` | `docs/OWNER_INPUT_REGISTER.md` | The Owner input, its source citation and its downstream dependants |
+| `A-C1 … A-C3` | `docs/ARCHITECTURE_DECISIONS.md` §3.2 | Compatibility assumption, probe evidence and closure condition |
+| `D-01 … D-04` | `docs/ARCHITECTURE_DECISIONS.md` §4 | Documented Standard↔upstream discrepancy |
+| `S-01 … S-15` | `docs/MASTER_SPECIFICATION.md` §2 | Specification discrepancy and its resolution. **There is no `S-00`** — that ID was a substring artefact of an unanchored grep (see §0's measurement table) and never existed |
+| `F-A / F-B / F-C` | `docs/ARCHITECTURE_DECISIONS.md` §7.2, ADR-019, ADR-025 | Review findings and their closure evidence |
+| `OD-1 … OD-7` | **This section** | The seven Owner decisions that root every engineering chain (§2.1's DAG). **OD-5 is spent** — the engine came up on its own and A.5 ran — so six remain actionable: OD-1, OD-2, OD-3, OD-4, OD-6, OD-7 |
+| `GAP-*` (level A/B) | §4B above | Phase 1 acceptance state, per item |
+
+**Field definitions**, so the table cannot be read optimistically:
+
+- **Agent-independent?** — could this batch's engineer close it with the authority already granted? `No` means a
+  human act, an external system, or an authorization this project does not hold is required.
+- **Owner approval required?** — `Yes` means closure is invalid without a named Owner signature (Master Spec line
+  3159). `No` means it is engineering work under Standard §13's defaults.
+- **Acceptance evidence for closure** — the artefact that must exist. Not the activity: the artefact.
+
+### 10.1 OD — the seven Owner decisions that root every chain
+
+| ID | Description | Status | Evidence available | Unverified / incomplete | Agent-independent? | Owner approval? | Dependency & phase | Acceptance evidence for closure |
+|---|---|---|---|---|---|---|---|---|
+| **OD-1** | Upgrade Node to `>=24.22.1 <25` (B-01) | **Open — blocking** | `node -v` → `v24.19.0`; `where.exe node` → one real binary at `C:\Program Files\nodejs\node.exe` plus a 4-byte `C:\Windows\System32\node` that is PATH noise, not a runtime; `nvm`/`fnm`/`volta`/`asdf` all absent; `winget.exe` present | Whether any Node in range is installable on this host; whether Payload 3.92.1 then starts | **No** — installing a runtime changes the machine, which the agreed scope places with the Owner | Yes — it is the Owner's machine | Roots B-02, therefore G0.1–G0.4, therefore Phase 2 | `node -v` printing an in-range version, and `node scripts/preflight.mjs` no longer listing Node as FAIL |
+| **OD-2** | Authorize `pnpm install` and the minimum vertical slice (B-02) | **Open — awaiting authorization** | 11 `dependencies` + 7 `devDependencies` declared in `package.json`; **0** installed; no `node_modules/`; no lockfile resolution performed | The whole transitive tree, including assumption A-C2 (`zod`) and A-C3 (the `graphql` patch level) | **No** — explicitly outside the granted scope | Yes | After OD-1; roots G0 and every Level B item | A completed install transcript plus `pnpm-lock.yaml`, and the resolved versions of the four `@payloadcms/*` siblings shown to be in lockstep |
+| **OD-3** | Owner/operator creates `.env` and its secrets (B-03) | **Open** | `.env.example` present, 4,148 bytes, **19** empty values (14 provider/endpoint + 5 role passwords); `grep -c 'OIDC' .env.example` → 0 by design (ADR-025 decision 5) | Every secret value; whether the five role passwords satisfy `init-roles.sh`'s `${VAR:?…}` guards | **No** — forbidden. Creating or populating `.env` is explicitly not authorized | Yes | Before `pnpm db:up`; before any install-time env validation | `.env` existing and untracked, and `pnpm db:up` starting the container without a missing-variable abort |
+| **OD-4** | `git init` and the first checkpoint (B-04) | **Open** | `git --version` → `2.56.0.windows.2`; `git rev-parse --is-inside-work-tree` → `fatal: not a git repository` | Everything version control provides: history, blame, revert, and a place for CI to run | **No** — initializing Git and creating commits is explicitly not authorized | Yes | Roots B-08, therefore Standard §12 enforceability; also the anchor for OD-6's adoption record | `git log` showing at least one commit, and `.github/workflows/ci.yml` having a repository to run in |
+| **OD-5** | Start the container engine and decide the database-verification path (B-09) | **SPENT — no Owner action was needed; A.5 executed 1 Nov 2026, exit 0** | 31 Oct measurement, retained as the record of what was believed: `wsl -l -v` exit 0 → `docker-desktop **Stopped**`, `Ubuntu **Stopped**`; `docker context ls` exit 0 → `desktop-linux *` with the pipe `//./pipe/dockerDesktopLinuxEngine` registered, i.e. PRESENT while nothing answered on it; `docker compose version` exit **0** → `v5.3.1` (**client only**); `docker version` / `docker info` / `docker ps -a` / `docker images` all exit **124**, 0 bytes. **1 Nov re-probe, same commands:** `docker info` exit **0** → server `29.9.2`; `docker images` exit **0** → `postgres:18.6-alpine` 433 MB **present**; compose `v5.6.1`; and `wsl -l -v` *still* says `docker-desktop **Stopped**` — the listing is not a daemon test | Image cached presence: was **UNKNOWN**, now **measured PRESENT**. Adapter-vs-18.6 support is still assumption **A-C1**, because the harness runs representative DDL, not a Payload migration | **No** — and nothing was started here; the engine was already answering when probed | Yes | **Rooted A.5 alone, with no other prerequisite** — not B-01, not B-02, not B-03 (finding F-B), and the prediction held | Achieved: `docker info` returned server metadata and the A.5 transcript exists — all 14 cases A–N plus the residual-risk probe, exit 0, throwaway container and volume removed, cleanup confirmed (`docs/A5_PRIVILEGE_EVIDENCE.txt`) |
+| **OD-6** | Formally adopt the Master Specification and establish change-control authority (Gate 0) | **Open** | `docs/MASTER_SPECIFICATION.md` regenerated byte-identical to source (SHA-256 `5b30b21e…`); 219 requirement rows carry assigned IDs; Appendix E approval rows all read `Pending Owner approval` | Adoption itself, the adoption date, and who holds change-control authority | **No** — the IDs and authority text are project work, adoption is an Owner act | **Yes, unavoidably** | Independent of OD-5 (§2.1); Gate 0 does **not** depend on step 5 or step 7 | A dated adoption record naming the approver, plus change-control authority stated in Appendix E / §20.8 |
+| **OD-7** | Arm the `pnpm run` guard so that this repository's documented check commands check instead of installing (B-10, hole H-12) | **Open — one command, machine-level** | `pnpm config get --global verify-deps-before-run` → `undefined`, so the built-in default `install` is in force; `node scripts/preflight.mjs` check 10 prints the resulting `WARN … TRAP ARMED`; the killed 1 Nov run left no `node_modules` and no `pnpm-lock.yaml` in this directory (re-checked) but did populate `E:\.pnpm-store\v11` | Whether the Owner prefers the global form or the per-shell form, and whether the machine-level store is cleaned; neither is this project's call. The project-scoped `.npmrc` route is **measured dead**, so no file in this repository can carry the fix | **No** — it changes machine-level pnpm configuration outside this workspace | **Yes** — `pnpm config set verify-deps-before-run error --global`, or per shell `pnpm_config_verify_deps_before_run=error pnpm run <script>`. `error` is the recommended value because measurement says it is the only one that cannot install: `warn` and `false` also never install, but they let the script run anyway, and `prompt` refuses only when stdin is not a terminal (H-12 row has the matrix) | Independent of OD-1…OD-4; useful before OD-2, not blocking it; Phase 0/1 diagnostics run without it via `node scripts/<name>.mjs` | `node scripts/preflight.mjs` prints `PASS \| pnpm run deps-before-run` and `pnpm run audit:workflow` exits 0 on its `OK:` line with no `Progress:` line anywhere in its output |
+
+### 10.2 Blockers that are not Owner decisions in the OD sense
+
+| ID | Description | Status | Evidence available | Unverified / incomplete | Agent-independent? | Owner approval? | Dependency & phase | Acceptance evidence for closure |
+|---|---|---|---|---|---|---|---|---|
+| **B-05** | No AI provider instance exists | Open | No `AI_PROVIDER` value; ADR-017 and `docs/AI_CURATOR_GOVERNANCE.md` are contracts with zero implementation | Provider, model, and the embedding/vector question ADR-007 deliberately refuses to pre-decide | No | Yes — via OID-19 | Phase 7; Gate 4 | A selected provider and model recorded in OID-19, and one executed retrieval test showing permission gating happens **before** the model |
+| **B-06** | Institutional identity facts absent | Open | OID-01…OID-07 all `Outstanding`; public output suppressed by design | Every fact: legal name, Arabic rendering, jurisdiction, location, founding history, partnerships/accreditations, contact details, mission text | **No — and forbidden.** Inventing any of these is prohibited | Yes | Gate 1; Phase 4 | Each OID row flipped to `Provided` naming the source document |
+| **B-07** | Actual Morocco inventory absent | Open | OID-08…OID-17 all `Outstanding`; zero artifact records exist | Objects, claims, evidence, ownership, provenance, authenticity, condition, image rights | **No — and forbidden** | Yes | Gate 1; Phases 2 and 5 | Artifact records loaded with claim-level evidence links and a reviewer per claim |
+| **B-08** | CI has never run | Open | `.github/workflows/ci.yml` — 416 lines / 22,226 bytes / four jobs / 45 step items (37 named + 8 bare action steps), header `STATUS: AUTHORED. NEVER EXECUTED.`; structurally machine-checked by the H-11 gate (exit 0), never parsed by GitHub's own YAML parser and never run | Whether the YAML parses; whether every step behaves as written. Job `quality` **will fail** on first run until OD-1 and OD-2 clear, and that failure is expected rather than a defect | No | No for vendor choice (Standard §13 default; `docs/OWNER_INPUT_REGISTER.md` §5 says the CI vendor is **not** an Owner input) — but Yes for OD-4 first | After OD-4; Phase 2 item 2.10 owns the scanning jobs | One green run transcript per job, pasted into `docs/TEST_AND_RELEASE_REPORT.md`, with the failing-then-fixed sequence preserved rather than overwritten |
+
+### 10.3 Compatibility assumptions — open, and not to be described as verified
+
+| ID | Description | Status | Evidence available | Unverified / incomplete | Agent-independent? | Owner approval? | Dependency & phase | Acceptance evidence for closure |
+|---|---|---|---|---|---|---|---|---|
+| **A-C1** | PostgreSQL **18.6** compatibility with `@payloadcms/db-postgres@3.92.1` | **Unresolved assumption** | Four-URL probe: `/docs/installation` 404, `/docs/databases/overview` 404, `/docs/databases/postgres` 404, `/docs/getting-started/installation` 200 giving Node and Next ranges and **no database range**. The adapter's registry manifest declares **no `engines` field** and no server-version constraint | Official support; demonstrated support. **Neither may be claimed.** An earlier ✅ on this row was an overclaim and has been withdrawn | **No** — closure is empirical and needs B-02 (install) plus B-03 (`.env`); B-09 is no longer part of it | No (engineering) | Phase 2 exit | `pnpm db:up` → `pnpm migrate` → `pnpm db:verify-privileges` all exit 0 against `postgres:18.6-alpine`. **A green run on `postgres:16-alpine` does not close this.** The 1 Nov A.5 run is *not* closure either: it served 18.6 and enforced the grant design on that server (`SHOW server_version` → 18.6), but its schema came from representative DDL, not from the adapter's migration output |
+| **A-C2** | `zod` in the dependency tree | **Unresolved assumption** | `payload@3.92.1`'s registry document lists **32 dependencies and no `zod`**, and `peerDependencies` is `{"graphql":"^16.8.1"}` only | Whether any other package in the tree pulls `zod`, and at what version — unknowable before an install | **No** | No | After OD-2 | `pnpm why zod` output, or its documented absence |
+| **A-C3** | The resolved `graphql` patch level | **Unknowable before B-01/B-02** | Peer range `^16.8.1` declared; nothing installed | Which patch actually resolves, and whether it satisfies every consumer | **No** | No | After OD-2 | The lockfile entry, quoted |
+
+### 10.4 Owner inputs — grouped, with the register as authority
+
+`docs/OWNER_INPUT_REGISTER.md` holds all 22 rows and every one is `Outstanding`. They are grouped here only so the
+decision burden is visible; **no row may be closed from this section.**
+
+| Group | IDs | What is missing | Unverified / incomplete | Agent-independent? | Owner approval? | Phase | Acceptance evidence for closure |
+|---|---|---|---|---|---|---|---|
+| Institutional and legal identity | **OID-01 … OID-07** | Legal name (EN + AR), legal nature, **jurisdiction**, approved Arabic rendering of "Noujoude" and of the tagline, publishable physical location, real founding history and dates, founder/Owner/collector attribution, partnerships, affiliations, certifications, **accreditations**, any "officially recognized" claim, official contact details and the inquiry address, Owner-approved mission/vision/narrative text | **All of it.** Every founder, institutional, legal, partnership and accreditation claim in this workspace is **explicitly unverified** and must remain so | **No — forbidden to invent** | Yes | Gate 1; Phases 4–5 | Each row `Provided`, naming the document each fact came from |
+| Collection facts and rights | **OID-08 … OID-17** | The actual artifact inventory; factual claims per artifact; the evidence and sources behind each claim; ownership statements plus the disclosure rule; provenance events; authenticity assessments (conclusion, method, reviewer, approval, disclosable extent); condition reports for real objects; image rights and licences for the **72 originals** with creator/source attribution; document rights for scanned letters and certificates; approval of the **10 AI-generated** assets, their rights position and the missing source originals | **All of it.** Ownership, provenance, authenticity and condition are unverified for every object because no object record exists | **No — forbidden to invent** | Yes, plus a **qualified rights reviewer** for image permissions (Master Spec line 2724) | Gate 1; Phases 2 and 5 | Each row `Provided`; every published claim linked to ≥1 evidence record with a named reviewer and an approval state |
+| Brand and font licence | **OID-18** | Canonical palette HEX set, logo usage rules, material families, and **final font licences** — including the Arabic/French family pairs Phase 3 depends on | Whether any proposed HEX value is canonical; whether the Arabic families are licensable | No | Yes | Phase 3; §6 Module 03; §21.7 step 4 | Written approval; until then tokens stay labelled `proposed` and unapproved palette values are never rendered as canonical |
+| Providers, hosting and recurring cost | **OID-19** | Hosting/environment, object-storage vendor, **AI provider and model**, email/SMTP provider, backup target, OTLP destination, **and the identity-provider instance** (which OIDC-compatible IdP, hosted where, under whose administrative control, at what recurring cost) — plus acceptance of that cost | 14 of the 19 empty `.env.example` values are these selections. The AI-model choice also decides the vector dimension ADR-007 refuses to hard-code | No | Yes | Phase 7; Phase 8; §6 Modules 14, 16, 20; Gate 4 | Each value supplied and each adapter's contract test passing against the real endpoint. **Staging rule (I-7): no acceptance test may be scheduled against an OID-19 item that is still `Outstanding`** — Module 14's MFA criterion is deferred by name for exactly this reason |
+| Availability baseline and SLA posture | **OID-20** | Formal acceptance of the proposed RPO/RTO and availability baseline, and a decision on whether anything may ever be **published** as an SLA | **The RPO/RTO figures in this workspace are internal targets, not published commitments.** They must never be presented as an SLA, and none has been measured | No | Yes | Phase 8; §21.7 | A signed acceptance, plus one **executed** restore test with *measured* RPO/RTO replacing the target |
+| Legal texts and retention | **OID-21** | Approved privacy notice, terms of use, cookie/consent posture, and the **retention period for inquiry personal data** | All four. Jurisdiction is itself an Owner fact (OID-01), so no text can be drafted correctly yet | No | Yes, plus legal review | Gate 4; §6 Module 13 | Approved texts and a retention period that `docs/MEDIA_AND_RIGHTS_GOVERNANCE.md` and the inquiry module both enforce |
+| Production deployment | **OID-22** | Explicit authorization to deploy to production | Not requested and not implied by anything in this batch | **No — deployment is explicitly not authorized** | Yes | Gate 5; Phase 9 | A dated authorization naming the target environment |
+
+### 10.5 Asset integrity — preserved, not re-decided
+
+| ID | Description | Status | Evidence available | Unverified / incomplete | Agent-independent? | Owner approval? | Phase | Acceptance evidence for closure |
+|---|---|---|---|---|---|---|---|---|
+| **AST-1** | Rights clearance across the audited library | **0 of 82 cleared** | `docs/ASSET_INVENTORY_AUDIT.csv`: `Rights Status` is `UNKNOWN — no rights statement supplied in reference/` for all 72 originals and `Awaiting Rights Review` for all 10 additional; `Brand/Curatorial Approval` is `Not Approved — no approval record supplied` for **82 of 82**. Re-run this batch, exit 0 | Every rights position. **No new evidence arrived, so the finding stands unchanged** | No | Yes — OID-15, OID-16, OID-17 | Phase 5 | A cleared value per asset from a qualified reviewer. **Uncleared assets must never be published, approved, or represented as cleared** |
+| **AST-2** | 18 name/pixel mismatches + 1 `WRONG_FORMAT` | Open | `audit-assets.mjs` reports `namePixelMismatchCount: 18` and `nonPresent: ["NDM-AST-041 vintage_collector_desk_16x9.jpg → WRONG_FORMAT"]` — the file is `image/webp` under a `.jpg` name | Whether Owner-supplied originals exist to replace them | No | Yes — OID-17 | Phase 5 | Either replaced by Owner-supplied originals, or explicitly recorded as unusable. Silence is not an outcome |
+| **AST-3** | 3 uncatalogued files in the library | Open, documented | `logo_presentation_scene_16x9_v3.webp` (7,572 B, SHA-256 `771a118b…`), `_pending_review_AI_generated/GENERATED_ASSETS_MANIFEST_AR.md` (9,241 B), `_pending_review_AI_generated/_manifest.json` (7,075 B) — all hashed and preserved; `docs/MEDIA_AND_RIGHTS_GOVERNANCE.md` §6.5 explains each | Disposition of the `.webp`, which has **no catalogue entry, no rights statement, no approval record and no Asset ID**, and whose `_v3` suffix implies two absent earlier revisions — a second undocumented lineage gap. It is deliberately **not** issued `NDM-AST-083`, because ADR-013 numbers strictly in Appendix A catalog order (S-09) and inventing an ID would corrupt the convention | No | Yes | Phase 5 | An Owner decision: adopt and catalogue, or `Rejected`/`Archived`. Until then it is `Reference Only` at best (A.11 line 3469) and must never be auto-adopted |
+| **AST-4** | The library and `reference/` must not change | **Holding** | Preflight re-hashes all 82 audited assets and all 7 `reference/` files against `docs/REFERENCE_INTEGRITY.json` on every run; both PASS this batch. `.prettierignore` now removes the one shipped command that could have written into either tree (R-14, closed) | Preflight's coverage limit — it would not notice a **new** untracked file (hole **H-7**) | Partly — the `.prettierignore` control was agent-independent and is done | No | Continuous | H-7's fix: preflight compares `physicalFileCount` against `catalogTotal + known uncatalogued` and fails on an unexplained extra |
+
+### 10.6 Factual-verification status — what this workspace does **not** know
+
+Recorded so that no later reader mistakes documentation for evidence. Each line is **unverified** and stays
+unverified until the named Owner input arrives:
+
+| Claim class | Status | Why it cannot be closed here |
+|---|---|---|
+| Founder history, dates and attribution | **Unverified** | OID-04 `Outstanding`; inventing it is prohibited |
+| Institutional identity, legal nature, jurisdiction | **Unverified** | OID-01 `Outstanding` |
+| Partnerships, affiliations, certifications, accreditations, "officially recognized" | **Unverified** | OID-05 `Outstanding`; no claim of recognition may be made |
+| Physical location | **Unverified** | OID-03 `Outstanding`; publication is itself conditional |
+| Legal texts, privacy posture, retention period | **Unverified** | OID-21 `Outstanding`; jurisdiction unknown |
+| Ownership of any object | **Unverified** | OID-11 `Outstanding`; no object record exists |
+| Provenance of any object | **Unverified** | OID-12 `Outstanding` |
+| Authenticity of any object | **Unverified** | OID-13 `Outstanding` |
+| Condition of any object | **Unverified** | OID-14 `Outstanding` |
+| Image authorship, copyright and licence | **Unverified** | OID-15/16/17 `Outstanding`; 0 of 82 cleared (AST-1) |
+| Official contact details | **Unverified** | OID-06 `Outstanding`; the footer contact block renders empty by design |
+| Availability, RPO/RTO, any SLA | **Internal targets only — not measured, not published** | OID-20 `Outstanding`; no restore has ever been attempted |
+
+### 10.7 Findings closed in this batch, listed so they are not reopened
+
+| ID | Finding | Closure | Where the evidence lives |
+|---|---|---|---|
+| **F-A** | An earlier WSL/Docker measurement was being carried forward as current state | **Closed by re-measurement.** `wsl -l -v` exit 0 shows `docker-desktop` and `Ubuntu` both **Stopped**; the current state is recorded separately from the historical one, and the earlier "no Docker pipe" reading is superseded by "the pipe name is registered and nothing answers on it" | `docs/ARCHITECTURE_DECISIONS.md` §7.2.1 (current) and §7.2.2 (historical); `docs/TEST_AND_RELEASE_REPORT.md` §0 |
+| **F-B** | The A.5 behavioural test was described as needing a Node upgrade and a dependency install | **Closed by reading the harness, and then by running it.** `scripts/db/run-privilege-tests.sh` is pure POSIX shell driving the `docker` CLI, `timeout` and `od`; every SQL statement runs through `psql` **inside** the container. Its only prerequisite was **B-09** — which cleared by observation on 1 Nov 2026 without any Owner or engineering action, and A.5 then executed with exit 0 on Node 24.19.0 with **no `node_modules/` and no `.env`**, which is the empirical proof of this finding, not merely its textual argument. No Node or install prerequisite may be reintroduced | ADR-019 "Evidence status"; §2 finding F-B; §2.1's chain analysis; `docs/A5_PRIVILEGE_EVIDENCE.txt` |
+| **F-C** | A finding about `payload` core was being generalized to the whole Payload ecosystem | **Closed at the pinned tag, with its limits recorded.** `gh api '…/contents/packages?ref=v3.92.1'` exit 0 → **44** packages, **0** identity/MFA/OTP/2FA/WebAuthn/passkey keyword hits, **12** `plugin-*`. The default branch has **45**, and the difference is explained: 5 added (`codemod`, `oxlint-config`, `oxlint-plugin`, `tanstack-start`, `transformer-sharp`), 4 gone (`eslint-config`, `eslint-plugin`, `richtext-slate`, `storage-uploadthing`) — 44 + 5 − 4 = 45. **Limits preserved:** the `@payloadcms` npm *scope* could not be enumerated (registry search returned `total: 0`); the Node engine and `@payloadcms/next` peer constraints are retained; PostgreSQL 18.6 stays unresolved (A-C1); no pinned version was changed to make compatibility look solved | ADR-025 "Measured capability" Pass 1 and Pass 2; `docs/ARCHITECTURE_DECISIONS.md` §8's re-verification triggers |
+
+### 10.8 How to use this register
+
+An item leaves this section only when its **acceptance evidence** column is satisfied and the artefact is filed.
+Three rules keep it honest:
+
+1. **No self-closure.** Where "Owner approval?" is `Yes`, the row cannot be closed by the engineer, by a passing
+   build, or by a document existing.
+2. **No silent downgrade.** If an item's evidence turns out to be weaker than recorded, the row is edited to say
+   so and the earlier claim is quoted — the way §4B's A4 row records its own mid-batch regression, and the way
+   `docs/TEST_AND_RELEASE_REPORT.md` §5 downgraded a previously-✅ integrity claim to ⚠️ when it proved to be an
+   overclaim.
+3. **No invented values.** An empty cell in this register is a fact about the project. It is never filled with a
+   plausible number, a default, or an internal target dressed as a commitment.
