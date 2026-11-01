@@ -17,9 +17,12 @@ There is **zero application code**. At the time of writing the workspace contain
 and `tests/` (`src/README.md`, `tests/setup/env.ts`), authored configuration at root
 (`package.json`, `tsconfig.json`, `eslint.config.mjs`, `vitest.config.ts`, `playwright.config.ts`,
 `.env.example`, `docker-compose.yml`, `scripts/db/init-roles.sh`), and documentation under `docs/`.
-`pnpm install` has never been run; the dependency set is a *candidate* pin list
-(`ARCHITECTURE_DECISIONS.md` §5), and the clean-install gate of Standard §2.3 step 9 is **blocked by B-01**
-(Host Node.js 24.19.0 violates `engines.node: ">=24.22.1 <25"`; `ARCHITECTURE_DECISIONS.md` §2, ADR-003).
+**Re-measured 1 November 2026:** the dependency set is no longer a *candidate* list — `pnpm install` executed under
+OD-2 with exit **0**, so `node_modules/` and `pnpm-lock.yaml` exist and every pinned version is now a *resolved*
+one — and the clean-install gate of Standard §2.3 step 9 is no longer blocked by B-01, because the host reads
+`v24.22.1`, inside `engines.node: ">=24.22.1 <25"`. What that gate still lacks is an application to install *for*:
+the chain now breaks at `pnpm test` (exit 1) and `pnpm build` (exit 1), not at the install. The consequence below
+is unchanged — every control in this document remains a contract with no implemented, tested mechanism behind it.
 
 This document is therefore governed by the two binding statements it must not violate:
 
@@ -642,20 +645,32 @@ EXECUTED.**`. It expresses the twelve checks above as pipeline steps. It enforce
    file parses as block YAML and that its jobs, steps, script paths, `pnpm` names and gate list are internally
    consistent (hole H-11). That closes most of the risk a parse error would carry, and it is **not** the same thing
    as GitHub's parser accepting the file.
-3. There is **no repository** for it to run in — `git rev-parse --is-inside-work-tree` returns
-   `fatal: not a git repository` (blocker B-04, Owner decision OD-4).
-4. Its `quality` job **will fail** on first run until OD-1 (Node in range) and OD-2 (`pnpm install`) clear. That
-   is an expected failure and must be recorded as a failure, not suppressed.
+3. There **is a repository now, and the pipeline still has never run.** What this line recorded — no repository for
+   the workflow to live in — was cleared on 1 November 2026 under OD-4 (`git init`, commit `aedeee0`). But
+   `git remote -v` prints nothing, so no hosted Actions service can pick the file up: the honest state is authored,
+   structurally checked, **zero runs** (blocker B-08).
+4. Its `quality` job **will fail**, and 1 November 2026 measured *why*, because OD-1 and OD-2 have since cleared:
+   `pnpm lint` exits **2** (`eslint.config.mjs` imports `@eslint/js`, which no manifest declares) and
+   `pnpm format:check` exits **1**. This is now a *known* failure rather than a predicted one, and it must still be
+   recorded as a failure, not suppressed.
 
-There is a fifth trap, and it is about how a reviewer *runs* the checks rather than what the file contains. In this
-workspace `pnpm run <script>` performs a dependency install before it executes the script, because `node_modules` is
-absent by design until OD-2 — measured on 1 November 2026, when `pnpm run audit:workflow` resolved 669 packages
-against the public registry instead of checking this repository. No project-scoped setting prevents it
-(`verify-deps-before-run` is read only from the global pnpm config), so `.npmrc` intentionally sets nothing,
-`scripts/preflight.mjs` check 10 reports whether the trap is still armed, and `docs/TEST_AND_RELEASE_REPORT.md` §9
-prints `node scripts/<name>.mjs` for every read-only gate. Recorded as hole **H-12**, blocker **B-10**, Owner
-decision **OD-7**. The CI file is not exposed to it: `docs-gates` calls `node scripts/…` directly and was verified to
-contain no `pnpm` invocation, while the other three jobs install explicitly first.
+There is a fifth trap, and it is about how a reviewer *runs* the checks rather than what the file contains. It was
+real, and it is now closed. In this workspace `pnpm run <script>` used to perform a dependency install before it
+executed the script, because `node_modules` was absent and pnpm's built-in `verify-deps-before-run` default is
+`install` — measured on 1 November 2026, when `pnpm run audit:workflow` resolved 669 packages against the public
+registry instead of checking this repository. No project-scoped setting prevents it (`verify-deps-before-run` is read
+only from the global pnpm config), so `.npmrc` intentionally set nothing, `scripts/preflight.mjs` check 10 reported
+whether the trap was still armed, and `docs/TEST_AND_RELEASE_REPORT.md` §9 printed `node scripts/<name>.mjs` for every
+read-only gate. Recorded as hole **H-12**, blocker **B-10**, Owner decision **OD-7**. **OD-7 executed the same day:**
+pnpm 11.21.0's real global config file on this host — `C:\Users\NaDa\AppData\Local\pnpm\config\config.yaml`, not
+`~/.npmrc`, which does not exist here — now carries `verifyDepsBeforeRun: error`, applied with the minimum change and
+the pre-existing keys preserved, and the behaviour was verified rather than assumed: `pnpm run audit:workflow` exits 0
+with no `Progress:` line anywhere, and preflight check 10 prints `PASS | pnpm run deps-before-run` alongside
+`global setting: error`. The workaround of invoking `node scripts/<name>.mjs` directly is still what §9 documents,
+because a check should not depend on a machine-level setting being right — but the trap is no longer armed, and a
+future out-of-sync tree now *refuses* instead of silently installing. The CI file was never exposed to it:
+`docs-gates` calls `node scripts/…` directly and was verified to contain no `pnpm` invocation, while the other three
+jobs install explicitly first.
 
 Two things the pipeline does contain that matter to this document. Job `db-privileges` runs
 `scripts/db/run-privilege-tests.sh` **unconditionally** and uploads its output as an artifact, then — behind a

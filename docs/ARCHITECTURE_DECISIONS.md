@@ -318,21 +318,38 @@ same migration stream.
 **Consequence:** One migration order to reason about; team must work inside Payload's migration CLI even for
 pure domain tables.
 
-### ADR-003 — Node.js 24.22.2 is a prerequisite, not an install step
-**Status:** Accepted, **blocked on host action**.
+### ADR-003 — Node 24 is a prerequisite, not an install step
+**Status:** Accepted and **satisfied on the host — executed 1 November 2026 under OD-1**.
 **Decision:** Target `>=24.22.1`; install 24.22.2 (LTS *Krypton*). Declare `"engines": { "node": ">=24.22.1 <25" }`
 and `"packageManager"` pinned in `package.json` so a wrong runtime fails fast instead of installing half a tree.
 **Consequence:** Until the host is upgraded, Phase 1 cannot complete and Phase 2 cannot begin. This is the
 single highest-priority external dependency of the build.
 
+**What was actually executed, and a correction to this ADR's own text.** The Owner authorized a compatible Node 24
+release inside the constraint and no major-version move; `winget install OpenJS.NodeJS.LTS --version 24.22.1
+--exact --scope machine` was run, and `node -v` → `v24.22.1`, npm `11.19.1`, verified by reading the active binary
+rather than the installer's exit code. **The version named in the Decision line above — 24.22.2 — is what the nodejs.org
+dist index reported as newest 24.x when this ADR was written, not what is installed; the constraint it was chosen to
+satisfy is `>=24.22.1 <25`, and 24.22.1 satisfies it.** The register at `docs/OWNER_INPUT_REGISTER.md` §5 carried the
+same drift in its environment-actions list and is corrected there too. Nothing about the decision changes: the
+requirement was always the range, and the range is met. **Phase 2's entry condition B-01 is therefore closed, and
+this ADR's *blocked on host action* clause is spent.**
+
 ### ADR-004 — PostgreSQL 18.6 delivered via Docker Compose for local development
-**Status:** Accepted as the *decision*. Its **delivery path is blocked by B-03, not by the engine**: the daemon
-answers again (1 November 2026 — `docker info` rc=0, server 29.9.2, Compose 5.6.1) and the mandated image is in
-the local cache, but `docker compose config` exits 1 on the seven unset `.env` secrets, so `pnpm db:up` cannot
-start and no instance of *this project* has ever existed. The 31 October reading in this line — "the engine is
-now **stopped** and no daemon command answers (B-09, §7.2)" — is superseded, as is D-03's original
-"server reachable, Compose 5.3.1". Accepting the ADR is not the same as having demonstrated it, and the
-demonstration still owes a migrated database.
+**Status:** Accepted as the *decision*. Its **delivery path was blocked by B-03 until 1 November 2026, and is now
+blocked by nothing except the work that has not been done**: the Owner's OD-3 created `.env`, `docker compose config
+--quiet` exits **0** against it (verified without ever rendering a secret value), the daemon answers (1 November 2026
+— `docker info` rc=0, server 29.9.2, Compose 5.6.1) and the mandated image is in the local cache. **The clause this
+status carried for a day — that `docker compose config` exits 1 on the seven unset `.env` secrets, so `pnpm db:up`
+cannot start — is spent, and it is corrected rather than deleted because the same seven guards are still the project's
+security contract; only their *state* changed.** What remains true is the next sentence: no instance of *this project*
+has ever existed. `docker ps -a` lists three stopped containers belonging to a different project and **no**
+`ndm-postgres`; this batch did not start one, because the authorization it worked under covered verifying the render,
+not creating a persistent database. Accepting the ADR is not the same as having demonstrated it, and the
+demonstration still owes a migrated database. **One further measurement belongs to this row:** the engine's
+reachability is latency-dependent on this host — inside the same window, `timeout 60 docker info` returned rc=124
+and `timeout 120 docker info` returned rc=0 after idle, and preflight printed both `2 WARN, 8 PASS` and
+`1 WARN, 9 PASS` minutes apart. Never inherit a PASS here; re-probe.
 **Decision:** `postgres:18.6-alpine` with a named volume, healthcheck, and non-superuser application role.
 Port bound to `127.0.0.1:5432` only, never `0.0.0.0`. Never a production claim.
 **Consequence:** Reproducible local database; `scripts/db/init-roles.sh` creates the four roles of ADR-005 on
@@ -914,10 +931,10 @@ because the plan assigns H-1 to Phase 2 and this window is Phase 0 + Phase 1.
 | 1 | ADRs recorded with rationale and rejected alternatives | ✅ this document — **25 ADRs** (ADR-001 … ADR-025). Measurement method: `grep -c '^### ADR-' docs/ARCHITECTURE_DECISIONS.md` → `25`, and the ID list printed by `grep -o '^### ADR-[0-9]*'` is contiguous with no gaps and no duplicates. Re-measured 31 October 2026 after this batch. |
 | 2 | Compatibility matrix verified against official sources, not inherited | ⚠️ §3 is verified for every package row, but §3.2 records **three open compatibility assumptions** (A-C1 PostgreSQL 18.6 ↔ the pinned adapter; A-C2 Zod against the rest of the installed tree; A-C3 the concrete `graphql` 16.x patch). A-C1 is the one that touches a written baseline, and it cannot be closed without B-09 + B-01. Counted by `grep -c '^\*\*A-C[0-9]'` → `3`. |
 | 3 | Version-selection gate of Standard §2.3 executed | ✅ with **four** documented discrepancies (D-01 … D-04 in §4; counted by `grep -c '^\*\*D-0'` → `4`). D-03 was itself corrected in this batch: its original "resolved" verdict was a stale measurement, now superseded by §7.2. |
-| 4 | Application initialized in `src/` | ⚠️ configuration authored; **install/scaffold not run** (selected scope + B-01) |
-| 5 | Scripts, types, linting, tests, environment examples | ⚠️ authored, unexecuted. Gains two files in this batch: `format:check` in `package.json` (I-10) and `.github/workflows/ci.yml` (I-5) — both authored, neither executed. |
-| 6 | Coherent Git checkpoint | ⏸ awaiting user decision on initializing a repository. Re-measured 31 October 2026: `git rev-parse --is-inside-work-tree` → `fatal: not a git repository` (B-04 still open). |
-| 7 | Clean install → typecheck → test → production build (Standard §2.3 step 9) | ❌ **blocked by B-01**, and behind it by B-02 (no `pnpm-lock.yaml` to freeze) |
+| 4 | Application initialized in `src/` | ⚠️ **dependency half done, scaffold not done.** Re-measured 1 November 2026: `pnpm install` executed under OD-2, so B-01/B-02 no longer stand in this row's way — `src/` still holds `README.md` only because initializing the application was outside the authorized scope of that batch |
+| 5 | Scripts, types, linting, tests, environment examples | ⚠️ **authored, and now partly executed.** `.env` was created under OD-3 on 1 November 2026 (38 assignments, 6 locally generated secrets, 14 Owner-supplied values deliberately left empty); `format:check` and `lint` have executed and both fail with measured exit codes (1 and 2), `typecheck` exits 0 over 19 JavaScript files with no `checkJs`, and `test` exits 1 with `No test files found`. The CI workflow file remains authored and unexecuted (B-08) |
+| 6 | Coherent Git checkpoint | ✅ **met 1 November 2026 under OD-4.** `git init` ran on a tree with no repository in `E:\no` or any parent — no existing history was found, so none was overwritten — and commit `aedeee0` on branch `main` records 150 files / 49,699 insertions. `git remote -v` is empty: no remote was created and nothing was pushed |
+| 7 | Clean install → typecheck → test → production build (Standard §2.3 step 9) | ⚠️ **the install and the three later legs have now executed; only the first leg is green, and hollowly.** 1 November 2026: `pnpm install` exit 0; `pnpm typecheck` exit 0 but over `scripts/**/*.mjs` only (0 `.ts` files exist); `pnpm test` exit 1; `pnpm build` exit 1 with `Couldn't find any pages or app directory`. The chain is not satisfied, and the reason is now the absent application rather than the absent toolchain |
 
 Items 4–5 are delivered as reviewable files so the dependency install becomes a single, deliberate next
 action. They are explicitly *not* evidence of a working application; per Directive §15, a config file is not

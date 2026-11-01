@@ -219,10 +219,24 @@ if (!dockerReady) {
     logFail('docker compose config did not render the expected definition', `exit ${good.status}\n${gout}`);
   }
 
-  const bad = spawnSync('docker', ['compose', 'config'], { encoding: 'utf8', cwd: ROOT, timeout: 60_000, env: composeEnv(false) });
+  // The negative half has to suppress TWO sources, not one. Deleting the seven keys from the child's
+  // environment used to be the entire test. OD-3 (1 Nov 2026) created the project `.env`, and Compose
+  // reads `.env` from the project directory, so the file re-supplied every value, the `:?` guards
+  // stopped biting, and this case went red — 24 passed, 1 failed — over a property of the *workspace*,
+  // not a defect in `docker-compose.yml`. Measured: with `.env` present and the keys only deleted from
+  // the environment, `docker compose config` exits 0.
+  // `--env-file <empty>` points the file source at a file that carries nothing, which is what restores
+  // the claim being tested: with neither the process environment nor an env file holding the secret,
+  // interpolation must abort rather than default to a blank string. Verified by hand first — exit 1,
+  // `required variable NDM_BACKUP_PASSWORD is missing a value`.
+  const noEnvDir = mkdtempSync(path.join(tmpdir(), 'ndm-compose-noenv-'));
+  const emptyEnvFile = path.join(noEnvDir, 'empty.env');
+  writeFileSync(emptyEnvFile, '', 'utf8');
+  const bad = spawnSync('docker', ['compose', '--env-file', emptyEnvFile, 'config'], { encoding: 'utf8', cwd: ROOT, timeout: 60_000, env: composeEnv(false) });
+  rmSync(noEnvDir, { recursive: true, force: true });
   const bout = (bad.stdout || '') + (bad.stderr || '');
   if (bad.status !== 0 && /required variable .* is missing a value/.test(bout)) {
-    logPass('the :? guards bite when the secrets are unset', `(exit ${bad.status})`);
+    logPass('the :? guards bite when neither the environment nor .env supplies the secrets', `(exit ${bad.status})`);
   } else {
     logFail('an unset secret did not abort the render', `exit ${bad.status}\n${bout}`);
   }

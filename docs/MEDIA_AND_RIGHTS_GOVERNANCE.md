@@ -487,9 +487,44 @@ Standard §6 line 184 permits public originals only "until rights and publicatio
 neither recorded for any of the 82, **every original and derivative in this library must remain private**.
 Standard §15 line 332 makes that a prohibition, not a preference.
 
----
+### 7.2 The 1 November 2026 reconciliation attempt — zero of 82 closed, and what each class still needs
 
-## 8. Derivative, optimization and integrity rules
+The Owner's authorization of 1 November 2026 (§3) instructed this batch to close an asset's rights or approval
+status **only** where valid evidence supports it, and named the shortcuts that are forbidden: unknown rights must
+not be marked cleared, possession of a file must not be treated as proof of copyright, licences/creators/sources
+must not be invented, curatorial approval must not be recorded without an approval record, and where evidence is
+insufficient the accurate pending status must be retained with the exact missing evidence identified. Existing
+asset identities and catalog references are to be maintained. **All 82 rows were re-read against that standard and
+not one of them could be closed.** The searches performed, and what each returned:
+
+| What was searched | Result |
+|---|---|
+| Every file under `reference/` for a licence, copyright, rights-holder, attribution or stock-source statement | Only **requirements** for those fields, never a value. The asset document's own header still reads `Binding Working Baseline — Final Brand/License Approval Pending` (line 5), and line 106 is the specification of the missing record, not an instance of it |
+| `Noujoude.photo/` for rights sidecars, metadata files or a licence document of any kind | **Two** non-image files exist in the whole library — `_pending_review_AI_generated/_manifest.json` and `GENERATED_ASSETS_MANIFEST_AR.md` — and both record the *absence* of rights, not their presence. No `.txt`, `.xmp`, `.json` sidecar sits beside any of the 82 catalogued assets |
+| The 10 AI manifest entries, re-read per asset | `rights_state` = `Awaiting Rights Review` on **10 of 10**; `approval_state` = `Pending Human Approval` on **10 of 10**; the Arabic manifest carries the same state and adds "لم تُحلّل بعد" — not yet analysed |
+| `docs/ASSET_INVENTORY_AUDIT.csv`, CSV-aware re-parse of all 82 rows × 20 columns, 1 November 2026 | `Physical Status` 81 `PRESENT` + 1 `WRONG_FORMAT` · `Source/Creator` 72 × `Not supplied in any reference document` + 10 × `AI-generated (Qwen ImageGen tooling)…` · `Rights Status` 72 `UNKNOWN…` + 10 `Awaiting Rights Review` · `Brand/Curatorial Approval` **82 × `Not Approved — no approval record supplied`** · `Alt Text Status` 82 × `Not Recorded` · `Actual Usage` 82 × none (no application code) · `Derivative Status` 72 × no derivatives produced + 10 × derivative from an absent PNG original |
+| `.env`, `git` state and the toolchain, as possible sources of an implied approval | Rejected as evidence. OD-3's locally generated secrets and OD-4's first commit record **operator acts**, and neither is a rights statement. A file being committed is not a file being licensed |
+
+**What closure would require, class by class — the exact missing evidence.** The form is not invented here;
+`Noujoude_Asset_and_Brand_Requirements_EN.md` line 106 defines the fields a rights record must carry, so the minimum
+evidence is one record per asset in that shape.
+
+| Class | Rows | Missing evidence | Minimum form that closes it |
+|---|---|---|---|
+| Original assets, rights unknown | 72 | Copyright owner, licence or permission, attribution line, permitted uses, restrictions, expiry/review date — and a creator/source for each | A per-asset rights record in the six-field shape of line 106, signed or supplied by the Owner. For the 10 country-hero and certificate/collection graphics, additionally the statement of what the image actually depicts, since an asset name is not provenance |
+| AI-generated, quarantined | 10 | Human approval, rights position, **and the 10 `source_png` originals**, all of which are absent from the filesystem | Either the originals plus a rights record, or an Owner decision that these ten are used at all — plus the answer to the wider question in OID-17: whether illustrative AI visuals may represent heritage subjects |
+| Curatorial/brand approval, all assets | 82 | An approval record naming the approver and the date | A named approval per asset (RB-02 and RB-10 together: the approver must be a real identity, and ADR-020's scoped `Approve` grant is still unimplemented) |
+| Alt text and captions | 82 | The text itself, per locale | Editorial copy per asset per locale — depends on OID-02 for Arabic and OID-07 for institutional voice |
+| Format and dimension integrity | 1 + 18 | Nothing from the Owner: `vintage_collector_desk_16x9.jpg` is a `.jpg` holding `image/webp`, and 18 files are smaller than their filenames claim | Engineering work gated on RB-01 — no derivative may be produced from an asset whose rights state is unknown, so the fix cannot precede the clearance |
+| Uncatalogued files | 3 | A decision on whether they belong in the library | Owner direction; §6.5 records what they are and §10 keeps them out of the 82-row catalogue until then |
+
+**The distinction that keeps this honest.** Preservation evidence is abundant and rights evidence is absent, and the
+two are not interchangeable: `preflight` proves 82/82 checksums match the baseline, which says the files are the
+files, and says nothing about whether any of them may be shown. `docs/ASSET_INVENTORY_AUDIT.csv` keeps its exact
+pending values — none was softened — and `RB-01` through `RB-09` in §7 stay as they were written, because a batch
+authorized to *reconcile* is not a batch authorized to *clear*.
+
+---
 
 All **Contract — unimplemented**; `sharp` (Standard §2.2 line 53) is a candidate pin in
 `ARCHITECTURE_DECISIONS.md` §5 and is not installed.

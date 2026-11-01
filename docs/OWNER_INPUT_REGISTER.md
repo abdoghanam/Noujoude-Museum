@@ -1,12 +1,12 @@
 # Noujoude Digital Heritage Museum — Owner Input Register
 
 **Document ID:** NDM-OWNER-INPUT-001
-**Version:** 0.1.0
-**Date:** 31 October 2026
-**Authority:** `reference/Noujoude_Technology_and_Security_Standard_EN.md` §13 (approved defaults versus Owner inputs); `reference/Noujoude_Master_Specification_EN.md` Appendix G.13 (lines 3664, 3933–3937) and §1.5 (lines 166–181); `reference/Noujoude_Master_Execution_Directive_EN.md` §9 (lines 179–186), §17 (line 316), §18 (line 333).
+**Version:** 0.2.0
+**Date:** 31 October 2026, updated 1 November 2026 by the Owner's formal authorization of that date
+**Authority:** `reference/Noujoude_Technology_and_Security_Standard_EN.md` §13 (approved defaults versus Owner inputs); `reference/Noujoude_Master_Specification_EN.md` Appendix G.13 (lines 3664, 3933–3937) and §1.5 (lines 166–181); `reference/Noujoude_Master_Execution_Directive_EN.md` §9 (lines 179–186), §17 (line 316), §18 (line 333). Status changes recorded in version 0.2.0 rest on one further authority: the Owner's message **FORMAL OWNER AUTHORIZATION — NOUJOUDE PROJECT**, §1, dated 1 November 2026 — a chat message, not (yet) a file in `reference/`, and §6A.3 records that limitation rather than concealing it.
 **Rule this file enforces:** Directive §17 — "Do not invent factual or legal content." (line 319), "Do not fake records or metrics in production screens." (line 320), and "Do not ask the Owner to decide routine technical details already governed here." (line 316). Both halves are binding: §3 keeps every genuine question on the page, §5 removes every question that must never be asked.
 
-**Counts as measured at write time: 22 Owner inputs, all `Outstanding`.** Nothing in this register has been supplied, and nothing has been rejected. §6 states which facts were checked for in `reference/` and found absent, so the count is evidence, not guesswork.
+**Counts as measured 1 November 2026: 22 Owner inputs — 20 `Outstanding`, 1 `Accepted (internal targets only)` (OID-20), 1 `Approved in principle, conditional` (OID-22).** Nothing in this register has been supplied as a *fact*, and nothing has been rejected. The two rows that moved did so because the Owner answered a **decision** the register was asking for (accept these targets? authorize deployment?); not one of the 20 factual rows gained a value, because §2's re-check found no authoritative source for any of them in this workspace. §6 states how the register was compiled and §6A states exactly what was searched on 1 November, what was found, and what the Owner must still supply for each of the 20 — so the count is evidence, not guesswork.
 
 **Quotation convention:** every string in this file presented inside quotation marks is reproduced from the cited line of the cited reference file, with one typographic exception — the sources use curly quotes (“ ”) which this file renders as straight quotes. Line numbers were verified with `node scripts/show-lines.mjs <range>` and re-checked by `node scripts/verify-citations.mjs`; where a measurement comes from this project's own documents (`docs/ASSET_INVENTORY_AUDIT.csv`, `.env.example`, `_manifest.json`) the text says so, because those are findings, not reference quotations.
 
@@ -30,8 +30,12 @@ So each row below has a **Meanwhile** column: the engineering that proceeds rega
 | `Outstanding` | Not supplied by the Owner; not inferable; no value exists in the workspace. **Must not be filled in by the build.** |
 | `Provided` | Supplied with a named source document/date; recorded where it lives |
 | `Rejected` | Explicitly declined by the Owner; recorded so it is never re-proposed |
+| `Accepted (internal targets only)` | The Owner has adopted proposed engineering figures as internal targets, with an explicit prohibition on external representation. Used only where the item asked for acceptance of values already documented, and the Owner's authorization itself forbids the wider act. |
+| `Approved in principle, conditional` | The Owner has authorized an action **when its prerequisites are met**, without waiving any gate and without supplying the missing prerequisites. Not an execution record: nothing has been deployed. |
 
-Every row in §3 is `Outstanding`. No row here is `Provided`, with one exception noted inside OID-02 (the **English** tagline is spec-locked and therefore not an input at all — see §5).
+Two statuses were added on 1 November 2026 because the Owner's authorization distinguishes them and a four-state vocabulary would have had to lie: an approval in principle is not `Provided` (no fact was supplied) and it is not `Outstanding` (the decision was made). The states the Owner's §5 requires — approved, executed, verified, blocked, not applicable — are kept separate from these row statuses throughout: `Approved in principle, conditional` is an approval, and §3's OID-22 row says in the same breath that nothing was executed.
+
+**Status of every row, as measured 1 November 2026:** 20 rows are `Outstanding`, OID-20 is `Accepted (internal targets only)`, OID-22 is `Approved in principle, conditional`. No row is `Provided`, with one exception noted inside OID-02 (the **English** tagline is spec-locked and therefore not an input at all — see §5), and no row is `Rejected`.
 
 ---
 
@@ -43,7 +47,7 @@ Every row in §3 is `Outstanding`. No row here is `Provided`, with one exception
 
 ---
 
-## 3. Owner input register (22 items, all Outstanding)
+## 3. Owner input register (22 items: 20 Outstanding, 2 decided on 1 November 2026)
 
 Columns: **Why it cannot be invented** = the specific rule plus the specific absence. **Where it will live** = the module/table/field that will hold it once supplied. **Meanwhile** = the work that proceeds.
 
@@ -84,10 +88,10 @@ Columns: **Why it cannot be invented** = the specific rule plus the specific abs
 
 | ID | What is needed | Why it cannot be invented | Status | Where it will live | Meanwhile |
 |---|---|---|---|---|---|
-| **OID-19** | Hosting/environment selection, object-storage vendor, AI provider **and model**, email/SMTP provider, backup target, OTLP destination, **and now the identity-provider instance** (which OIDC-compatible IdP, hosted where, under whose administrative control, at what recurring cost) — and acceptance of the recurring cost | Standard §13 puts this class with the facts: "Approval of operational costs, providers, and formal service commitments." (line 304) Measured absence: counting empty values in `.env.example` (`grep -cE '^[A-Z0-9_]+=$'`) gives 19, of which 14 are provider/endpoint selections (`S3_ENDPOINT`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `AI_PROVIDER`, `AI_PROVIDER_API_KEY`, `AI_MODEL`, `SMTP_HOST`, `SMTP_USER`, `SMTP_PASSWORD`, `INQUIRY_NOTIFY_ADDRESS`, `OTEL_EXPORTER_OTLP_ENDPOINT`, `RATE_LIMIT_REDIS_URL`, `BACKUP_TARGET_URI`) and 5 are the superuser/role passwords the operator must create locally and `scripts/db/init-roles.sh` reads at lines 58 to 67; no ADR selects a vendor — ADR-025 decides the MFA *mechanism* and explicitly refuses to name a provider, recording self-hosted Keycloak only as a non-committed zero-cost candidate; the AI model choice also decides the vector dimension that ADR-007 deliberately refuses to hard-code | `Outstanding` | Module 16 integration status (safeguarded configuration), Module 14's identity configuration (ADR-025 decision 1), `docs/SECURITY_AND_PERMISSIONS.md`, `docs/AI_CURATOR_GOVERNANCE.md` | Every adapter is written to a vendor-neutral interface with contract tests against a local stub; nothing fakes a provider in real environments; the inert test env in `tests/setup/env.ts` keeps keys blank by design; ADR-025 decision 5 deliberately adds no `OIDC` key to `.env.example` until the strategy that reads it exists, so this absence is a stated rule and not a hole (contrast H-1, where a declared variable has no implementation) |
-| **OID-20** | Formal acceptance of the proposed RPO/RTO and availability baseline — and a decision on whether anything may ever be **published** as an SLA | The `GAP-14` row of `reference/Noujoude_Gap_Closure_Register_EN.csv` records its closure as `Closed as proposed baseline; provider proof/Owner approval pending` (CSV cell value). The availability rule: "Target monthly availability objective for V1 is 99.5%, subject to the actual provider/support plan and formal Owner acceptance. Do not publish an SLA based solely on this internal objective." (Standard §11 line 262) The specification agrees: "They are engineering acceptance targets, not public contractual SLAs." (Master Spec line 3883) | `Outstanding` | Operations record in `docs/TEST_AND_RELEASE_REPORT.md`; Module 16 service settings | The engineering targets (DB RPO ≤1h/RTO ≤4h; media RPO ≤4h/RTO ≤8h; config ≤24h/≤4h; 35/12/12 retention points) are implemented as design constraints, never as public promises; restore tests will record *measured* numbers |
+| **OID-19** | Hosting/environment selection, object-storage vendor, AI provider **and model**, email/SMTP provider, backup target, OTLP destination, **and now the identity-provider instance** (which OIDC-compatible IdP, hosted where, under whose administrative control, at what recurring cost) — and acceptance of the recurring cost | Standard §13 puts this class with the facts: "Approval of operational costs, providers, and formal service commitments." (line 304) Measured absence: counting empty values in `.env.example` (`grep -cE '^[A-Z0-9_]+=$'`) gives 19, of which 14 are provider/endpoint selections (`S3_ENDPOINT`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `AI_PROVIDER`, `AI_PROVIDER_API_KEY`, `AI_MODEL`, `SMTP_HOST`, `SMTP_USER`, `SMTP_PASSWORD`, `INQUIRY_NOTIFY_ADDRESS`, `OTEL_EXPORTER_OTLP_ENDPOINT`, `RATE_LIMIT_REDIS_URL`, `BACKUP_TARGET_URI`) and 5 are the superuser/role passwords the operator must create locally and `scripts/db/init-roles.sh` reads at lines 58 to 67; no ADR selects a vendor — ADR-025 decides the MFA *mechanism* and explicitly refuses to name a provider, recording self-hosted Keycloak only as a non-committed zero-cost candidate; the AI model choice also decides the vector dimension that ADR-007 deliberately refuses to hard-code. **Updated 1 Nov 2026 by OD-3:** the local `.env` now exists and carries the 5 role passwords plus `PAYLOAD_SECRET` as freshly generated values, which is an operator act the Owner authorized and which answers **none** of this row — the 14 provider/endpoint keys remain deliberately empty in `.env` exactly as in the template, no vendor is selected, and no recurring cost has been accepted. The row is unchanged because the fact is unchanged | `Outstanding` | Module 16 integration status (safeguarded configuration), Module 14's identity configuration (ADR-025 decision 1), `docs/SECURITY_AND_PERMISSIONS.md`, `docs/AI_CURATOR_GOVERNANCE.md` | Every adapter is written to a vendor-neutral interface with contract tests against a local stub; nothing fakes a provider in real environments; the inert test env in `tests/setup/env.ts` keeps keys blank by design; ADR-025 decision 5 deliberately adds no `OIDC` key to `.env.example` until the strategy that reads it exists, so this absence is a stated rule and not a hole (contrast H-1, where a declared variable has no implementation) |
+| **OID-20** | Formal acceptance of the proposed RPO/RTO and availability baseline — and a decision on whether anything may ever be **published** as an SLA | The `GAP-14` row of `reference/Noujoude_Gap_Closure_Register_EN.csv` records its closure as `Closed as proposed baseline; provider proof/Owner approval pending` (CSV cell value). The availability rule: "Target monthly availability objective for V1 is 99.5%, subject to the actual provider/support plan and formal Owner acceptance. Do not publish an SLA based solely on this internal objective." (Standard §11 line 262) The specification agrees: "They are engineering acceptance targets, not public contractual SLAs." (Master Spec line 3883) | `Accepted (internal targets only)` — **1 November 2026, Owner authorization §1(7)** | Operations record in `docs/TEST_AND_RELEASE_REPORT.md`; Module 16 service settings | **What was accepted, in the exact documented values, none invented or altered** (Standard §11 lines 249–251 for the RPO/RTO rows, line 256 for retention, line 259 for the restore cadence, line 262 for availability; Master Spec G.11.1 lines 3887–3888 for the two availability scopes): PostgreSQL primary data RPO ≤ 1 hour / RTO ≤ 4 hours; original media and critical object storage RPO ≤ 4 hours / RTO ≤ 8 hours; application config and deployment artifacts RPO ≤ 24 hours / RTO ≤ 4 hours; 35 daily, 12 weekly, 12 monthly recovery points; restores tested quarterly and before major database/storage migrations; 99.5% monthly availability for both the public museum and the Control Center. **What the acceptance does not do:** the Owner's authorization states that it does not authorize representing these figures as a contractual or publicly guaranteed SLA, so the prohibition in Standard §11 line 262 and the public-copy ban in `docs/IMPLEMENTATION_PLAN.md` R-07 survive this row closing, unchanged. **What remains factually missing, and is now an execution prerequisite rather than a decision:** no hosting or support plan has been selected (OID-19), no restore has ever been attempted in this workspace, and Standard §11 line 245 still describes the figures as proposed engineering targets rather than a claim a vendor meets. Acceptance makes them binding *internally*; it does not make them *measured* |
 | **OID-21** | Approved legal texts and rules: privacy notice, terms of use, cookie/consent posture, and the **retention period for inquiry personal data** | The route table names the gate twice: the privacy row reads "Approved privacy notice" (Master Spec line 425) and the terms row reads "Approved terms of use" (line 426) — the adjective is the gate, not decoration. Module 13's acceptance criterion is "Inquiry PII is role-restricted; inquiries are excluded from public search and AI retrieval; retention actions are logged." (line 3816) — the retention rule is required but its period is not supplied, and legal retention periods are jurisdiction-dependent, while jurisdiction itself is OID-01 | `Outstanding` | Policy content records per locale with publication state; Module 13 retention configuration | Policy routes, versioning and consent plumbing are built with a withheld state; inquiry PII is role-restricted, excluded from search indexing and from AI knowledge by default — protection does not wait for the text |
-| **OID-22** | Explicit authorization to deploy to production | Directive §17 line 325; Standard §12 line 281 and §15 line 335; ADR-level prohibition | `Outstanding` | Release record in `docs/TEST_AND_RELEASE_REPORT.md` §8 | No deployment tooling is pointed at any production target; staging is not assumed either |
+| **OID-22** | Explicit authorization to deploy to production | Directive §17 line 325; Standard §12 line 281 and §15 line 335; ADR-level prohibition | `Approved in principle, conditional` — **1 November 2026, Owner authorization §1(8)** | Release record in `docs/TEST_AND_RELEASE_REPORT.md` §8 | **The condition is the content of the decision.** The Owner authorizes production deployment *when all mandatory release gates have passed*, and the authorization explicitly does not waive security requirements, rights and licensing requirements, data protection requirements, release acceptance criteria, required operational readiness, the need for an identified production target, or valid deployment credentials. Therefore the state of this row is an approval, and the state of the act is: **nothing has been deployed, no target exists, no credential exists, and no release gate has passed** — those are execution prerequisites recorded as such in `docs/TEST_AND_RELEASE_REPORT.md` §4A, not Owner decisions this row can manufacture. What changes on 1 November is that the *class* of action is no longer forbidden: a future deployment attempt will not be refused for want of authorization, only for want of gates, a named target, and real credentials. No deployment tooling is pointed at any production target, and staging is not assumed either — the Owner's text forbids deploying to an assumed or invented target |
 
 **Note added in the gap-closure batch (31 Oct 2026) — all 22 rows remain `Outstanding`, and one of them now
 gates a schedule.** Nothing in that batch supplied an Owner fact, so no status in this register changed. What
@@ -107,6 +111,29 @@ did change is how the plan treats an unselected input:
 
 None of these notes moves a row toward `Provided`. A row moves only when the Owner supplies the fact and names
 the document it came from (§7's update protocol).
+
+**Superseding note, 1 November 2026 — two rows moved, twenty did not, and the difference is the point.** The
+sentence above this one — that all 22 rows remain `Outstanding` — is retained as the 31 October record it was, and
+is no longer the current state. The Owner's authorization of 1 November closed exactly two rows, and closed them
+because the thing asked for was a *decision the Owner alone could make* (accept these numbers as our internal
+target? do you authorize deploying to production someday, on conditions?). Neither closure supplied a fact about
+the museum:
+
+- **OID-20** is `Accepted (internal targets only)`. The values are the ones already documented, quoted unchanged
+  in the row. The acceptance does not license an SLA, and Standard §11 line 262's prohibition still binds.
+- **OID-22** is `Approved in principle, conditional`. It authorizes a class of future act and waives nothing;
+  gates, target and credentials remain execution prerequisites, and no deployment has occurred.
+- **OID-01 … OID-19 and OID-21 stay `Outstanding`, all 20 of them**, and §6A records the specific fact still
+  missing for each and the minimum evidence that would close it. The re-check searched the workspace before
+  writing that section; it found nothing that closes any of the 20, and the Owner's blanket authorization was
+  explicitly not treated as a substitute for the facts — §6 of that authorization says so in terms.
+
+Two consequences for the rest of the documentation. First, the schedule rule in the note above survives and now
+has an exception-shaped hole in it: Module 14's MFA half is still deferred against OID-19, which is still
+`Outstanding`, but OID-20's closure means the backup and restore *cadence* is a committed internal target rather
+than a proposal awaiting a decision — it can be engineered against, and still cannot be published. Second, no row
+in this register became `Provided`. `Accepted` and `Approved in principle` are decisions about *our* targets and
+*our* permissions; `Provided` is reserved for the museum's facts, and not one has arrived.
 
 ---
 
@@ -153,11 +180,12 @@ Standard §13 line 285 and Directive §17 line 316 require these to be decided, 
 
 **Also not an Owner input, and not to be re-raised:** the choice of Payload/Next/React/PostgreSQL/pnpm versions within the verified matrix (ADR-001…ADR-004, §3); the four database roles (ADR-005); single schema authority and the prohibition on a second ORM (ADR-002); background jobs on Payload Jobs (ADR-015); Lexical rich text (ADR-016); the CI vendor; lint/format rules; migration file naming; test-directory layout; naming of internal types.
 
-**Environment actions, which are neither Owner *facts* nor architecture decisions** — they are operator steps the build cannot perform for itself, listed here once so they are not mistaken for institutional inputs:
-- Install **Node 24.22.2** (B-01). The ADR refuses to work around it.
-- Create `.env` from `.env.example` with local development values (B-03).
-- Authorize `git init` and the first checkpoint commit (B-04).
-- Authorize dependency installation and the first application scaffold (B-02).
+**Environment actions, which are neither Owner *facts* nor architecture decisions** — they are operator steps the build cannot perform for itself, listed here once so they are not mistaken for institutional inputs. **All four were authorized and executed on 1 November 2026; the statuses below were re-measured, not asserted, and the full evidence is `docs/IMPLEMENTATION_PLAN.md` §10.1 and `docs/CHANGELOG.md`.**
+- Install the Node runtime required by `engines.node` (B-01 / OD-1) — **executed and verified: `v24.22.1`**. **This row previously read 24.22.2, and that was wrong:** the constraint is `>=24.22.1 <25`, the release the Owner authorized and the project installed is **24.22.1**, and the documentation had drifted upward by one patch without anyone changing the requirement. Corrected here rather than quietly, because a register that names a version the project does not run is the kind of stale claim `docs/IMPLEMENTATION_PLAN.md` §8 catalogs as a documentation defect. The ADR still refuses to work around the constraint.
+- Create `.env` from `.env.example` with local development values (B-03 / OD-3) — **executed and verified: `.env` exists, 93 lines, 38 keys, 6 freshly generated secrets, 14 provider/endpoint keys left empty on purpose (that emptiness *is* OID-19), mode `0600`, and `git status --ignored` reports `!! .env`. No secret value has been printed in any document, log or report in this workspace.**
+- Authorize `git init` and the first checkpoint commit (B-04 / OD-4) — **executed and verified: repository initialized on `main`, first commit recorded, no remote configured, nothing pushed; `.gitignore` reviewed before staging and a secret audit run against the index.**
+- Authorize dependency installation and the first application scaffold (B-02 / OD-2) — **installation executed and verified: `pnpm install` exit 0, `node_modules` present, `pnpm-lock.yaml` written and committed. The *scaffold* half was not: `src/` is still empty of application code, and building it is Phase 2 work this batch does not start.**
+- Arm the `pnpm run` guard (B-10 / OD-7) — **executed and verified: the global pnpm config now reads `verifyDepsBeforeRun: error`; the fifth action, added because H-12 showed this list was incomplete without it.**
 
 ---
 
@@ -173,7 +201,80 @@ Standard §13 line 285 and Directive §17 line 316 require these to be decided, 
 | Read `Noujoude_Asset_and_Brand_Requirements_EN.md` lines 39, 70–74, 204–212 | palette, fonts and asset-derived claims all require explicit approval |
 | Checked `.env.example` for provider configuration | 19 empty values, 14 of them provider/endpoint selections → OID-19 |
 | Cross-checked the Gap Register | GAP-07 (visual approval remains) → OID-18; GAP-10 (rights remain to verify) → OID-15/16/17; GAP-14 (proposed baseline pending approval) → OID-20 |
-| Confirmed no Owner input is marked `Provided` | nothing in the workspace records an Owner decision, approval or supply |
+| Confirmed no Owner input is marked `Provided` | nothing in the workspace records an Owner decision, approval or supply — **true as compiled on 31 October; §6A records what changed on 1 November and what did not** |
+
+---
+
+## 6A. Re-check of every open row, 1 November 2026 (the Owner's §2 instruction, executed literally)
+
+The Owner's authorization asked for one thing per remaining input: search for an authoritative source; if the exact
+fact is already documented, record the source and date and close the row; if not, keep the row open and report the
+exact missing fact and the minimum evidence required. It also stated in §6 that the blanket authorization is **not**
+a substitute for factual project information. So the search was run, and this section is its output.
+
+**Sources searched, with the commands:** every file under `reference/` (7 files) and every non-generated file under
+`docs/`, plus the workspace's own records — `grep -ril` over `reference/` for jurisdiction, legal name, legal form,
+foundation, accreditation, founder, established-in, telephone, opening hours, VAT and commercial-register terms; a
+read of the Master Spec's own input register at §21 (lines 3176–3242); `docs/ASSET_INVENTORY_AUDIT.csv` re-parsed
+for all 82 rows; `Noujoude.photo/_pending_review_AI_generated/_manifest.json` re-read; `.env.example` and `.env`
+key states re-counted; the Gap Register re-read for closure wording.
+
+**What the search produced, honestly stated:** one authoritative source the register had not previously cited —
+**Master Spec §21, the specification's own Owner-input register** — which enumerates the required inputs under
+`OI-001…OI-009`, `CI-001…CI-010`, `BA-001…BA-007` and `LO-001…LO-008`, and records each one's state as pending
+supply. That is evidence of *what is required and how it must be answered*; it is not evidence of any of the missing
+facts. **Not one of the 20 open rows closed**, because no reference file, asset filename, configuration value or
+prior document supplies a legal name, a founder, an address, an artifact, a rights statement or a provider
+selection. Every hit for the searched terms was a **requirement or a prohibition**, not a value.
+
+Two near-misses are recorded because they are exactly the kind of thing a later reader (or a later model) would
+mistake for evidence. First, Master Spec §21.5 (lines 3234–3236) reproduces a *Current Project Truth* paragraph
+claiming an existing Next.js foundation, PostgreSQL/pgvector work and an asset library; the specification itself
+excludes those as implementation claims and requires independent dated evidence, so they cannot close any row.
+Second, OD-3 filled six secret values into `.env` on 1 November — locally generated, operator-grade, and **not** an
+Owner input; OID-19 stayed open precisely because `.env`'s 14 provider/endpoint keys are still empty by design. And
+every keyword hit was a rule rather than a value — the About-page prohibition is typical: "The page must not invent the institution's legal status, physical building, founder's biography, origin date, accreditations, or partnerships." (line 836)
+
+**Per-row outcome.** Status is unchanged (`Outstanding`) for all 20 rows below; the column that matters here is the
+last one, because that is what the Owner has to act on.
+
+| OID | Spec §21 ID | Exact fact still missing | Minimum evidence that closes it |
+|---|---|---|---|
+| OID-01 | OI-001, OI-003, LO-001 | English legal/institutional name; legal nature and operating status; governing jurisdiction | A one-paragraph Owner-signed statement giving the registered entity name verbatim, its legal form, and the jurisdiction whose law governs — plus, if the name is to be published, the registry extract or equivalent that supports it |
+| OID-02 | OI-002 | The canonical Arabic institutional name and the approved Arabic forms of the brand strings | The Arabic strings themselves, in the orthography the Owner approves. A proposed transliteration from the build does not count: the rule forbids an unapproved substitute (Master Spec line 512) |
+| OID-03 | OI-007 | Whether any physical location is intended for publication, and which address if so | A yes/no decision. If yes: the publishable address text and an explicit permission to display it. If no: that sentence, and the location block becomes a permanent not-applicable state |
+| OID-04 | OI-004, OI-005 | The founding history, its dates, and the attribution of founder / owner / collector / institutional representative | The narrative as the Owner authorizes it, with dates, and the name or role description that may appear beside it |
+| OID-05 | OI-008 | Whether any partnership, affiliation, certification or accreditation exists, and whether any officially-recognized claim may be made | Per claim: the counterparty, the instrument, its date, and permission to name it. A statement that none exists is also a closing answer |
+| OID-06 | OI-006 | Postal address, telephone, email, opening hours, and the address that receives inquiries | The channel list exactly as publishable, plus the `INQUIRY_NOTIFY_ADDRESS` value. The SMTP provider that must carry the mail is OID-19, not this row |
+| OID-07 | OI-009 | Approved mission, vision and institutional narrative wording, in English and Arabic | The text. The values already fixed by the specification (Master Spec line 187) are not this input; the prose is |
+| OID-08 | CI-001, CI-009 | Which artifacts actually exist: identity, classification, dates, and country assignment | An inventory — one row per object with a stable identifier, title, category, and the country relationships the Owner asserts. Nothing in `reference/` lists a single real object |
+| OID-09 | CI-003, CI-004 | The factual claims per artifact, with date precision | Per-object statements the Owner authorizes, each marked with its precision (exact / circa / period) |
+| OID-10 | CI-004 | The evidence and sources behind each claim | For each claim, the document, catalogue entry, or record that supports it, supplied as material the project can store and cite |
+| OID-11 | CI-006 | Ownership statement per artifact, its evidence, and what may be disclosed | A statement of who holds the object, the evidence for it, and the disclosure rule — the model exists (ADR-011) and is empty by design |
+| OID-12 | CI-005 | Provenance events: dates, actors, places, and evidence per event | The custody chain as documented, event by event. Fabricated provenance is release-blocking (Master Spec line 2095) |
+| OID-13 | CI-007 | Authenticity assessments: conclusion, method, reviewer, approval, and permitted disclosure | An assessment per object the institution intends to assess, signed by a named reviewer. If the institution does not intend to claim authenticity, that decision closes the row instead |
+| OID-14 | — (not enumerated in §21; required by Master Spec §16.6 line 2455) | Condition reports for real objects | Approved condition, preservation and conservation observations per object, with reviewer. Depends on OID-08 existing first |
+| OID-15 | CI-008, BA-005 | Rights and licences for the 72 original assets, plus creator/source attribution | Per asset: the rights holder, the licence or permission, its scope and term, and the creator/source line to display. Possession of the file is not any of these (Asset Requirements line 111) |
+| OID-16 | CI-008 | Rights for scanned letters, certificates and documentary files | The same per-document facts, with the letter's author and the image's rights holder named separately — they are different subjects |
+| OID-17 | BA-006 | Approval of the 10 AI-generated assets, their rights position, whether illustrative AI visuals may represent heritage subjects at all, and the 10 missing `source_png` originals | A yes/no per asset from the Owner, the rights position, and the lineage files. All 10 manifest entries still read `Pending Human Approval` and `Awaiting Rights Review`, and all 10 source PNGs are still absent from the filesystem |
+| OID-18 | BA-001…BA-004 | Final logo and variants, approval of the palette HEX set, the material families, and final font licences with deployment source | The signed-off brand set and, per font, the licence document plus where it may be served from. The palette row in Asset Requirements line 39 says the values are a working baseline awaiting this approval |
+| OID-19 | LO-008, and LO-005's provider half | Hosting/environment selection, object-storage vendor, AI provider and model, SMTP provider, backup target, OTLP destination, identity-provider instance, and acceptance of the recurring cost | A named provider and plan per service, or an explicit decision to run it on the project's own infrastructure, plus the monthly cost the Owner accepts. AI conversation retention and provider data handling (LO-005) is tracked alongside this as PR-07 in `docs/AI_CURATOR_GOVERNANCE.md` |
+| OID-21 | LO-002, LO-003, LO-004 | Approved privacy notice, terms of use, cookie/analytics consent posture, the copyright/takedown procedure, and the retention period for inquiry personal data | The legal texts per locale (or the instruction that they are being drafted) and one number: how long an inquiry's personal data is kept. Jurisdiction-dependent, so it also depends on OID-01 |
+
+**What the Owner can do in one sitting, and what cannot be done in one sitting.** OID-03, OID-05, OID-13 and the
+*decline* half of OID-17 each close on a decision sentence; OID-06, OID-07 and OID-02 close on short text the Owner
+already owns; OID-19 closes on a provider list plus a cost acceptance. OID-08 through OID-14 and OID-15 through OID-16
+are collection work — they need the inventory and the rights records, and no document in this workspace contains them.
+That distinction matters for the plan: `docs/IMPLEMENTATION_PLAN.md` B-05, B-06 and B-07 gate public *claims*, not
+buildable software, and Phase 2 proceeds against the withheld states this register already defines.
+
+**The two rows that did move are not in the table above.** OID-20 is `Accepted (internal targets only)` and OID-22 is
+`Approved in principle, conditional`, both on 1 November 2026, both recorded in §3 with what their authorization does
+not do. Mapping them back to the specification's own register: OID-20 answers LO-006 and LO-007 (lines 3228–3229),
+and OID-22 is the release-side counterpart of Directive §17's prohibition. The reference files are read-only, so the
+`Pending … Approval` state the specification writes for those rows is unchanged in `reference/` and superseded only
+in this register's status column — which is the correct direction of authority, and is recorded that way so nobody
+later reads the spec's stale state as a missing decision.
 
 ---
 

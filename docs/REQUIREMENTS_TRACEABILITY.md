@@ -35,8 +35,9 @@ Column conventions:
 | Status column values | The five that Directive §15 line 288 permits, quoted by name throughout: "Implemented and Verified" / "Partially Implemented" / "Not Implemented" / "Blocked by Owner Input" / "Out of V1 Scope". Line 288 is their only source; Appendix C's separate vocabulary is handled by REQ-CFX-015 |
 | `§11.9 1613–1617`, `G.2 3672`, `Directive 194` | The Source column's declared style (its header says "section · lines"): a section locator followed by the line number(s) it occupies in that file, written without the word "line". `scripts/verify-citations.mjs` reads both this style and `line N`, so a number in a Source cell is a checkable citation, not decoration |
 
-Only **documentation and audit** requirements can honestly reach "Implemented and Verified" at this baseline, because
-their deliverable *is* a document and its contents are measurable. Every such row states the exact scope of the claim.
+Only **documentation, audit and one host-runtime version gate** can honestly reach "Implemented and Verified" at this
+baseline, because their deliverable *is* a document, a measurement, or an environment reading that a command re-checks.
+Every such row states the exact scope of the claim.
 
 ---
 
@@ -44,20 +45,29 @@ their deliverable *is* a document and its contents are measurable. Every such ro
 
 | Status | Rows | Share |
 |---|---:|---:|
-| Implemented and Verified | 23 | 11% |
-| Partially Implemented | 5 | 2% |
-| Not Implemented | 167 | 76% |
-| Blocked by Owner Input | 20 | 9% |
-| Out of V1 Scope | 4 | 2% |
-| **Total** | **219** | **100%** |
+| Implemented and Verified | 24 | 11.0% |
+| Partially Implemented | 6 | 2.7% |
+| Not Implemented | 166 | 75.8% |
+| Blocked by Owner Input | 19 | 8.7% |
+| Out of V1 Scope | 4 | 1.8% |
+| **Total** | **219** | **100.0%** |
 
-Counts are recomputed from the table body, not asserted.
+Counts are recomputed from the table body, not asserted. The command that produced them, run against this file on
+1 November 2026: `grep -E '^\| REQ-' docs/REQUIREMENTS_TRACEABILITY.md | awk -F' [|] ' '{print $NF}' | sort | uniq -c`
+→ 166 / 24 / 19 / 6 / 4, and the five shares are one-decimal so that they sum to 100.0 rather than to 101 by rounding.
+
+**Two rows moved on 1 November 2026, and both moved because an Owner decision was executed, not because a status was
+re-labelled.** **REQ-BLD-002** left `Blocked by Owner Input` for `Implemented and Verified` once OD-1 put the host
+inside `engines.node` and preflight printed the PASS line. **REQ-BLD-005** left `Not Implemented` for `Partially
+Implemented` because `pnpm-lock.yaml` now exists and is committed while its named verification
+(`pnpm install --frozen-lockfile`) has still never run. Nothing else moved: **application-level verified progress is
+still 0 rows**, and the 24th row is a runtime reading, not product behaviour.
 
 **What the counts actually prove:** Phase 0 (audit) and Phase 1 (architecture, decisions, modelling, governance
 contracts, this register) are delivered and measurable. **Implementation has not started.** Application-level verified
-progress is **0 rows**: all 23 "Implemented and Verified" rows are documentation, audit or version-verification
-deliverables whose evidence is a file in `docs/` plus a re-runnable command — none is product behavior, and none may be
-quoted as a feature being working. 20 rows are blocked on facts, rights, approvals or hosting commitments that must not
+progress is **0 rows**: all 24 "Implemented and Verified" rows are documentation, audit or version-verification
+deliverables whose evidence is a file in `docs/` or a re-runnable command — none is product behavior, and none may be
+quoted as a feature being working. 19 rows are blocked on facts, rights, approvals or hosting commitments that must not
 be fabricated (Standard §13 lines 296–304; G.13 line 3935), including all ten quarantined AI-generated assets (§19).
 
 Group totals (219 rows): 15 conflict resolutions · 6 build gate · 8 commerce · 10 CMS boundary · 6 brand · 8 worlds ·
@@ -99,11 +109,11 @@ not product behavior.
 | ID | Source | V1/F | Implementation location | Test(s) | Evidence | Status |
 |---|---|---|---|---|---|---|
 | REQ-BLD-001 | Standard §2.3 63–87; Directive §7 118–121 | V1 | `docs/ARCHITECTURE_DECISIONS.md` §3 | re-query npm registry / payloadcms.com / postgresql.org / nodejs.org | 31 Oct 2026 direct-source matrix, payload 3.92.1, next 16.4.3, react 19.3.1, PG 18.6; "UNVERIFIED" used where unproven | Implemented and Verified |
-| REQ-BLD-002 | ADR-003 / B-01; Standard §2.2 46 | V1 | — (environment, not code) | `node scripts/preflight.mjs` | preflight FAIL: host Node 24.19.0 violates `">=24.22.1 <25"`; needs 24.22.2 installed | Blocked by Owner Input |
-| REQ-BLD-003 | Standard §2.3 step 9 77; §12 269–280 | V1 | — (planned: CI pipeline) | clean install → typecheck → test → production build | — (no dependency tree installed; ADR §7 row 7 = ❌ blocked) | Not Implemented |
-| REQ-BLD-004 | Standard §15 329; §2.3 65 | V1 | — (planned: lockfile audit + CI guard) | — (none; rejects beta/RC/canary dist-tags) | — (nothing installed yet; nothing to audit) | Not Implemented |
-| REQ-BLD-005 | Standard §2.2 47 (pnpm, committed lockfile) | V1 | — (planned: `pnpm-lock.yaml`) | — (none; `pnpm install --frozen-lockfile`) | — (no lockfile exists) | Not Implemented |
-| REQ-BLD-006 | Standard §3.2 99–106; ADR-005 | V1 | `scripts/db/init-roles.sh` (authored; **executed inside the A.5 harness's throwaway container** on 1 Nov 2026 — entrypoint run plus an idempotent re-run, `docs/A5_PRIVILEGE_EVIDENCE.txt`) | — (none; runtime role has DML only, no DDL, not superuser) | The script ran and the grant state was asserted, but **against a disposable database, not this project's**: no project database has been created (ADR-004; `docker compose config` exits 1 on the unset `.env` secrets, B-03) | Not Implemented |
+| REQ-BLD-002 | ADR-003 / B-01; Standard §2.2 46 | V1 | host runtime, not code (`node -v`) | `node scripts/preflight.mjs` | **Executed 1 Nov 2026 under OD-1:** `node -v` → `v24.22.1` and preflight prints `PASS \| Node.js 24.22.1 \| satisfies engines.node`. Scope of the claim is **this host only** — no CI runner image has ever executed (B-08), and the pinned range `>=24.22.1 <25` is what the requirement binds, not any particular patch | Implemented and Verified |
+| REQ-BLD-003 | Standard §2.3 step 9 77; §12 269–280 | V1 | — (planned: CI pipeline) | clean install → typecheck → test → production build | **Attempted end-to-end 1 Nov 2026 and it does not pass:** install exit 0, typecheck exit 0 (hollow — 19 `scripts/**/*.mjs`, 0 `.ts`, `checkJs` off), `pnpm test` exit 1 (`No test files found`), `pnpm build` exit 1 (no `pages`/`app` directory). ADR §7 row 7 is now ⚠️ partly executed rather than blocked | Not Implemented |
+| REQ-BLD-004 | Standard §15 329; §2.3 65 | V1 | — (planned: lockfile audit + CI guard) | — (none; rejects beta/RC/canary dist-tags) | **There is now something to audit** — `pnpm-lock.yaml` (8,399 lines) resolved every entry to a stable version, and the install printed `✓ Lockfile passes supply-chain policies` — but no automated beta/RC/canary rejection guard exists and the CI `security-scans` job has never run, so the requirement's mechanism is still unimplemented | Not Implemented |
+| REQ-BLD-005 | Standard §2.2 47 (pnpm, committed lockfile) | V1 | `pnpm-lock.yaml` (authored by `pnpm install` under OD-2, 285,200 bytes / `lockfileVersion: '9.0'`, committed in `aedeee0`) | `pnpm install --frozen-lockfile` | The lockfile exists and is tracked, and `packageManager` is pinned in `package.json`. **What has not been done is the verification the row names:** `pnpm install --frozen-lockfile` has never been executed, so reproducibility is asserted from the file's presence rather than proven by a frozen install | Partially Implemented |
+| REQ-BLD-006 | Standard §3.2 99–106; ADR-005 | V1 | `scripts/db/init-roles.sh` (authored; **executed inside the A.5 harness's throwaway container** on 1 Nov 2026 — entrypoint run plus an idempotent re-run, `docs/A5_PRIVILEGE_EVIDENCE.txt`) | — (none; runtime role has DML only, no DDL, not superuser) | The script ran and the grant state was asserted, but **against a disposable database, not this project's**: no project database has been created. **The reason this row stated on 31 Oct is now false and is corrected here** — `docker compose config` no longer exits 1 on unset `.env` secrets (OD-3 created `.env`; the render now exits **0**, verified with `--quiet` so no secret is printed). `pnpm db:up` simply has not been run | Not Implemented |
 
 ---
 

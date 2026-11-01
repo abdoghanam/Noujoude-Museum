@@ -72,7 +72,7 @@ Standard §4.2 concern, recorded in `docs/SECURITY_AND_PERMISSIONS.md` §2.1 R11
 
 Per **ADR-007** there is **no `pgvector` column** in Phase 1 or Phase 2 and **no vector dimension is adopted**;
 V1 AI retrieval is keyword/PostgreSQL-full-text plus `pg_trgm` (ADR-006) behind the permission gates above,
-"not vector, until re-decided" (`ARCHITECTURE_DECISIONS.md` line 367). Three independent sources agree
+"not vector, until re-decided" (`ARCHITECTURE_DECISIONS.md` line 384). Three independent sources agree
 (ADR-007 §Why): Master §8.19 line 1398 rules `VECTOR(768)` "not a public artifact field or a fixed product
 requirement" and requires the dimension to match a selected and tested model; §9.4 line 1430 places advanced
 semantic retrieval in Future Scope; Standard §3.3 line 117 forbids hard-coding a dimension before the
@@ -113,7 +113,7 @@ claim:
 
 | Dimension | Field (ADR-009) | Required predicate for public AI retrieval | Source | Status |
 |---|---|---|---|---|
-| **Publication state, per locale** | `PublicationRecord` (entity 16, §8.2 line 1047; shape at §8.16 line 1352: content entity, locale, publication state, published/unpublished timestamps, publisher, scheduled time, public route/slug version) | a `PublicationRecord` for that (entity, locale) **is Published**. Under **ADR-008 / S-02** publication is read from `PublicationRecord` and *"never from one global field"* — the wording of `docs/ARCHITECTURE_DECISIONS.md` line 374, this project's own rule rather than a specification quotation; the entity-level `publication_state` columns at lines 1134/1170/1218 are **not** an authority | §10.3 line 1453; ADR-008 | Contract — unimplemented |
+| **Publication state, per locale** | `PublicationRecord` (entity 16, §8.2 line 1047; shape at §8.16 line 1352: content entity, locale, publication state, published/unpublished timestamps, publisher, scheduled time, public route/slug version) | a `PublicationRecord` for that (entity, locale) **is Published**. Under **ADR-008 / S-02** publication is read from `PublicationRecord` and *"never from one global field"* — the wording of `docs/ARCHITECTURE_DECISIONS.md` line 391, this project's own rule rather than a specification quotation; the entity-level `publication_state` columns at lines 1134/1170/1218 are **not** an authority | §10.3 line 1453; ADR-008 | Contract — unimplemented |
 | **Rights clearance** | rights dimension; `RightsRecord` (§8.15 lines 1323–1344); Media↔Rights is a **join**, not `rights_record_id` (ADR-012 / S-05, §8.17 line 1373) | cleared **for the intended use**: §11.6 line 1593 "Only rights states explicitly cleared for the intended public use may be displayed"; §8.15 line 1344 "The presence of a file in the library does not prove a right to display it" | §14.4 line 1984 | Contract — unimplemented |
 | **Exhibition availability** | six-value country state: `Planned/Coming Soon`, `In Preparation`, `Open Exhibition`, `Temporarily Unavailable`, `Closed/Archived` (§11.9 lines 1613–1617) **plus `Hidden/Not Public`** (G.4 line 3723) per **ADR-010 / S-01** | not `Hidden/Not Public`; content from a non-open world is only surfaced as an explicitly approved planned-state introduction (§16/G.4 line 3720 "do not imply a complete exhibition") | ADR-010 | Contract — unimplemented |
 | **AI knowledge eligibility** | the eighth dimension; `AIKnowledgeSource` (line 1050) | explicitly eligible. Eligibility is *granted*, never inherited from "published": a record can be published to the website and still be non-eligible for retrieval | §14.4 line 1985; §16.9 line 2528 | Contract — unimplemented |
@@ -147,7 +147,7 @@ retrieval") and §6.10 line 816.
 | Restricted artifacts / rights-restricted media | §14.3 line 1976; §11.6 line 1593; Standard §15 line 332 | fails rights dimension |
 | Internal control data / hidden administrative records | §14.8 line 2027 "hidden administrative records"; Standard §7 line 199 "internal control data" | administrative surface, incl. audit and rights-review notes |
 | Permission/rights documents themselves | §14.3 line 1976 "permission file"; §8.15 line 1340 `permission_document` is a "Protected file reference" | evidence, not exhibit |
-| **Hidden / Not Public country worlds** | **G.4 line 3723, verbatim: "Hidden / Not Public: do not expose the route through public navigation, search, sitemap, or AI retrieval."** | the exposure ban names AI retrieval as one of four distinct channels; ADR-010 retains this as the sixth state value precisely because it "adds a sixth with an explicit behavioural rule" (`ARCHITECTURE_DECISIONS.md` line 395) |
+| **Hidden / Not Public country worlds** | **G.4 line 3723, verbatim: "Hidden / Not Public: do not expose the route through public navigation, search, sitemap, or AI retrieval."** | the exposure ban names AI retrieval as one of four distinct channels; ADR-010 retains this as the sixth state value precisely because it "adds a sixth with an explicit behavioural rule" (`ARCHITECTURE_DECISIONS.md` line 412) |
 
 **Appendix G.4 is the sharpest single constraint in this area**, because it makes the exclusion *channel-
 agnostic*: hiding a world from navigation while leaving it reachable to a retrieval query would satisfy the UI

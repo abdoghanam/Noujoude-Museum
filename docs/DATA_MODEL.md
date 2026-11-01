@@ -339,7 +339,7 @@ Master Spec line 1350 and adding one would be a schema claim with no source.
 - `publication_state` enum from §11.3 line 1555 + line 1557: `Draft`, `In Review`, `Approved`, `Scheduled` (optional),
   `Published`, `Unpublished`, `Archived`. Namespaced as `publicationState` per ADR-009.
 - publication is derived from the relevant `PublicationRecord`, *"never from one global field"* — the wording of
-  `docs/ARCHITECTURE_DECISIONS.md` line 374 (ADR-008), this project's own rule rather than a specification quotation.
+  `docs/ARCHITECTURE_DECISIONS.md` line 391 (ADR-008), this project's own rule rather than a specification quotation.
 - Every publish/unpublish/archive is an explicit, audited operation (`AuditEvent`, §11.12 line 1654).
 
 **Revision** (line 1354): `record_type`, `record_id`, `revision_id`, `previous_and_new_values` *or* a safe structured
@@ -603,15 +603,19 @@ as built.
 
 Governed by Technology Standard §3.4 (lines 121–126) and §3.2 (roles), executed under ADR-002, ADR-004 and ADR-005.
 Everything below is a plan. **No migration has been written, generated, or applied** — the migration directory does
-not exist, because `pnpm install` cannot yet run (B-01).
+not exist. **The reason for that changed on 1 November 2026:** this sentence used to read *because `pnpm install`
+cannot yet run (B-01)*, and B-01/B-02 are now cleared — `payload` 3.92.1 and `@payloadcms/*` are installed, so
+`pnpm migrate:create` is executable in principle. It has not been run because **there are no Payload collections to
+generate a migration from**: `src/` holds no application code, and authoring them is Phase 2 item 1. A blocked
+prerequisite and an unbuilt dependency are different facts, and the plan should not confuse them.
 
 **Sequence (`DC`, planned):**
 
 | Step | Action | Gate |
 |---|---|---|
-| 0 | Host Node 24.22.2 installed | ADR-003 / B-01 — blocks everything below |
-| 1 | `pnpm install`; lockfile committed; `@payloadcms/*` + `payload` pinned identically (3.92.1) | ADR-002 constraint, `ARCHITECTURE_DECISIONS.md` §5 |
-| 2 | `postgres:18.6-alpine` via Docker Compose, `127.0.0.1:5432` only, healthcheck | ADR-004. The image is in the local cache since 1 Nov 2026 (`docker images` rc=0, 433 MB) and the engine answers (`docker info` rc=0), so **B-09 no longer binds this step**; what binds it is **B-03** — `docker compose config` exits 1 on the seven unset `.env` secrets (`ARCHITECTURE_DECISIONS.md` §7.2) |
+| 0 | Host Node 24 in the `>=24.22.1 <25` range installed | ADR-003 / B-01 — **done 1 Nov 2026 under OD-1: `node -v` → `v24.22.1`, and preflight prints `PASS \| Node.js 24.22.1`. ADR-003's own text named 24.22.2 because that was the newest 24.x at read time; the requirement was always the range, and the range is met** |
+| 1 | `pnpm install`; lockfile committed; `@payloadcms/*` + `payload` pinned identically (3.92.1) | ADR-002 constraint, `ARCHITECTURE_DECISIONS.md` §5 — **done 1 Nov 2026 under OD-2: install exits 0, `pnpm-lock.yaml` is 285,200 bytes / 8,399 lines / lockfileVersion 9.0 with 701 `.pnpm` entries, and it is committed source. The pins resolved identically at 3.92.1** |
+| 2 | `postgres:18.6-alpine` via Docker Compose, `127.0.0.1:5432` only, healthcheck | ADR-004. The image is in the local cache since 1 Nov 2026 (`docker images` rc=0, 433 MB) and the engine answers (`docker info` rc=0), so **B-09 no longer binds this step**. **Neither does B-03, which did when this row was last written:** OD-3 created `.env` on 1 Nov 2026 and `docker compose config --quiet` now exits **0** (the seven `:?` guards are satisfied by present values, not removed — the negative case is still proven by suppressing the env file, and `scripts/tests/verify-compose-config.test.mjs` asserts exactly that). What binds this step now is simply that nobody has run `pnpm db:up` in this batch: `docker ps -a` shows three stopped containers from a different project and no `ndm-postgres`. **Note the engine caveat: reachability here is a latency property, not a constant — a 60 s probe after idle returned rc=124 and a 120 s probe returned rc=0 in the same window** |
 | 3 | Bootstrap migration + `scripts/db/init-roles.sh` create the four roles (migration, runtime, reporting, backup) | ADR-005 as refined by **ADR-019**; Standard §3.2 lines 99–106; runtime role DML-only, non-superuser, no `BYPASSRLS`, no `UPDATE`/`DELETE` on append-only relations |
 | 4 | Payload-generated migration: base collections (§8.3–8.16) | Standard §3.4 line 121 "Every schema change must be a committed migration" |
 | 5 | Adapter-extension migration: custom Drizzle tables — `audit_event`, `artifact_country_relationship`, `media_asset_rights`, `revision_annotation`, `translation_record` (if taken) | ADR-002/011/012; same migration stream, explicit names/FK/indexes/order per Standard §3.1 |

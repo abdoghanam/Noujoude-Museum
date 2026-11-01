@@ -942,3 +942,138 @@ drifted apart. All seven suites re-run together: 14, 22, 23, 25, 32, 19, 11 — 
 **What this closes and what it does not.** A reporting defect in a Phase 1 tool, now with a guard on the report. It
 validates no product requirement, and Level B is unchanged at **0 of 12** — the twelve Standard §12 checks still
 require OD-1, OD-2, OD-3 and OD-4, not a corrected console line.
+
+### N. Six Owner decisions granted, executed and verified — Gate 0 Passed, and 20 facts plus 82 rights records still owed (1 November 2026, authorization window)
+
+**What arrived.** A formal Owner authorization message granting OD-1, OD-2, OD-3, OD-4, OD-7, Gate 0, OID-20 and
+OID-22 in principle, and instructing that the remaining Owner inputs and the 82 asset-rights records be reconciled
+against existing evidence — with the explicit boundary that the blanket authorization is *not* a source of factual
+project information and may not be used to close them. Execution order was as instructed, adjusted only where a
+documented dependency required it: OD-1 → OD-7 → OD-2 → OD-3 → OD-4 → Gate 0 → OID-20 → OID-22 → reconciliation.
+
+**OD-1 — the runtime (B-01 closed).** `winget upgrade --id OpenJS.NodeJS.LTS --version 24.22.1 --exact --scope
+machine` completed; `node -v` → `v24.22.1`, `npm -v` → `11.19.1`, `pnpm --version` → `11.21.0`. The ADR's requirement
+is the range `>=24.22.1 <25`, not a patch: nodejs.org also publishes 24.22.2, and 24.22.1 is the newest release inside
+that range this host's package manager carries. Node 25 was not installed. `scripts/preflight.mjs` flipped its Node
+line from FAIL to PASS, printing `PASS | Node.js 24.22.1 | satisfies engines.node`.
+
+**OD-7 — the guard, armed at the place that actually governs (B-10 and H-12 closed).** The mechanism was inspected
+before anything was set, and it was **not** where the documentation assumed: pnpm 11.21.0's global config on this host
+is `C:\Users\NaDa\AppData\Local\pnpm\config\config.yaml`; `~/.npmrc` does not exist here. Before: 3 keys, 59 bytes,
+SHA-256 `67494dd19aef…627fc`, **backed up first**. The minimum change — one key, its value taken from this project's
+own measured matrix rather than guessed — was `pnpm config set verify-deps-before-run error --global`. After: the same
+three keys unchanged (`fetchRetries: 5`, `fetchTimeout: 600000`, `networkConcurrency: 1`, the last preserved on
+purpose even though it is why the install was slow) plus `verifyDepsBeforeRun: error`. Verified behaviourally, not by
+reading the file: `pnpm config get --global verify-deps-before-run` → `error`; `pnpm run audit:workflow` exit 0 with
+zero `Progress:` lines; `pnpm test:gates` exit 0; preflight check 10 prints `PASS | pnpm run deps-before-run`.
+`networkConcurrency` tuning is a machine decision this batch did not own.
+
+**OD-2 — the tree, and two things it surfaced (B-02 closed).** `pnpm install` exit **0**; `pnpm-lock.yaml` written —
+285,200 bytes / 8,399 lines / `lockfileVersion: '9.0'` — `node_modules` present with all 18 declared dependencies
+linked and 701 entries under `.pnpm`, and the install printed `✓ Lockfile passes supply-chain policies`. Resolved
+versions recorded rather than assumed: `payload` and all four `@payloadcms/*` siblings **3.92.1** (lockstep), next
+16.4.3, react 19.3.1, **graphql 16.14.2** — 17.0.2 exists and was not pulled, which closes A-C3 empirically — and
+**zod 4.6.7**, which closes A-C2 empirically. The two surfaced problems: **(1)** pnpm refused to finish while two
+dependencies wanted install-time build scripts (`ERR_PNPM_IGNORED_BUILDS`, exit 1) **and** then refused every
+`pnpm run <script>` with `ERR_PNPM_VERIFY_DEPS_BEFORE_RUN`; resolved by naming the packages to `pnpm approve-builds`
+(`esbuild`, `unrs-resolver`), which wrote `allowBuilds` into `pnpm-workspace.yaml` — now a committed project file that
+carries its reasoning. The alternative route was measured dead: pnpm 11 no longer reads the `pnpm` field in
+`package.json` (it warns so), so an `onlyBuiltDependencies` entry there is inert and was **reverted rather than left
+as a fake guard**. **(2)** No version constraint was overridden and no dependency added — but `pnpm lint` now fails
+for a missing-declaration reason, recorded below.
+
+**OD-3 — `.env`, six secrets generated, fourteen inputs left empty (B-03 closed for the configuration half).** `.env`
+created: 5,212 bytes, 38 assignments — the same 38 keys as `.env.example`, none added, none dropped. Six values
+generated locally from `crypto.randomBytes`: `PAYLOAD_SECRET` (64 hex) and five role/bootstrap passwords (48 hex
+each), pairwise distinct and hex-only so they cannot break the single-quoted SQL interpolation in
+`scripts/db/init-roles.sh`. Fourteen provider/endpoint values were **left empty and labelled in-file as still-required
+Owner inputs** — they are OID-19's selections and may not be invented. No secret value was printed anywhere in this
+window; verification used key names, lengths and counts only. `docker compose config --quiet` → exit **0** with zero
+bytes emitted, which proves all seven `:?` guards are satisfied; preflight's `.env` line flipped WARN → PASS; `next
+build` independently reported `- Environments: .env`. `.env` is git-ignored and absent from the index. **Not
+executed:** `pnpm db:up` — the container bring-up was not requested.
+
+**OD-4 — a repository, and one checkpoint (B-04 closed, B-08 un-rooted).** `git init` on a tree with no repository in
+`E:\no` or any parent, so no existing history was found and none was overwritten. First commit **`aedeee0`** on branch
+`main`: 150 files, 49,699 insertions. Verified before committing: `.gitignore` read line by line; `git check-ignore`
+→ `.env` IGNORED, `node_modules/` ignored, `.env.example` correctly re-included; a name scan of the staged set found
+no `.pem/.key/p12/pfx/secrets//id_rsa/credentials` path; a content scan for private-key blocks, AWS key ids, `ghp_`
+and Slack tokens found nothing. `git remote -v` → empty; nothing was pushed, because the authorization forbids it.
+Two facts stated rather than smoothed over: the commit records this machine's **pre-existing global** git identity
+(changing git config is outside what this batch may do), and `reference/` plus `Noujoude.photo/` are committed
+**on purpose** — 7 and 85 files — because that is what makes the read-only and never-overwrite protections enforceable
+by diff.
+
+**Gate 0 — adopted, recorded, and nothing in the specification was touched to make it pass.** The Owner's message
+adopts the current Master Specification as the governing baseline and names the Owner as the change-control authority.
+Recorded in `docs/OWNER_INPUT_REGISTER.md`, in `docs/TEST_AND_RELEASE_REPORT.md` §4A (Gate 0 → Passed, approver named)
+and here. The baseline artifact is unchanged and byte-identical to source (SHA-256 `5b30b21e…`, 257,099 bytes over
+4,069 lines, 219 requirement rows carrying assigned IDs). **No line of `reference/` and no line of
+`docs/MASTER_SPECIFICATION.md` was edited to record this adoption.** Appendix E's per-item rows still read
+`Pending Owner approval` where the Owner has not answered that specific item — blanket adoption of the baseline is
+recorded as itself and is not smeared across 22 unrelated rows.
+
+**OID-20 and OID-22 — recorded with the exact states, because a single word for both would have lied.** OID-20 is
+`Accepted (internal targets only)`: the documented values are adopted as engineering and operational targets — RPO
+≤1h / RTO ≤4h for PostgreSQL, ≤4h / ≤8h for media, ≤24h / ≤4h for configuration, 35 daily / 12 weekly / 12 monthly
+retention, quarterly restore tests, and 99.5% monthly availability — and the register states what the acceptance does
+**not** do: nothing is published as an SLA, no restore test has been executed, and no RPO/RTO has ever been measured.
+OID-22 is `Approved in principle, conditional`: production deployment is authorized when the mandatory release gates
+have passed, which waives no security, rights, data-protection or acceptance requirement, and the actual target and
+credentials remain execution prerequisites. Nothing was deployed; there is no target; no gate that depends on
+deployment moved.
+
+**The reconciliation, and its honest result: 0 of 20 facts, 0 of 82 rights records.** All twenty outstanding inputs
+were searched for an authoritative source already in the workspace before any was reported as missing; `docs/OWNER_INPUT_REGISTER.md` §6A now
+carries the search commands, the near-misses, and a per-item statement of the exact missing fact and the minimum
+evidence that would close it. The search did surface new authoritative material — the specification's own
+Owner-input register structure, which the project register now maps against — but nothing that supplies a legal name,
+a jurisdiction, a founding date, an accreditation, a contact address, an artifact record, or a licence. The 82 asset
+records were re-derived from the inventory CSV and the reference sweep in `docs/MEDIA_AND_RIGHTS_GOVERNANCE.md` §7.2:
+rights status is still `UNKNOWN — no rights statement supplied in reference/` on all 72 originals and `Awaiting Rights
+Review` on all 10 additional assets, and `Not Approved — no approval record supplied` on **82 of 82**. `.env` and the
+git checkpoint were considered as evidence and rejected: neither is a rights statement. Possession of a file is not
+ownership of its copyright, and a byte-perfect copy of an unlicensed photograph is a perfect copy of an unlicensed
+photograph.
+
+**Four documentation states this window invalidated, and repaired rather than left.** The H-10 compose suite went
+**red on a real property change**: 24 passed, **1 failed**. Its negative case had only ever suppressed the *process*
+environment, but Compose also reads `.env` from the project directory — so once OD-3 created that file, the seven
+`:?` guards stopped biting and the case could no longer prove what it claimed. Repaired **in the test, not in the
+product**: it now suppresses both sources with `--env-file <empty>`, and the repair was proved non-vacuous three ways
+— the new form exits 1 with `required variable … is missing a value`; the old form exits 0 now that `.env` exists;
+and the same command against a copy with the `:?` guards stripped exits 0 with `Defaulting to a blank string`.
+Separately, the last case of the H-12 suite had hard-coded an assumption about the *machine* (`WARN` in a real
+workspace) that OD-2 and OD-7 made false; it now derives its expectation from the state it is standing in and asserts
+preflight's classification against that, so it passes armed *or* guarded and cannot be quietly satisfied by either — a
+case that only passes in one world is a fixture, not a test. ADR-003's title carried a patch version that the
+requirement does not; ADR-004 and `docs/DATA_MODEL.md` §9 both asserted that `pnpm install` or `docker compose config`
+still blocked them, which is now false; each was rewritten with the measured state, and the four stale claims were
+found by a sweep, not by luck.
+
+**A fifth incident of the same class, this time caused by this window's own edits.** Rewriting ADR-003 and ADR-004
+inserted lines into `docs/ARCHITECTURE_DECISIONS.md`, which shifted every later line in that file — and the citation
+gate went **red: 4 `LINE_OFF`**, three in `docs/AI_CURATOR_GOVERNANCE.md` and one in `docs/DATA_MODEL.md`, each
+citing a pre-shift line (367 → 384, 374 → 391, 395 → 412). This is not a tooling quirk but the real maintenance
+property of a line-number citation system: editing one document can invalidate a correct citation in another, and only
+a gate that re-resolves every reference will notice. Fixed by repointing the four references, re-measured green.
+
+**Two requirement rows moved, and only two.** `docs/REQUIREMENTS_TRACEABILITY.md` §1 was re-counted from the table body
+rather than incremented by hand: `grep -E '^\| REQ-' … | awk -F' [|] ' '{print $NF}' | sort | uniq -c` → **166 Not
+Implemented + 24 Implemented and Verified + 19 Blocked by Owner Input + 6 Partially Implemented + 4 Out of V1 Scope =
+219 rows**. REQ-BLD-002 left `Blocked by Owner Input` because OD-1 executed and preflight prints the Node PASS line;
+REQ-BLD-005 left `Not Implemented` for `Partially Implemented` because the lockfile now exists and is committed while
+its named verification (`pnpm install --frozen-lockfile`) has never been run. Application-level verified progress is
+still **0 rows** — the 24th is a runtime reading, not product behaviour — and the 31 October tally these figures
+supersede stays in §H and §I above as the record of what was believed then.
+
+**What this batch did not do.** It did not touch `src/`, write a collection, generate a migration, add a dependency,
+or start Phase 2. **Two defects found while executing are reported, not repaired,** because the authorization's
+boundaries put them outside it: `eslint.config.mjs` imports `@eslint/js`, which no manifest declares, so `pnpm lint`
+dies with `Cannot find package '@eslint/js'` at exit **2** — the lint gate cannot run at all, independently of `src/`;
+and `pnpm format:check` fails at exit **1**, because hand-edited documentation rows are not Prettier-shaped, while
+running `--write` would rewrite bytes and shift the line numbers that 533 cited fragments across this documentation set
+resolve against. Level B is still **0 of 12**: four rows now have measured exit codes (`lint` 2, `format:check` 1,
+`typecheck` 0 over 19 JavaScript files with `checkJs` off — a hollow green by this project's own H-1 rule — `test` 1
+with `No test files found`, `build` 1 with `Couldn't find any pages or app directory`), and none of them is a
+defensible pass.

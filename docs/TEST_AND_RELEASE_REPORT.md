@@ -1,13 +1,21 @@
 # Noujoude Digital Heritage Museum — Test and Release Report
 
 **Document ID:** NDM-QA-001
-**Version:** 0.1.0
+**Version:** 0.2.0
 **Measurement window:** 31 October 2026, 01:50–02:10 local, on this host.
 **Re-measurement window:** 31 October 2026, later the same day — the container engine, the toolchain versions,
 the pinned-artifact registry documents, the `v3.92.1` package listing, the preflight gate and both
 documentation-integrity gates were all re-run. Where the two windows disagree, §0 and §1.9 carry the **later**
 figures and §2 records the correction. The earlier window's numbers are not preserved as current anywhere.
-**Status:** **No application has been tested, because no application exists.** §1 lists what genuinely ran; §3 lists everything that has not.
+**Third window — 1 November 2026:** the Owner authorized and this batch executed OD-1 (Node 24.22.1), OD-7 (the
+`pnpm run` guard), OD-2 (install + lockfile), OD-3 (`.env`), OD-4 (`git init` + first checkpoint) and Gate 0, plus
+OID-20 and OID-22. Four Standard §12 checks that had never been runnable were then **run** (§4 rows 1, 2, 3 and 9),
+preflight was re-measured (§0 and §9), and Gate 0 was marked Passed in §4A on recorded evidence with a named
+approver. Rows in §0 and §1 that still describe an absent toolchain are the 31 October record kept as audit
+evidence; where a row was re-measured it says so in its own cell.
+**Status:** **No application has been tested, because no application exists.** That sentence is unchanged by
+everything in the window above, and it is the reason Gate 0 can be Passed while §4's twelve checks are all Unmet.
+§1 lists what genuinely ran; §3 lists everything that has not.
 **Rule enforced:** Directive §17 line 318 *"Do not claim a feature is implemented without verifying behavior"* and line 320 *"Do not fake records or metrics"*; Standard §15 line 334 *"No invented metrics, security compliance, or backup success claims."* Every number below was produced by a command shown next to it, on this host, in this window. Where a figure in an earlier document disagreed with a fresh run, §2 records the correction.
 
 **Reproduce everything in §1 in four commands** (§9). Do not trust a number in this file that you have not re-produced: a parallel documentation workstream was editing `scripts/copy-master-spec.mjs` and the generated header of `docs/MASTER_SPECIFICATION.md` *while this report was being written*, which is visible in §2.3.
@@ -18,18 +26,18 @@ figures and §2 records the correction. The earlier window's numbers are not pre
 
 | Tool | Command | Output | Required by decision | Verdict |
 |---|---|---|---|---|
-| Node.js | `node -v` | `v24.19.0` | `>=24.22.1 <25` (`package.json` engines; Payload 3.92.1 `engines.node "^22.23.4 \|\| >=24.22.1"`) | ❌ **FAILS — blocker B-01** |
+| Node.js | `node -v` | **Re-measured 1 November 2026: `v24.22.1`**, rc=0. The 31 October value was `v24.19.0`, and that reading is kept here rather than overwritten because it is what made B-01 true. | `>=24.22.1 <25` (`package.json` engines; Payload 3.92.1 `engines.node "^22.23.4 \|\| >=24.22.1"`) | ✅ **PASS — B-01 cleared by OD-1.** Installed with `winget install OpenJS.NodeJS.LTS --version 24.22.1 --exact --scope machine`, then verified by reading the active binary, not the installer's exit code. npm is now `11.19.1` |
 | pnpm | `pnpm -v` | `11.21.0` | `packageManager: pnpm@11.21.0` | ✅ matches |
-| npm | present | 11.17.0 | unused; pnpm is the authority | — |
-| Git | `git --version` | `git version 2.56.0.windows.2` | Git (Standard §2.2) | ✅ binary present, ❌ **no repository** (`git rev-parse --is-inside-work-tree` → `fatal: not a git repository`) |
+| npm | `npm -v` | `11.17.0` on 31 October, **`11.19.1`** after OD-1 (npm ships with Node) | unused; pnpm is the authority | — |
+| Git | `git --version` | `git version 2.56.0.windows.2` | Git (Standard §2.2) | ✅ binary present, and **a repository now exists**: `git init` executed under OD-4 on 1 November 2026 on branch `main`, first checkpoint committed, `git remote -v` empty, nothing pushed. The 31 October reading — `git rev-parse --is-inside-work-tree` → `fatal: not a git repository` — is what B-04 recorded, and B-04 is cleared |
 | Docker CLI | `docker --version` | `Docker version 29.7.2, build a7dcaa6` (client only — answers without a daemon) | local infrastructure (Standard §2.2) | ✅ binary present |
 | Docker Compose | `docker compose version` | `Docker Compose version v5.3.1` on 31 October, **rc=0**, 30 bytes — **client only.** Re-measured 1 November 2026: **v5.6.1**, rc=0. Either exit code proves the CLI is installed and says nothing about the engine. | ADR-004 (`postgres:18.6-alpine`) | ✅ binary present; preflight now reports `compose: 5.6.1` |
 | Docker context config | `docker context ls` | **rc=0** — lists `default` and `desktop-linux *` → `npipe:////./pipe/dockerDesktopLinuxEngine` | — | ✅ readable; the endpoint is *registered*, which is not the same as *live* |
-| Docker **daemon** | `docker version`, `docker info`, `docker ps -a`, `docker images` — each wrapped in `timeout 30`/`40`, exit code captured **before** any pipe | **Re-measured 1 November 2026: `docker info` exits 0**, server `29.9.2`, 3 containers listed (0 running), `docker images` exits 0. The 31 October reading in this row's earlier life was all four **rc=124** with **0 bytes** — not even the Client section of `docker version` was flushed, so the CLI hung while connecting rather than reporting a refusal. That reading is kept because it is what made B-09 true when it was written. | required to start `postgres:18.6-alpine` (ADR-004) | ✅ **reachable 1 November 2026; B-09 cleared by observation, not by an Owner decision — re-probe before relying on it** |
+| Docker **daemon** | `docker version`, `docker info`, `docker ps -a`, `docker images` — each wrapped in `timeout 30`/`40`, exit code captured **before** any pipe | **Re-measured 1 November 2026: `docker info` exits 0**, server `29.9.2`, 3 containers listed (0 running), `docker images` exits 0. **And re-measured again forty minutes later in the same window, when `timeout 60 docker info` returned rc=124 and `timeout 120 docker info` returned rc=0** — the engine answers, but not inside 60 s of going idle (§1.1's third run). The 31 October value in this row's earlier life was all four probes **rc=124** with **0 bytes** — not even the Client section of `docker version` was flushed, so the CLI hung while connecting rather than reporting a refusal. That reading is kept because it is what made B-09 true when it was written. | required to start `postgres:18.6-alpine` (ADR-004) | ✅ **reachable 1 November 2026; B-09 cleared by observation, not by an Owner decision — and re-probed within this very window, where it failed a 60 s probe and passed a 120 s one. Never inherit this state: re-measure it** |
 | WSL | `wsl -l -v` | 31 October: **rc=0** → `docker-desktop  Stopped  2`; `Ubuntu  Stopped  2`. **1 November, re-run: the identical output** — `Ubuntu Stopped 2`, `docker-desktop Stopped 2`, rc=0 — *while `docker info` in the same minute exits 0 and answers.* | engine backend | ⚠️ **Diagnostic correction, and it changes F-A's remedy.** `wsl -l -v` was recorded on 31 October as the proof that the daemon was absent. Re-measured 1 November, the distribution still reports **Stopped** and the daemon nonetheless answers, so the WSL listing is **not** a valid proxy for engine reachability on this host; `docker info` is. F-A's two historical signatures stand as recorded — `docker-desktop Running` with `500 Internal Server Error` on `/containers/create` and `/containers/json` (ARCHITECTURE_DECISIONS §7.2.2), then Stopped with rc=124 (§7.2.1) — but neither is the current state, and no Owner engine restart was needed to reach the daemon. |
 | `postgres:18.6-alpine` in the local cache | `docker images` | **1 November 2026: rc=0** and the tag is listed, 433 MB. The 31 October value was **rc=124, 0 bytes — the cache could not be enumerated**, which is why this row read UNKNOWN. | ADR-004 mandates this image | ✅ **PRESENT.** An earlier note recorded the image as "absent from the local cache"; that claim stays withdrawn — it was unmeasurable then, and the measurement that finally replaced it is this one. |
 | `psql` client | not present | — | not required; the container provides it | ✅ acceptable |
-| `node_modules/`, `pnpm-lock.yaml` | `ls` | both absent | — | ❌ confirms **no install has ever run** |
+| `node_modules/`, `pnpm-lock.yaml` | `ls` | **Re-measured 1 November 2026: both present.** `pnpm-lock.yaml` is 285,200 bytes / 8,399 lines at `lockfileVersion: 9.0` with 701 `.pnpm` entries; `node_modules/` exists and the tree resolves. The 31 October reading (`both absent`, confirming no install had ever run) is what B-02 recorded and OD-2 cleared | installs must be authorized (OD-2) | ✅ **present, and the lockfile is committed source.** Two facts belong with this one: pnpm 11 ignores the `pnpm` field in `package.json`, so the live supply-chain control is `pnpm-workspace.yaml` → `allowBuilds`, whose two grants (`esbuild`, `unrs-resolver`) were made by name after inspecting what they build; and `ERR_PNPM_IGNORED_BUILDS` made the first install exit **1** until those grants existed |
 | Application source | `find src tests -type f` | `src/README.md`, `tests/setup/env.ts` — two files, neither is application code or a test | — | ❌ confirms zero implementation |
 | YAML validator | `python -c "import yaml"`, `python3 -c "import yaml"`, `node -e "require('yaml')"`, `perl -MYAML` / `-MYAML::Tiny`, `ruby -e "require 'yaml'"`, PowerShell `ConvertFrom-Yaml`, `jq --version` | python 3.13 → `ModuleNotFoundError: No module named 'yaml'`; python3 the same; node → module not found; both perl modules fail; ruby not installed; PowerShell silent; `jq` absent. Re-probed 1 Nov 2026 — no cached container image carries one either | needed to machine-check the newly authored `.github/workflows/ci.yml` | ❌ **none available, and installing one is outside this batch's authorization.** What was substituted instead is `scripts/verify-workflow-structure.mjs`: ten structural rules over the block subset, exit **0**, proven red-and-green by its own 32-case suite (hole **H-11**). So `ci.yml` is recorded as **authored and structurally checked, not YAML-conformance-validated, never executed** (§1.7). |
 
@@ -44,7 +52,7 @@ count of subsections is precisely the kind of figure that goes stale mid-work, a
 drift. §9 repeats the same commands as a reproduction script. All are read-only against `reference/` and
 `Noujoude.photo/` and write only inside `docs/` (ADR-014). Exit codes are from this shell.
 
-### 1.1 `node scripts/preflight.mjs` → **exit 1**
+### 1.1 `node scripts/preflight.mjs` → **exit 1 on 31 October, exit 0 on 1 November 2026**
 
 Measured 31 October 2026, this window:
 
@@ -110,6 +118,47 @@ then timeouts), and the sequence is documented as **B-09** in
 `docs/ARCHITECTURE_DECISIONS.md` §7.2 with its probe table. A tool that reported PASS
 once does not entitle this report to claim PASS now. The 1 November re-run above is the
 fresh measurement that does entitle it: `PASS | Docker | server reachable; compose: 5.6.1`.
+
+**Third run of this command, 1 November 2026, after OD-1/OD-2/OD-3/OD-7 were executed — exit `0`, and the
+tally moved twice within minutes of this writing.** With the engine warm:
+
+```
+WARN | Noujoude.photo/ reconciliation
+     | 1 image file(s) in the directory with NO catalog row: logo_presentation_scene_16x9_v3.webp | 2 non-image file(s) not catalogued (manifests/notes): _pending_review_AI_generated/GENERATED_ASSETS_MANIFEST_AR.md, _pending_review_AI_generated/_manifest.json | 1 WRONG_FORMAT (extension vs container): vintage_collector_desk_16x9.jpg: .jpg holding image/webp | 18 NAME/PIXEL mismatch(es): … (catalog rows 82, physical files 85)
+PASS | Node.js 24.22.1
+     | satisfies engines.node ">=24.22.1 <25"
+PASS | pnpm 11.21.0
+     | packageManager declares pnpm@11.21.0
+PASS | .env
+     | present (values intentionally not read into this report)
+PASS | reference/ integrity
+     | 7 files match baseline checksums
+PASS | src/
+     | contains README.md
+PASS | docker-compose.yml contract
+     | docker-compose.yml states the pinned image, the loopback-only publish, the postgres:18 mount root, the read-only script mounts, the seven required secret guards, a pg_isready healthcheck, no host-escape affordance and an ndm- container name (10 rules)
+PASS | CI workflow structure
+     | .github/workflows/ci.yml parses as block YAML and its 4 jobs name every step, reference real jobs, invoke scripts that exist, agree with pnpm test:gates, and carry no literal secret (10 rules)
+PASS | pnpm run deps-before-run
+     | node_modules exists, so the auto-install path no longer fires from a missing tree; global setting: error
+
+10 checks: 0 FAIL, 1 WARN, 9 PASS
+```
+
+Four things are worth pinning to that transcript. **B-01's FAIL is gone** — the row now reads `PASS | Node.js
+24.22.1`, which is the first time this check has passed in the life of this report. **`.env` moved WARN → PASS**
+under OD-3, and the check prints only its presence: `values intentionally not read into this report`, which is
+the no-secret-printing rule implemented rather than promised. **Check 10 moved WARN → PASS** under OD-7 and
+reports both halves of the H-12 condition. **The surviving WARN is the `Noujoude.photo/` reconciliation, and it is
+Owner asset-governance work (B-06) — not a defect in the checker, and nothing OD-3 or OD-4 authorizes touching.**
+
+**And the engine still refuses to be inherited.** Run again minutes later, with the daemon idle, the same command
+printed `WARN | Docker | daemon did not answer within 20 s` and the tally read **`0 FAIL, 2 WARN, 8 PASS`** —
+still exit `0`, because a cold engine is a warning in this harness, not a failure. Probing directly in that
+state: `timeout 60 docker info` returned **rc=124** (no output), and `timeout 120 docker info` returned **rc=0**
+with server `29.9.2`. So the engine's reachability on this host is a latency question with a window between 60 and
+120 seconds after idle, and the 20-second probe sits below it. That is why §0's Docker row says *re-probe before
+relying on it*, and why Phase 2 entry re-probes rather than citing this transcript as a permanent state.
 
 ### 1.2 `node scripts/audit-assets.mjs` → **exit 0**
 
@@ -267,11 +316,12 @@ not CREATE, and stripped of `UPDATE`/`DELETE`/`TRUNCATE` on relations declared a
 schema owned by the migration role — **is now a demonstrated privilege boundary, demonstrated
 inside a disposable container only.** Standard §3.2 and Master Spec line 3822 compliance for
 *this project's actual database* is still not claimed: no project database exists yet (§3 row 9,
-`Not run` — `pnpm db:up` needs `.env`, B-03), and the proof above ran against representative
-relations created by the harness, not against migrated Payload tables. The residual risk survives
-unchanged by design: the table owner can drop the guard, and the compensating control is a CI
-assertion that exists as code (`.github/workflows/ci.yml`, job `db-privileges`) but has **never
-executed** because no repository exists (B-04). **Audit immutability in production therefore
+`Not run` — **the reason changed on 1 November 2026:** `.env` now exists under OD-3 and `docker compose config`
+renders with exit **0**, so `pnpm db:up` is blocked only by not having been requested, not by B-03), and the proof
+above ran against representative relations created by the harness, not against migrated Payload tables. The residual
+risk survives unchanged by design: the table owner can drop the guard, and the compensating control is a CI assertion
+that exists as code (`.github/workflows/ci.yml`, job `db-privileges`) but has **never executed** — a repository has
+existed since OD-4, and it still has no remote and zero runs (B-08). **Audit immutability in production therefore
 remains unproven even though the grant design is proven** — the two statements are different, and
 collapsing them is the error this paragraph exists to prevent.
 
@@ -346,8 +396,13 @@ a pipe. **The blocks below are dated, not current.** Both gates ran again at the
 `verify-deps-before-run` matrix was measured and written up, and again after the §2.2 correction was made: **528**
 fragments (VERIFIED 426 + SELF_RECORDING 10 +
 PROJECT_RECORD 10 + no-line-ref 82 = 528, `DEFINED_TERM` 6 inside that 82, 0 verbatim-without-citation) and **196**
-tables, both exit **0**. The counts moved — 506 → 522 → 525 → 523 → 526 → 527 → **528** fragments, 192 → 194 → 195 →
-**196** tables, and 1,225 → **1,226** bare references — because writing about the work adds quotations, references
+tables, both exit **0**. **A third pair of runs closed the Owner-authorization window later the same day: 533
+fragments — VERIFIED 427 + SELF_RECORDING 10 + PROJECT_RECORD 10 + no-line-ref 86 = 533, `DEFINED_TERM` 6 inside that
+86, 0 verbatim-without-citation — 199 tables, and 1,247 bare references all resolving, both gates exit 0.** The +3
+tables are attributed by measurement, not by narration: `grep -cE '^[\|][\s:-]*---'` per file against
+`git show HEAD:<file>` gives +2 in `docs/MEDIA_AND_RIGHTS_GOVERNANCE.md` (§7.2's reconciliation tables) and +1 in
+`docs/OWNER_INPUT_REGISTER.md` (§6A's per-item table), ten files unchanged. The counts moved — 506 → 522 → 525 → 523 → 526 → 527 → 528 → **533** fragments, 192 → 194 → 195 →
+**196** → **199** tables, and 1,225 → 1,226 → **1,247** bare references — because writing about the work adds quotations, references
 and table rows; the one-fragment delta lands entirely in the `NO_LINE_REF` class (81 → 82), which is what the tool
 prints, but which specific sentence became it is not attributed here, since the gate reports a class total and not an
 authorship, and guessing at the cause would be exactly the unverified claim this report exists to prevent. The
@@ -648,24 +703,24 @@ by construction; the check-only *result* is pending the first install. Nobody sh
 
 ## 4. Release gate definition — Standard §12 required checks
 
-The twelve checks are quoted from `Noujoude_Technology_and_Security_Standard_EN.md` §12 (lines 266–279). Every one is **unmet**. The situation changed in one respect during this batch and is recorded precisely so it is not over-read: a CI pipeline definition **now exists** at `.github/workflows/ci.yml`, which closes coverage hole H-2's *authoring* half — and on 1 November 2026 it stopped being a file nobody had checked by machine, because `scripts/verify-workflow-structure.mjs` now enforces ten structural rules over it and exits **0** (coverage hole H-11). It has nevertheless **never executed**, its file header says `STATUS: AUTHORED. NEVER EXECUTED.`, no YAML *conformance* parser exists on this host — the structural gate is a contract over the block subset, not GitHub's parser — and there is no repository for it to run in (B-04). An authored pipeline enforces nothing. H-2 therefore moves from `no definition exists` to `definition authored, structurally checked, zero runs`, and the twelve checks stay unmet.
+The twelve checks are quoted from `Noujoude_Technology_and_Security_Standard_EN.md` §12 (lines 266–279). Every one is **unmet**, and the reason for that changed on 1 November 2026. Before OD-2, five of the twelve were unmet because the tool to run them did not exist on this machine; the tooling gap is now closed, and the twelve have been re-measured rather than re-asserted. **Rows 1, 2, 3 and 9 were actually executed in this batch and their real exit codes are recorded below** — and every one of them fails or proves less than its exit code suggests, for reasons that are now about *missing application code and missing dependencies*, not about a missing runtime. The situation changed in one further respect during this batch and is recorded precisely so it is not over-read: a CI pipeline definition **now exists** at `.github/workflows/ci.yml`, which closes coverage hole H-2's *authoring* half — and on 1 November 2026 it stopped being a file nobody had checked by machine, because `scripts/verify-workflow-structure.mjs` now enforces ten structural rules over it and exits **0** (coverage hole H-11). It has nevertheless **never executed**, its file header says `STATUS: AUTHORED. NEVER EXECUTED.`, no YAML *conformance* parser exists on this host — the structural gate is a contract over the block subset, not GitHub's parser — and while a repository now exists (B-04 is cleared, `git init` executed, first commit recorded), there is still **zero CI runs** and no remote for a run to happen on. An authored pipeline enforces nothing. H-2 therefore moves from `no definition exists` to `definition authored, structurally checked, zero runs`, and the twelve checks stay unmet.
 
 | # | Required check | Command that will satisfy it | State today | Why unmet |
 |---|---|---|---|---|
-| 1 | Formatting and lint | `pnpm format:check` + `pnpm lint`, both now steps in CI job `quality` | ❌ **Unmet** | ESLint and Prettier have never run — neither is installed (B-02). The check-only format script now exists (I-10, §3.1), which removes the *tooling gap* but not the *execution gap* |
-| 2 | Strict TypeScript typecheck | `pnpm typecheck` | ❌ **Unmet** | no `tsc` execution possible without install |
-| 3 | Unit tests for domain and validation logic | `pnpm test` | ❌ **Unmet** | zero tests exist |
+| 1 | Formatting and lint | `pnpm format:check` + `pnpm lint`, both now steps in CI job `quality` | ❌ **Unmet — executed and failing, both halves** | **Re-measured 1 November 2026 after OD-2.** `pnpm format:check` exits **1** with `Code style issues found in 79 files` — the same command printed **37** earlier the same day and **60** mid-window, and the count rose because hand-written documentation rows are exactly what Prettier reshapes; it is a moving figure and must be re-read, not quoted, and 41 of the 79 sit in an untracked `brand/` tree this batch neither wrote nor committed; `pnpm lint` exits **2** with `Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@eslint/js' imported from E:\no\eslint.config.mjs`. The lint half is a **declared-dependency gap newly made visible by installation** — the config imports a package the manifest does not carry, and neither half has been repaired because adding a dependency is outside the authorization this batch worked under (OD-2 says do not silently change dependency versions or override package constraints) and outside the item list. The format half will not be auto-fixed here for a documented reason: `prettier --write` would rewrite documentation whose citation line numbers depend on unchanged bytes, converting every quote in `docs/` into a `LINE_OFF` defect. Both are reported as prerequisites, not as passes |
+| 2 | Strict TypeScript typecheck | `pnpm typecheck` | ❌ **Unmet — and a green exit that must not be read as a pass** | **Re-measured 1 November 2026: `tsc --noEmit` exits `0`.** That exit 0 is *hollow*: `tsconfig.json` sets `allowJs: true` without `checkJs`, and its include covers `scripts/**/*.mjs` (**19 files**, parsed but not type-checked) and `src/**/*.ts(x)` (**0 files** — there is no application code yet). So the command proves the compiler runs on Node 24.22.1 and that the scripts parse; it proves nothing about types, which is exactly the defect class this project catalogued as H-1/H-11 (a check that cannot fail for the reason it exists). The row stays Unmet until there are `src/` types to check and the strict-mode result is attributable to them |
+| 3 | Unit tests for domain and validation logic | `pnpm test` | ❌ **Unmet — executed, exit 1** | **Re-measured 1 November 2026:** vitest 3.2.7 starts, resolves `E:/no`, and exits **1** with `No test files found`, listing `include: src/**/*.test.ts, src/**/*.test.tsx, src/**/*.integration.ts` and the exclusions (`node_modules`, `.next`, `reference/**`, `Noujoude.photo/**`, `tests/e2e/**`). This is the configured `passWithNoTests: false` behaviour doing its job — the harness is real and the absence is loud — but zero domain or validation tests exist because there is no domain or validation code yet |
 | 4 | Integration tests for database, CMS hooks, access control, jobs, storage adapters | `NDM_ALLOW_INTEGRATION=1 pnpm test` | ❌ **Unmet** | no database, no code under test |
 | 5 | Playwright E2E for key public/admin routes in **both locales** | `pnpm test:e2e` | ❌ **Unmet** | no routes, no browsers launched |
 | 6 | Accessibility automated checks **plus manual audit records** | `pnpm test:a11y` + written manual record | ❌ **Unmet** | neither half exists (GAP-11 "implementation audit pending") |
 | 7 | Security checks mapped to ASVS controls and negative authorization tests | ASVS L2 mapping + negative authz suite | ❌ **Unmet** | no controls implemented to test (GAP-13 also instrumentation pending). The negative authorization *database* cases were authored in `run-privilege-tests.sh` and were blocked by B-09 (§1.5) when this row was written; they have **since executed** — 14 of 14 matched expectation for an authorization reason (1 November 2026, §1.5, `docs/A5_PRIVILEGE_EVIDENCE.txt`). That proves the grant design, not the application's own authorization controls, which remain unimplemented, so the row stays Unmet |
-| 8 | Dependency and secret scanning | dependency half: `pnpm audit --audit-level=high`, authored as CI job `security-scans`. Secret half: **nothing exists** | ❌ **Unmet — at best PARTIALLY authored** | Neither half has run. The secret-scanning half is **deliberately absent** from `ci.yml` and the absence is declared in that file's header, so this row cannot be quietly upgraded when the dependency half goes green. Landing point for both: Phase 2 work item **2.10** in `docs/IMPLEMENTATION_PLAN.md` §4 |
-| 9 | Production build | `pnpm build` | ❌ **Unmet** | never executed |
-| 10 | Database migration verification **and** restore test | `pnpm migrate` + restore procedure | ❌ **Unmet** | no migration exists and no project instance exists to restore. The 31 October basis ("image never pulled; the cache cannot be enumerated while B-09 stands") is superseded: `docker images` exits 0 and lists `postgres:18.6-alpine` (1 November 2026), so what binds this row is B-01/B-02/B-03 — not the engine |
+| 8 | Dependency and secret scanning | dependency half: `pnpm audit --audit-level=high`, authored as CI job `security-scans`. Secret half: **nothing exists** | ❌ **Unmet — at best PARTIALLY authored** | Neither half has run automatically. One manual substitute was performed, and it is recorded as a manual act rather than upgraded into a pass: before the OD-4 checkpoint, the staged index was audited for secrets and `.env` was confirmed ignored (`git ls-files -- .env` returns nothing; `git status --ignored` reports `!! .env`), and `.npmrc` was read before commit to confirm it carries no credential. That is a one-time human check on 150 files, not a scanner, and it will not catch the next leak. The secret-scanning half remains **deliberately absent** from `ci.yml` and the absence is declared in that file's header, so this row cannot be quietly upgraded when the dependency half goes green. Landing point for both: Phase 2 work item **2.10** in `docs/IMPLEMENTATION_PLAN.md` §4 |
+| 9 | Production build | `pnpm build` | ❌ **Unmet — executed, exit 1, and the failure is informative** | **Re-measured 1 November 2026:** Next.js 16.4.3 (Turbopack) starts, prints `- Environments: .env` — the first time OD-3's file has been consumed by the toolchain, and evidence it is wired, printed as a name and never as a value — runs `next.config` successfully in 177 ms, then fails: `Error: > Couldn't find any 'pages' or 'app' directory. Please create one under the project root`, exit **1**. The build toolchain is therefore proven and the application is absent, which is the Phase 2 boundary stated as a measurement rather than a plan |
+| 10 | Database migration verification **and** restore test | `pnpm migrate` + restore procedure | ❌ **Unmet — every upstream blocker is now cleared, and the row still cannot pass** | The 31 October basis — image never pulled, cache unenumerable while B-09 stood — is superseded: `docker images` exits 0 and lists `postgres:18.6-alpine`, and B-01, B-02, B-03, B-04, B-09 and B-10 are all cleared as of 1 November 2026. What binds the row now is *content*: no migration file exists yet (`payload migrate:create` is Phase 2 work, and `src/` holds no Payload config to generate one from), and no project database instance has been created — `docker ps -a` lists three stopped containers belonging to a different project (`noujoude-postgres`, `-2`, `-3`) and **no** `ndm-postgres`, and this batch deliberately did not start one, because the authorization it worked under covered verifying the Compose render, not creating a persistent database. Separately: no restore has ever been attempted, so the specification's rule that a successful backup job is not proof of recoverability still cannot be satisfied. **OID-20's acceptance on 1 November makes the restore cadence a committed internal target; it supplies no measurement.** |
 | 11 | SEO route and metadata checks | automated SEO suite | ❌ **Unmet** | no routes (GAP-15 "implementation tests pending") |
 | 12 | Performance measurements and regression checks | CWV harness at p75 | ❌ **Unmet** | nothing to measure; targets remain targets (GAP-12) |
 
-Standard §12 line 281 additionally forbids using mock functionality as release evidence, and §15 line 336 forbids silently downgrading accessibility, performance or security expectations. Accordingly: no check below is recorded as passing on the strength of a configuration file, a stub, or a planned behaviour.
+Standard §12 line 281 additionally forbids using mock functionality as release evidence, and §15 line 336 forbids silently downgrading accessibility, performance or security expectations. Accordingly: no check below is recorded as passing on the strength of a configuration file, a stub, or a planned behaviour. **That rule became harder to honour on 1 November, not easier:** four of the twelve rows can now actually be executed, and two of the executions return a status a dashboard would render as green while proving nothing about application behaviour — `pnpm typecheck` exits 0 over zero `src/` files (row 2), and the test runner would exit 0 on a suite that exists but asserts nothing. A check that cannot fail for the reason it exists is not a check, so rows 2 and 3 are recorded as Unmet *with their exit codes shown*, which is the only honest way to hold line 281 once the tools are installed.
 
 ---
 
@@ -675,16 +730,16 @@ Standard §12 line 281 additionally forbids using mock functionality as release 
 
 > *"A gate may be marked Passed only with recorded evidence and an identified approver."* — `reference/Noujoude_Master_Specification_EN.md` line 3159
 
-Two obligations follow, and both are reporting obligations rather than coding ones. First, a gate needs **recorded** evidence, which in this document means a transcript or a measurement that a reader can re-produce (§9 lists the commands). Second, it needs an **identified approver** — a named human, not a role filled by the architect. Since no gate condition is met today, the table below records what artifact *would* be the evidence and *who* signs, so that a later entry can be checked against it rather than asserted.
+Two obligations follow, and both are reporting obligations rather than coding ones. First, a gate needs **recorded** evidence, which in this document means a transcript or a measurement that a reader can re-produce (§9 lists the commands). Second, it needs an **identified approver** — a named human, not a role filled by the architect. Until 1 November 2026 no gate condition was met at all, so the table below recorded what artifact *would* be the evidence and *who* would sign, so that a later entry could be checked against it rather than asserted. **One row has now been checked against it and filled in:** Gate 0 has both its artifact and its named approver, and is marked Passed on that basis. The other five are unchanged, and the reason this report bothers to say so is that a table in which everything is Open is easy to upgrade by accident — the rows that stay Open must stay Open because their evidence does not exist, not because nobody looked.
 
 | Gate | Condition, verbatim from the cited line | Evidence artifact that would be recorded here | Identified approver (named, not inferred) | State |
 |---|---|---|---|---|
-| **Gate 0 — Product Baseline** (3137) | *"Master Specification adopted; requirement IDs assigned; scope and change-control authority established."* | Adoption record for `reference/Noujoude_Master_Specification_EN.md` (SHA-256 `5b30b21e…`); `docs/REQUIREMENTS_TRACEABILITY.md` ID column | **Owner** — Appendix E lists every approval item as `Pending Owner approval`, so adoption is unsigned | **Open.** IDs are assigned by this project; "adopted" is not recorded and cannot be self-declared. |
+| **Gate 0 — Product Baseline** (3137) | *"Master Specification adopted; requirement IDs assigned; scope and change-control authority established."* | Adoption record for `reference/Noujoude_Master_Specification_EN.md` (SHA-256 `5b30b21e…`, re-verified by every preflight run since 30 October); `docs/REQUIREMENTS_TRACEABILITY.md` ID column — **219 rows, 219 distinct IDs, measured** | **Project Owner** — the Owner signed this decision by name on 1 November 2026 (authorization §1, Gate 0 clause), which is what line 3159 requires and what Appendix E could not supply on its own | ✅ **Passed — 1 November 2026.** All three conditions are met and each has a recorded artifact: *adopted* (the Owner formally adopts the current Master Specification as the governing baseline and its text is fingerprinted in `docs/REFERENCE_INTEGRITY.json`); *IDs assigned* (219, one per requirement row); *change-control authority established* (the Owner is the designated authority, recorded in `docs/OWNER_INPUT_REGISTER.md` and `docs/CHANGELOG.md`). **What this Passing does not include, stated so nobody infers it later:** it does not waive the Owner's own instruction that the specification's requirements must not be altered to make a gate pass; it does not make any other gate closer — Gates 1–5 below are unchanged and remain Open; and it changes nothing about the twelve engineering checks in §4, four of which were executed today and all of which still fail or prove less than their exit codes suggest. Passing Gate 0 says the baseline is fixed and someone owns it. It does not say the baseline is satisfied |
 | **Gate 1 — Institutional and Collection Readiness** (3141) | *"Official identity fields approved; actual Morocco inventory loaded; claims/evidence, image permissions, and required content reviewed; no invented collection information."* | `OWNER_INPUT_REGISTER.md` rows OID-01 … OID-07 marked `Provided` with the document each fact came from; artifact inventory with evidence links; rights per asset | **Owner** for identity and inventory; a **qualified rights reviewer** for image permissions (Master Spec line 2724) | **Open — blocked by Owner input.** Engineering cannot supply any of it; the only half this project can enforce is the "no invented" prohibition, which is untested because no content path exists. |
 | **Gate 2 — Experience and Design Readiness** (3145) | *"Public routes and page behavior complete; approved visual system applied; English and Arabic layouts reviewed; responsive and accessibility tests passed."* | Playwright + axe transcripts in §3, per locale and per viewport class; the Owner's visual-system approval (OID-18) | Owner (design approval) plus the named accessibility verifier | **Open — 0 routes exist.** No page-behaviour test has been executed. |
 | **Gate 3 — Administration and Data Readiness** (3149) | *"Canonical Control Center modules and essential screens available; permissions enforced; data relationships and validation tested; publication and revision workflows complete."* | Per-module positive **and** negative permission test transcripts for all twenty modules; migration and constraint evidence | Owner / designated administrator | **Open — no module exists.** Module 14 (roles) and Module 19 (audit) are prerequisites and are unbuilt. |
 | **Gate 4 — AI and Governance Readiness** (3153) | *"AI source scope, citation, uncertainty, privacy, and safety tests passed; legal/privacy policies approved; no restricted retrieval path remains."* | Red-team and evaluation transcripts covering the nine classes at lines 2085–2093, with `Unauthorized Disclosure` release-blocking; LO-03/LO-05 approvals | Legal / privacy reviewer, then Owner | **Open — no AI component exists** and no provider is selected (B-05/OID-19). `docs/AI_CURATOR_GOVERNANCE.md` is a contract with zero implementation. |
-| **Gate 5 — Production Readiness** (3157) | *"Security verification, performance, monitoring, backups, restore testing, SEO checks, and release regression are complete."* | ASVS L2 review record, CWV measured at p75, an **executed** restore test with measured RPO/RTO, §4's twelve checks green in CI | Owner (deployment authorization, OID-22) | **Open.** A restore has never been attempted, so the line-3908 rule — a successful backup job is not proof of recoverability — is unsatisfiable today by definition. |
+| **Gate 5 — Production Readiness** (3157) | *"Security verification, performance, monitoring, backups, restore testing, SEO checks, and release regression are complete."* | ASVS L2 review record, CWV measured at p75, an **executed** restore test with measured RPO/RTO, §4's twelve checks green in CI | Owner (deployment authorization, OID-22) — **now `Approved in principle, conditional`, 1 November 2026**; the condition is this row's evidence, so the approval changes the gate's prerequisites, not its state | ❌ **Open — and the 1 November authorization proves it is still open.** A restore has never been attempted, so the line-3908 rule — a successful backup job is not proof of recoverability — is unsatisfiable today by definition. OID-22 now answers *may this project ever deploy, given its gates*, and explicitly does not answer *where, with what credentials, or against which passed check*. No target exists, no credential exists, and **all twelve** of §4's engineering checks are Unmet — four of them now by measured exit code rather than by the absence of a tool. |
 
 **What may not be done with this table.** No row may be marked Passed by tooling, by inference from a build succeeding, or by the architect. §20.7 line 3163 blocks the most likely shortcut: *"The product is not considered complete because all pages exist."* The §21.7 closure sequence (lines 3244–3253, mirrored in `docs/IMPLEMENTATION_PLAN.md` §4A.1) fixes the order the gates must be closed in, and its step 5 → step 7 dependency means *"Approve the physical ERD and data dictionary against this logical model."* (line 3250) has to be an approved artifact before *"Verify implementation against requirement IDs and test evidence."* (line 3252) can be recorded as satisfied anywhere in this file.
 
@@ -721,16 +776,16 @@ Standard §11 requires restore tests *quarterly* and before major database or st
 
 **No production deployment may occur without explicit, recorded authorization from the Owner.** That is a triple prohibition: Directive §17 line 325, Standard §12 line 281 and Standard §15 line 335; the Master Spec's own release gate closes at G.12 line 3929 with *"No critical/high security defect remains unresolved without explicit risk acceptance by the authorized Owner."*
 
-Current release readiness: **0%.** Nothing is deployable — there is no application, no schema, no content and no passing check. Recorded here rather than implied. This table is the **deployment-condition** view; the product Gate 0–5 evidence and approver records are §4A, and a deployment is not authorized by this table alone.
+Current release readiness: **0%.** Nothing is deployable — there is no application, no schema, no content and no passing check. Recorded here rather than implied. This table is the **deployment-condition** view; the product Gate 0–5 evidence and approver records are §4A, and a deployment is not authorized by this table alone. **The 1 November authorization changed three cells below, and changed the readiness figure by none of them:** two rows moved from *no decision* to *decision recorded*, which is the Owner answering, and one row moved from *no repository* to *repository with zero runs*, which is a tool existing. Readiness is measured in artifacts that prove behaviour, and no such artifact arrived.
 
 | Condition | Requirement | Today |
 |---|---|---|
-| Owner factual inputs supplied | all 22 rows in `docs/OWNER_INPUT_REGISTER.md` `Provided`/`Rejected` | ❌ 22 `Outstanding` |
-| Rights and brand approval cleared | 82 assets rights-cleared and approved | ❌ 0 of 82 |
-| All twelve §12 checks green in CI | twelve-of-twelve | ❌ 0 of 12. A pipeline definition now exists (`.github/workflows/ci.yml`) but has **never executed** and there is no repository to run it in (B-04), so it enforces nothing |
-| Restore test executed | measured RPO/RTO recorded | ❌ not run |
-| SLA posture decided | Owner decision on what may be published | ❌ OID-20 |
-| Deployment authorization | explicit Owner approval | ❌ OID-22 |
+| Owner factual inputs supplied | all 22 rows in `docs/OWNER_INPUT_REGISTER.md` `Provided`/`Rejected` | ❌ **0 `Provided`, 0 `Rejected`, 20 `Outstanding`, 2 decided-but-not-supplied** (OID-20 accepted as internal targets, OID-22 approved in principle). No institutional fact has arrived, so Gate 1 stays blocked exactly as before |
+| Rights and brand approval cleared | 82 assets rights-cleared and approved | ❌ 0 of 82 — re-verified on 1 November, not inherited: 72 `UNKNOWN` rights with no creator or source, 10 AI assets pending both rights and human approval with all 10 `source_png` originals absent, and `Brand/Curatorial Approval` = `Not Approved` on 82 of 82 |
+| All twelve §12 checks green in CI | twelve-of-twelve | ❌ 0 of 12. A pipeline definition exists (`.github/workflows/ci.yml`) and is structurally checked by a gate that exits 0, but it has **never executed**; B-04 cleared on 1 November so a local repository now exists, and there is still **no remote and no CI runner**, so it enforces nothing. Four of the twelve have now been run directly and their exit codes are in §4 |
+| Restore test executed | measured RPO/RTO recorded | ❌ not run — and OID-20's acceptance makes this a committed internal obligation rather than a proposal awaiting a decision |
+| SLA posture decided | Owner decision on what may be published | ✅ **decided 1 November 2026, in the restrictive direction:** the figures are internal engineering and operational targets; **no** public or contractual SLA may be represented from them, so the publishing prohibition in `docs/IMPLEMENTATION_PLAN.md` R-07 and Standard §11 survives this row |
+| Deployment authorization | explicit Owner approval | ⚠️ **approved in principle, conditional** (1 November 2026). It waives nothing and supplies no target and no credentials, so it is a permission to *earn* a deployment, not one to perform it |
 | P0 closure / P1 staging decision | per Master Spec G.12 line 3916 | ❌ not reached |
 
 Signature block — to be filled by the Owner only, and deliberately left blank:
@@ -750,15 +805,18 @@ No entry in this block may be written by tooling, by inference, or by the archit
 
 All of §1 is read-only against the protected trees and cheap to re-run.
 
-**Run these as `node scripts/<name>.mjs`, not as the `pnpm <name>` aliases, until OD-7 is set.** Measured 1 November
-2026: with `node_modules` absent by design (B-02), `pnpm run audit:workflow` did not execute the gate — pnpm verifies
-declared dependencies before running any script and started resolving the tree against the public registry. The
-command was killed; nothing landed in this directory, but packages were written to the machine store. `node
-scripts/preflight.mjs` check 10 reports whether that trap is still armed. See `docs/CHANGELOG.md` §L, hole **H-12**,
-blocker **B-10** and `.npmrc`, which sets no options because the project-scoped fix is measured not to exist.
+**`node scripts/<name>.mjs` and `pnpm <name>` are now both valid here, and the reason they were not is worth keeping.** Measured 31 October/early 1 November 2026: with `node_modules` absent by design (B-02), `pnpm run audit:workflow` did not execute the gate — pnpm verifies declared dependencies before running any script and started resolving the tree against the public registry. The command was killed; nothing landed in this directory, but packages were written to the machine store. That was hole **H-12**. **OD-7 closed it on 1 November 2026** by setting `verifyDepsBeforeRun: error` in pnpm 11.21.0's global config file, and OD-2 installed the tree, so the trigger is gone twice over: the documented `pnpm <name>` commands in §4 and above now run the script with zero `Progress:` lines. `node scripts/preflight.mjs` check 10 is the re-measurement — it now reports **PASS** with both facts (`node_modules` exists and the global setting is `error`) instead of printing the warning. See `docs/CHANGELOG.md` §L, blocker **B-10** and `.npmrc`, whose status block records the exact machine-level change while the rest of the file stays a measurement record.
 
 ```sh
-node scripts/preflight.mjs            # expect exit 1 while B-01 stands; 10 checks: 1 FAIL, 3 WARN, 6 PASS
+node scripts/preflight.mjs            # RE-MEASURED 1 November 2026: exit **0**, `10 checks: 0 FAIL, 1 WARN, 9
+                                      # PASS`. B-01 is cleared, so Node 24.22.1 satisfies `engines.node`
+                                      # `>=24.22.1 <25` and the FAIL is gone; `.env` moved WARN→PASS under OD-3;
+                                      # check 10 moved WARN→PASS under OD-7. **The one remaining WARN is the
+                                      # `Noujoude.photo/` reconciliation — 1 uncatalogued image, 2 uncatalogued
+                                      # metadata files, 1 WRONG_FORMAT, 18 name/pixel mismatches — and it is
+                                      # Owner asset-governance work (B-06), not a checker defect and not
+                                      # something OD-3 or OD-4 authorizes touching.** The 31 Oct/1 Nov record
+                                      # for comparison was exit 1 with 1 FAIL, 3 WARN, 6 PASS.
                                       # check 8 is the compose contract, check 9 the workflow structure contract
                                       # (both added 1 Nov 2026, both PASS), check 10 the `pnpm run` dependency-check
                                       # trap (WARN until OD-7 — see the paragraph above); Docker is PASS on a warm
@@ -821,8 +879,16 @@ node scripts/tests/copy-master-spec-output.test.mjs
                                       # exit 1 and write nothing. The committed copy is never regenerated here
 env -u POSTGRES_DB -u POSTGRES_SUPERUSER -u POSTGRES_SUPERUSER_PASSWORD \
     -u NDM_MIGRATION_PASSWORD -u NDM_RUNTIME_PASSWORD -u NDM_REPORTING_PASSWORD \
-    -u NDM_BACKUP_PASSWORD docker compose config
-                                      # expect exit 1 naming the missing variable — the :? guards biting
+    -u NDM_BACKUP_PASSWORD docker compose --env-file /dev/null config
+                                      # expect exit 1 naming the missing variable — the :? guards biting.
+                                      # **`--env-file /dev/null` is now mandatory, and was not on 31 October:**
+                                      # Compose reads `.env` from the project directory independently of the
+                                      # process environment, so once OD-3 created that file on 1 November the
+                                      # child-env stripping above stopped proving anything — the render found
+                                      # the secrets in the file and exited 0. Suppressing the *file* source is
+                                      # the negative test. This invalidation was found by the suite, not by
+                                      # reading the docs: `scripts/tests/verify-compose-config.test.mjs` went
+                                      # red on exactly this case, and its repair is the same flag
                                       # docker compose config exits 0 instead only when those seven are
                                       # present; supply them as placeholders in the child environment,
                                       # never in a file, and nothing is created either way
@@ -843,10 +909,34 @@ sh scripts/db/run-privilege-tests.sh  # REPRODUCED 1 November 2026, exit 0, tran
                                       # major labelled against the tag. It starts and removes its
                                       # own container and volume; never point it at a project
                                       # database.
-pnpm format:check                     # NOT reproducible here: Prettier is not installed (B-02).
-                                      # Do not run it for now either — this is the H-12 trap, so the
-                                      # alias resolves 669 packages before Prettier is ever reached.
-                                      # `--check` never writes; see §3.1 for the three legs of that claim
+pnpm format:check                     # REPRODUCED 1 November 2026, exit **1**: `Code style issues found in 78
+                                      # files`. The figure moves with the documentation — it read **37** earlier and **60** mid-window
+                                      # the same day — so re-run it rather than quoting it.
+                                      # It is reproducible now — Prettier 3.9.10 installed under OD-2 —
+                                      # and it is also safe to run now, because `node_modules` exists so pnpm's
+                                      # dependency verification passes silently instead of resolving the tree
+                                      # (H-12/B-10, closed by OD-7). `--check` never writes; see §3.1 for the
+                                      # three legs of that claim. It has deliberately **not** been repaired with
+                                      # `--write` in this batch: prettier would rewrite citation-bearing docs and
+                                      # turn line numbers that 533 verified quotations resolve against into
+                                      # `LINE_OFF` defects.
+                                      pnpm typecheck                        # REPRODUCED 1 November 2026, exit **0** — read §4 row 2 before counting
+                                      # that as a pass: `allowJs` without `checkJs`, 0 files under `src/`, so
+                                      # the exit proves the compiler runs and the scripts parse
+pnpm test                             # REPRODUCED 1 November 2026, exit **1**: `No test files found` from
+                                      # vitest 3.2.7, with the configured include/exclude lists printed —
+                                      # `passWithNoTests: false` working as designed
+pnpm lint                             # REPRODUCED 1 November 2026, exit **2**: `ERR_MODULE_NOT_FOUND`,
+                                      # `Cannot find package '@eslint/js' imported from E:\no\eslint.config.mjs`
+                                      # — a declared-dependency gap, reported rather than silently patched
+pnpm build                            # REPRODUCED 1 November 2026, exit **1**: Next.js 16.4.3 (Turbopack)
+                                      # prints `- Environments: .env`, runs next.config in 177 ms, then
+                                      # `Couldn't find any 'pages' or 'app' directory` — Phase 2's boundary line
+pnpm test:gates                       # REPRODUCED 1 November 2026, exit **0**: seven suites, 146 assertions
+                                      # (14 + 22 + 23 + 25 + 32 + 19 + 11). The suite order in package.json is
+                                      # tables, asset reconciliation, citations, compose, workflow structure,
+                                      # pnpm trap, spec copy — chained with &&, so the chain stops at the first
+                                      # failure and a green chain means every suite ran
 ```
 
 Environment and pinned-release probes added in this batch (§0, §1.9). Every exit code must be captured **before**
@@ -861,8 +951,10 @@ timeout 40 docker info                             # 1 Nov 2026: rc=0, server 29
                                                    # 31 Oct 2026: rc=124, 0 bytes (that was B-09)
 timeout 40 docker images                           # 1 Nov: rc=0 and `postgres:18.6-alpine 433MB` is listed.
                                                    # 31 Oct: rc=124, so cache state was UNKNOWN, not absent
-node -v; pnpm -v; git --version                    # v24.19.0 / 11.21.0 / 2.56.0.windows.2
-git rev-parse --is-inside-work-tree                # fatal: not a git repository  (B-04)
+node -v; pnpm -v; git --version                    # 1 Nov: v24.22.1 / 11.21.0 / 2.56.0.windows.2
+                                                   # 31 Oct: v24.19.0 — that reading was B-01, closed by OD-1
+git rev-parse --is-inside-work-tree                # 1 Nov: true (OD-4 ran `git init`; first commit aedeee0)
+                                                   # 31 Oct: fatal: not a git repository — that was B-04
 curl -s -o /dev/null -w '%{http_code}' https://registry.npmjs.org/payload/3.92.1                       # 200
 curl -s -o /dev/null -w '%{http_code}' https://registry.npmjs.org/@payloadcms%2Fdb-postgres/3.92.1     # 200
 gh api 'repos/payloadcms/payload/contents/packages?ref=v3.92.1' --jq '.[].name' | wc -l                # 44
