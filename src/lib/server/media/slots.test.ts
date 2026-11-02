@@ -269,13 +269,20 @@ describe("servingFooterSentence", () => {
 });
 
 describe("the layout band", () => {
-  it("records the gate's own reason for the masthead, in both locales", async () => {
+  it("says the approved mark is pending without publishing which gate stopped it", async () => {
     for (const locale of LOCALES) {
       const html = await renderLayout(locale);
       const [masthead] = slotViewsFor("global", locale);
       if (masthead === undefined) throw new Error("the map binds no Header surface");
-      expect(html).toContain(`data-reason="${slotOutcome(masthead)}"`);
+      // SR-02: the band's structural hook records that the mark is not there yet — which is the fact a
+      // visitor needs — and the reason the layer computed is asserted here rather than printed in the
+      // page. The route refuses a withheld asset with a 404 that carries no reason; a header that named
+      // `rights_not_cleared`, or the catalog id behind it, would undo that decision in markup.
       expect(html).toContain('data-slot="approved-mark-pending"');
+      expect(slotOutcome(masthead)).toBe("rights_not_cleared");
+      expect(html).not.toMatch(/\sdata-(?:asset-id|surface|reason)=/);
+      expect(html).not.toContain(slotOutcome(masthead));
+      expect(html).not.toContain(masthead.assetId);
       // What the band shows instead of the mark: the name, as text. The refusal is not a blank gap.
       expect(html).toContain(">Noujoude</p>");
     }
@@ -470,7 +477,19 @@ describe("the bound routes as a visitor receives them", () => {
       expect(html).not.toContain("<img");
       expect(html).not.toContain('as="image"');
       expect(html.match(/data-slot="media-withheld"/g)?.length).toBe(views.length);
-      expect(html.match(/data-reason="rights_not_cleared"/g)?.length).toBe(views.length);
+      /*
+       * SR-02, measured over every route the catalog binds rather than over one fixture: before this the
+       * assertion was `data-reason="rights_not_cleared"` per view, which is the disclosure being tested
+       * for rather than tested against. Every one of the 46 bound surfaces names a real register id, so
+       * this is where an id leak would actually show up — a page enumeration needs no guessing, and the
+       * `/api/media/<id>` refusals were built to avoid confirming exactly that an id is real.
+       */
+      expect(html).not.toMatch(/\sdata-(?:asset-id|surface|reason)=/);
+      for (const view of views) {
+        expect(html).not.toContain(view.assetId);
+        expect(html).not.toContain(view.surface);
+      }
+      expect(html).not.toMatch(/NDM-AST-\d{3}/);
       expect(html).toContain(expectedTally(views.length));
     }
   });

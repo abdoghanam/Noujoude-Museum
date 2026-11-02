@@ -14,6 +14,7 @@
  * a second parser. A third copy in `src/` would recreate both.
  */
 
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
@@ -61,33 +62,101 @@ export function registryFromText(
 
 /** Read the register from disk. A missing file is a thrown failure, never an empty inventory. */
 export function readAssetRegister(root = process.cwd()): readonly AssetRecord[] {
-  const file = path.join(root, ASSET_REGISTER_PATH);
-  let text: string;
+  return parseRegister(readRegisterBytes(root));
+}
+
+function readRegisterBytes(root: string): Buffer {
+  const file = path.join(path.resolve(root), ASSET_REGISTER_PATH);
   try {
-    text = readFileSync(file, "utf8");
+    return readFileSync(file);
   } catch {
     throw new AssetRegistryError(
       `the asset register at ${ASSET_REGISTER_PATH} could not be read; media slots cannot decide without it`,
     );
   }
-  return registryFromText(text);
 }
 
-let cache: readonly AssetRecord[] | null = null;
-
-/** The register, read once per process. A cold failure is thrown, never cached as empty. */
-export function assetRegister(): readonly AssetRecord[] {
-  if (cache === null) cache = readAssetRegister();
-  return cache;
+function parseRegister(bytes: Buffer): readonly AssetRecord[] {
+  return registryFromText(bytes.toString("utf8"));
 }
 
-export function assetById(assetId: string): AssetRecord | null {
-  return assetRegister().find((asset) => asset.assetId === assetId) ?? null;
+/**
+ * The cached register plus the digest of the bytes it was parsed from.
+ *
+ * `surfaceIndex` lives here rather than in its own module-level variable so the two cannot be at
+ * different versions of the file: the index used to be cleared only by an explicit reset, which meant a
+ * refreshed register could still answer a surface lookup from the previous one.
+ */
+interface RegisterCacheEntry {
+  /** Resolved directory the bytes came from, so a second root cannot be served the first root's rows. */
+  readonly root: string;
+  readonly stamp: string;
+  readonly records: readonly AssetRecord[];
+  readonly surfaceIndex: Map<string, readonly AssetRecord[]>;
 }
 
-export function assetByFilename(filename: string): AssetRecord | null {
+let cache: RegisterCacheEntry | null = null;
+
+/**
+ * The register, revalidated against the file on every call.
+ *
+ * It used to be read once per process, and that was a security defect rather than an optimisation
+ * (SR-08, and the reason `docs/MEDIA_AND_RIGHTS_GOVERNANCE.md` §20.4 cannot be enforced by a cache): a
+ * revocation written into the register — a right withdrawn, an approval rescinded, an asset pulled from
+ * publication — only became visible at the next process start, so a long-lived server could keep serving
+ * an asset for as long as it stayed up. The gate itself re-runs per request, but it was re-running over
+ * remembered rows.
+ *
+ * The fix keys the cache on the SHA-256 of the register bytes instead of on "have I read yet". Every call
+ * reads the file and hashes it (the delivered register is 55,941 bytes measured on 2 November 2026, so
+ * the cost is a small read plus one hash); the CSV is re-parsed and the surface index rebuilt only when
+ * the digest moved. That keeps the expensive part cached and the security-relevant part fresh, and it
+ * makes the failure mode honest: a register that cannot be read throws on the next call instead of being
+ * answered from memory.
+ */
+export function assetRegister(root = process.cwd()): readonly AssetRecord[] {
+  return registerSnapshot(root).records;
+}
+
+/**
+ * The cache lookup itself: hash what is on disk, reuse the parse only when the digest did not move.
+ *
+ * A cold or changed register is parsed here; a register that cannot be read throws from
+ * `readRegisterBytes` before any remembered rows can be returned. That is the fail-closed property the
+ * old code could not guarantee after its first read.
+ */
+function registerSnapshot(root: string): RegisterCacheEntry {
+  const resolved = path.resolve(root);
+  const bytes = readRegisterBytes(resolved);
+  const stamp = createHash("sha256").update(bytes).digest("hex");
+  const cached = cache;
+  if (cached !== null && cached.root === resolved && cached.stamp === stamp) return cached;
+  const records = parseRegister(bytes);
+  const entry: RegisterCacheEntry = {
+    root: resolved,
+    stamp,
+    records,
+    surfaceIndex: indexBySurface(records),
+  };
+  cache = entry;
+  return entry;
+}
+
+export function assetById(
+  assetId: string,
+  root = process.cwd(),
+): AssetRecord | null {
   return (
-    assetRegister().find((asset) => asset.filename === filename) ?? null
+    assetRegister(root).find((asset) => asset.assetId === assetId) ?? null
+  );
+}
+
+export function assetByFilename(
+  filename: string,
+  root = process.cwd(),
+): AssetRecord | null {
+  return (
+    assetRegister(root).find((asset) => asset.filename === filename) ?? null
   );
 }
 
@@ -99,13 +168,12 @@ export function assetByFilename(filename: string): AssetRecord | null {
  * the caller to resolve against the gate; it does not filter by rights, because "which assets belong
  * here" and "which assets may be served here" are different questions with different owners.
  */
-export function assetsForSurface(surface: string): readonly AssetRecord[] {
+export function assetsForSurface(
+  surface: string,
+  root = process.cwd(),
+): readonly AssetRecord[] {
   const wanted = surface.trim().toLowerCase();
-  return assetRegister().filter(
-    (asset) =>
-      asset.surfaces.length > 0 &&
-      asset.surfaces.some((s) => s.toLowerCase() === wanted),
-  );
+  return registerSnapshot(root).surfaceIndex.get(wanted) ?? [];
 }
 
 /**
@@ -120,9 +188,10 @@ export function assetsForSurface(surface: string): readonly AssetRecord[] {
 export function assetsBoundToRoute(
   route: RouteKey | "global",
   slug?: string,
+  root = process.cwd(),
 ): readonly AssetRecord[] {
   const surfaces = bindingsForRoute(route, slug);
-  const bySurface = indexBySurface();
+  const bySurface = registerSnapshot(root).surfaceIndex;
   const matched: AssetRecord[] = [];
   for (const binding of surfaces) {
     const assets = bySurface.get(binding.surface.toLowerCase());
@@ -140,34 +209,44 @@ export function assetsBoundToRoute(
   return matched;
 }
 
-let surfaceIndex: Map<string, readonly AssetRecord[]> | null = null;
-
-/** One pass over the register, keyed by the lower-cased surface name. */
-function indexBySurface(): Map<string, readonly AssetRecord[]> {
-  if (surfaceIndex === null) {
-    const index = new Map<string, AssetRecord[]>();
-    for (const asset of assetRegister()) {
-      for (const surface of asset.surfaces) {
-        const key = surface.toLowerCase();
-        const bucket = index.get(key);
-        if (bucket === undefined) index.set(key, [asset]);
-        else bucket.push(asset);
-      }
+/**
+ * One pass over one version of the register, keyed by the lower-cased surface name.
+ *
+ * Pure, and called from `registerSnapshot` rather than from a lookup: an index that cached itself in a
+ * module variable could outlive the records it was built from, which is the same staleness SR-08 is about
+ * — a surface pulled from the catalog would still resolve to the asset that used to declare it.
+ */
+function indexBySurface(
+  records: readonly AssetRecord[],
+): Map<string, readonly AssetRecord[]> {
+  const index = new Map<string, AssetRecord[]>();
+  for (const asset of records) {
+    for (const surface of asset.surfaces) {
+      const key = surface.toLowerCase();
+      const bucket = index.get(key);
+      if (bucket === undefined) index.set(key, [asset]);
+      else bucket.push(asset);
     }
-    surfaceIndex = index;
   }
-  return surfaceIndex;
+  return index;
 }
 
-/** Clear every cache the registry holds. Exists for tests and for a re-audit inside one process. */
+/**
+ * Drop the cached parse and index.
+ *
+ * Kept for a re-audit inside one process and for tests. It is no longer the *only* way a change becomes
+ * visible — that is the point of the digest key above — so the security property does not depend on
+ * someone remembering to call it.
+ */
 export function resetAssetRegisterCache(): void {
   cache = null;
-  surfaceIndex = null;
 }
 
 /** Assets that a public page may render *right now*. Measured: this is the empty set. */
-export function publiclyServeableAssets(): readonly AssetRecord[] {
-  return assetRegister().filter((asset) => decidePublicServing(asset).serve);
+export function publiclyServeableAssets(
+  root = process.cwd(),
+): readonly AssetRecord[] {
+  return assetRegister(root).filter((asset) => decidePublicServing(asset).serve);
 }
 
 /**

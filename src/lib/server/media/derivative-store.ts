@@ -15,6 +15,7 @@
  * now unrecoverable from disk.
  */
 
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
@@ -69,6 +70,45 @@ export function derivativeUrl(assetId: string): string {
 }
 
 /**
+ * The manifest plus the digest of the bytes it was parsed from, or `null` when the store has not been
+ * built.
+ *
+ * The stamp exists so a caller can tell "the record has not changed since I last parsed it" from "I have
+ * not looked yet" without re-parsing — which is what lets `slot-facts.ts` revalidate per request instead
+ * of reading once per process (SR-08). The digest is of the *file bytes*, so it changes when the lineage
+ * changes and a page built from the previous lineage cannot keep being rendered off a remembered copy.
+ *
+ * Absent answers `{manifest: null, stamp: null}` rather than throwing: see `readDerivativeManifest`.
+ */
+export interface DerivativeManifestSource {
+  readonly manifest: DerivativeManifest | null;
+  /** Lowercase SHA-256 of the manifest file, or null when there is no manifest file. */
+  readonly stamp: string | null;
+}
+
+export function readDerivativeManifestSource(
+  root = process.cwd(),
+): DerivativeManifestSource {
+  const file = path.join(root, DERIVATIVE_MANIFEST_PATH);
+  let bytes: Buffer;
+  try {
+    bytes = readFileSync(file);
+  } catch {
+    return { manifest: null, stamp: null };
+  }
+  const stamp = createHash("sha256").update(bytes).digest("hex");
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(bytes.toString("utf8"));
+  } catch {
+    throw new DerivativeManifestError(
+      `${DERIVATIVE_MANIFEST_PATH} is not valid JSON; refusing to serve from a lineage record it cannot read`,
+    );
+  }
+  return { manifest: validateManifest(parsed, file), stamp };
+}
+
+/**
  * Read the manifest, or `null` when the store has not been built.
  *
  * Absent is a legitimate state, not an error: the pipeline has never run, and on this repository it
@@ -78,22 +118,7 @@ export function derivativeUrl(assetId: string): string {
 export function readDerivativeManifest(
   root = process.cwd(),
 ): DerivativeManifest | null {
-  const file = path.join(root, DERIVATIVE_MANIFEST_PATH);
-  let text: string;
-  try {
-    text = readFileSync(file, "utf8");
-  } catch {
-    return null;
-  }
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(text);
-  } catch {
-    throw new DerivativeManifestError(
-      `${DERIVATIVE_MANIFEST_PATH} is not valid JSON; refusing to serve from a lineage record it cannot read`,
-    );
-  }
-  return validateManifest(parsed, file);
+  return readDerivativeManifestSource(root).manifest;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -9,6 +9,10 @@ import {
   isLocale,
 } from "@/domain/locale";
 import { buildPath, primaryNavigation } from "@/domain/routes";
+import {
+  publicServingSummary,
+  servingFooterSentence,
+} from "@/lib/server/media/slots";
 import styles from "@/ui/layout.module.css";
 import "@/ui/styles/global.css";
 
@@ -52,6 +56,16 @@ export default async function LocaleLayout({
   const locale: Locale = isLocale(segment) ? segment : DEFAULT_LOCALE;
   const navigation = primaryNavigation();
   const other = locale === "ar" ? "en" : "ar";
+  /*
+    Both numbers below are read from `docs/ASSET_INVENTORY_AUDIT.csv` through the media layer, on every
+    request, which is the point: the footer used to assert "82 catalogued assets, 0 cleared for public
+    serving" as typed prose. A sentence in a template cannot notice that a re-audit changed the register,
+    and this page's claim is a release condition. `servingFooterSentence` builds the wording from the
+    measurement, so the counts move when the measurement does — and
+    `src/lib/server/media/slots.test.ts` calls it with figures the register does not have today and fails
+    if the sentence and the register can ever disagree.
+  */
+  const serving = publicServingSummary();
 
   return (
     <html lang={locale} dir={directionOf(locale)}>
@@ -61,9 +75,14 @@ export default async function LocaleLayout({
         </a>
         <header className={styles.siteHeader}>
           {/*
-            §6.1 required-content item 1 is an "approved monogram or wordmark". Zero brand files
-            are approved (BA-001), so the mark slot renders as the name in text and is labelled as
-            a placeholder rather than presented as the identity asset.
+            §6.1 required-content item 1 is an "approved monogram or wordmark". The usage map binds the
+            catalog's `Header` surface to this band, the slot for it resolves to a refusal, and the mark is
+            therefore shown as the name in text. The band says *that* it is pending, through the structural
+            hook below and the footer's measured counts; it does not publish which gate stopped it or which
+            catalogued asset would have filled it (SR-02) — the route's own refusals answer 404 with no
+            reason for exactly that reason, and a page that named the reason and the id would undo it in
+            markup. The reason is still computed and asserted where it belongs:
+            `src/lib/server/media/slots.test.ts` calls `slotOutcome` directly.
           */}
           <p className={styles.wordmark} data-slot="approved-mark-pending">
             {SITE_NAME}
@@ -110,10 +129,13 @@ export default async function LocaleLayout({
           {children}
         </main>
         <footer className={styles.siteFooter}>
-          <p>
-            Pre-publication shell. 82 catalogued assets, 0 cleared for public
-            serving, so no imagery is rendered anywhere in this build.
-          </p>
+          {/*
+            `lang="en"` because the sentence is a structural statement about this build, not editorial
+            content: §4.2 makes the shell bilingual, but Arabic copy is an Owner input that has not been
+            supplied, and writing an Arabic translation here would be inventing content. Marked the way
+            the navigation labels are marked, so an Arabic page does not read English text as Arabic.
+          */}
+          <p lang="en">{servingFooterSentence(serving)}</p>
         </footer>
       </body>
     </html>

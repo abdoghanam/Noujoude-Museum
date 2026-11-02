@@ -25,6 +25,17 @@ import styles from "@/ui/media-slot.module.css";
  * English-only copy, marked `lang="en"`, follows the convention the layout sets for structural labels:
  * Arabic editorial copy is an Owner input that has not been supplied, and writing it here would be
  * inventing content in the other language rather than labelling a state.
+ *
+ * What a refusal does *not* carry is the asset's identity. The same file used to write
+ * `data-asset-id`, `data-surface` and `data-reason` into every withheld slot, which meant a public page
+ * enumerated the catalog — id, placement and legal status per asset — in markup, while
+ * `src/app/api/media/[assetId]/route.ts` goes out of its way to answer 404 with no reason precisely
+ * because "a `403` would confirm that the id is real and derived but withheld" (SR-02; ASVS V3.5,
+ * NIST SP 800-53r5 AC-4). Two layers of one product had taken opposite decisions about the same fact.
+ * The reason and the id are still first-class values — they are the `image`/`withheld` union
+ * `decideMediaSlot` returns, asserted by `src/lib/media/slot.test.ts` and read by the operator-facing
+ * tests — they are simply no longer printed for whoever asks for a page. `data-slot` stays: it labels
+ * the component's own state for CSS and for the tests, and it names nothing outside this build.
  */
 
 export interface MediaSlotProps {
@@ -32,8 +43,6 @@ export interface MediaSlotProps {
   readonly record: SlotRecord;
   /** The served copy and the alt text, resolved by `src/lib/server/media/slot-facts.ts`. */
   readonly facts: SlotFacts;
-  /** Which §6.1 surface this slot sits in — recorded so the usage map is a fact, not a memory. */
-  readonly surface: string;
 }
 
 const WITHHELD_COPY: Readonly<Record<WithheldReason, string>> = {
@@ -52,7 +61,7 @@ const WITHHELD_COPY: Readonly<Record<WithheldReason, string>> = {
     "This asset has no measured pixel dimensions, so its shape would have to be guessed from its filename.",
 };
 
-export function MediaSlot({ record, facts, surface }: MediaSlotProps) {
+export function MediaSlot({ record, facts }: MediaSlotProps) {
   const decision = decideMediaSlot(record, facts);
 
   if (decision.kind === "image") {
@@ -60,8 +69,6 @@ export function MediaSlot({ record, facts, surface }: MediaSlotProps) {
       <img
         alt={decision.alt}
         className={styles.image}
-        data-asset-id={decision.assetId}
-        data-surface={surface}
         height={decision.height}
         src={decision.src}
         width={decision.width}
@@ -70,20 +77,14 @@ export function MediaSlot({ record, facts, surface }: MediaSlotProps) {
   }
 
   /*
-   * The withheld branch carries no dimensions, no count and no caption — §6.1 requires that "Empty or
-   * unavailable sections do not render fabricated counts or objects", and the domain's placeholder shape
-   * (`{kind, assetId, reason}`) is deliberately three keys wide. The machine-readable `data-reason` is
-   * the operator-facing audit trail; the sentence is what a visitor reads.
+   * The withheld branch carries no dimensions, no count, no caption and no identifier — §6.1 requires
+   * that "Empty or unavailable sections do not render fabricated counts or objects", and the domain's
+   * placeholder shape (`{kind, assetId, reason}`) is deliberately three keys wide so the *decision* keeps
+   * both facts. What stopped the pixel is recorded in the returned union, in the tests and (once SR-23
+   * lands) in the audit trail. It is not printed in the page a stranger can request.
    */
   return (
-    <p
-      className={styles.withheld}
-      data-asset-id={decision.assetId}
-      data-reason={decision.reason}
-      data-slot="media-withheld"
-      data-surface={surface}
-      lang="en"
-    >
+    <p className={styles.withheld} data-slot="media-withheld" lang="en">
       {WITHHELD_COPY[decision.reason]}
     </p>
   );
@@ -121,12 +122,14 @@ export function MediaSlotGroup({ views }: MediaSlotGroupProps) {
       </p>
       <ul className={styles.list}>
         {views.map((view) => (
+          /*
+            `assetId` and `surface` are used here and nowhere else in the markup: they are what makes two
+            slots for one asset on two surfaces two React items. That is the deliberate half of SR-02 — the
+            placement still has to be *modelled*, it just is not *published* — and the tally below counts the
+            surfaces without naming them.
+          */
           <li className={styles.entry} key={`${view.assetId}:${view.surface}`}>
-            <MediaSlot
-              facts={view.facts}
-              record={view.record}
-              surface={view.surface}
-            />
+            <MediaSlot facts={view.facts} record={view.record} />
           </li>
         ))}
       </ul>

@@ -1,7 +1,14 @@
-import { readFileSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 import {
   ASSET_REGISTER_PATH,
@@ -291,5 +298,156 @@ describe("lookup by identity", () => {
     expect(columns.length).toBe(AUDIT_COLUMNS.length);
     expect(columns[0]).toBe(AUDIT_COLUMNS[0]);
     expect(columns[columns.length - 1]).toBe(AUDIT_COLUMNS[19]);
+  });
+});
+
+/**
+ * SR-08 — a register change is visible on the next read.
+ *
+ * `assetRegister()` used to answer "have I read this file yet?" and then keep the rows for the lifetime of
+ * the process. That is not a performance defect, it is a governance one: the day an Owner withdraws a
+ * rights statement or rescinds an approval, the row in `docs/ASSET_INVENTORY_AUDIT.csv` changes and the
+ * running site carries on deciding from the previous rows — a revocation that takes effect only at the next
+ * restart is a revocation that has not taken effect (ASVS V3.5, NIST SP 800-53r5 AC-4). The cache is now
+ * keyed on the SHA-256 of the register bytes, so these cases are written against the *file*: rewrite it,
+ * call again, and require the new content with no reset in between.
+ *
+ * Every case runs against a throwaway root under the OS temp directory. The delivered register is read by
+ * the blocks above and is never edited by this one.
+ */
+const fixtureRoots: string[] = [];
+
+/** One register row, in the delivered 20-column order, with the cells a case cares about overridden. */
+function registerRow(overrides: Record<string, string> = {}): string {
+  const cells: Record<string, string> = {
+    "Asset ID": "NDM-AST-001",
+    Filename: "fixture_asset_512.webp",
+    "Expected Category": "A.2 Brand Identity Assets",
+    "Physical Status": "PRESENT",
+    "Actual Path": "fixture_asset_512.webp",
+    "MIME Type": "image/webp",
+    Width: "512",
+    Height: "512",
+    "File Size": "4096",
+    "SHA-256": "0".repeat(64),
+    "Source/Creator": "fixture",
+    "Rights Status": "No rights statement supplied",
+    "Brand/Curatorial Approval": "Not Approved — no approval record supplied",
+    "Intended Usage": "fixture role | Fixture surface",
+    "Actual Usage": "Not in use",
+    "Derivative Status": "None",
+    "Alt Text Status": "Not Recorded",
+    Notes: "Test-only row. The delivered register is not written by this file.",
+    "Verified By": "registry.test.ts",
+    "Verified Date": "2026-11-02",
+    ...overrides,
+  };
+  return AUDIT_COLUMNS.map((column) => {
+    const value = cells[column] ?? "";
+    return /[",\n]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value;
+  }).join(",");
+}
+
+/** A temp root whose `docs/` holds a register with exactly these rows. */
+function tempRegisterRoot(rows: readonly string[]): string {
+  const root = mkdtempSync(path.join(tmpdir(), "ndm-registry-"));
+  fixtureRoots.push(root);
+  return writeRegister(root, rows);
+}
+
+function writeRegister(root: string, rows: readonly string[]): string {
+  const file = path.join(root, ASSET_REGISTER_PATH);
+  mkdirSync(path.dirname(file), { recursive: true });
+  writeFileSync(file, `${AUDIT_COLUMNS.join(",")}\n${rows.join("\n")}\n`, "utf8");
+  return root;
+}
+
+afterEach(() => {
+  for (const dir of fixtureRoots.splice(0)) rmSync(dir, { force: true, recursive: true });
+});
+
+describe("SR-08: the register cache revalidates against the file", () => {
+  it("sees a replaced row on the next read, and rebuilds the surface index with it", () => {
+    const root = tempRegisterRoot([
+      registerRow({ "Intended Usage": "fixture role | First surface" }),
+    ]);
+    expect(assetRegister(root).map((asset) => asset.assetId)).toEqual(["NDM-AST-001"]);
+    expect(assetsForSurface("First surface", root)).toHaveLength(1);
+
+    writeRegister(root, [
+      registerRow({ "Asset ID": "NDM-AST-002", "Intended Usage": "fixture role | Second surface" }),
+    ]);
+
+    // Both caches moved together. The surface index used to be a second module variable cleared only by an
+    // explicit reset, so a refreshed register could still answer a surface lookup from the old one.
+    expect(assetRegister(root).map((asset) => asset.assetId)).toEqual(["NDM-AST-002"]);
+    expect(assetById("NDM-AST-001", root)).toBeNull();
+    expect(assetsForSurface("First surface", root)).toEqual([]);
+    expect(assetsForSurface("Second surface", root).map((a) => a.assetId)).toEqual([
+      "NDM-AST-002",
+    ]);
+  });
+
+  it("reports a rights statement that changed underneath it", () => {
+    // The revocation case in the only form the delivered vocabulary can express it: `pending` is a named
+    // statement, so writing a different one moves the count the gate reads. Both states deny — the point
+    // is that the *record* the gate decides from is the record on disk, now.
+    const root = tempRegisterRoot([
+      registerRow({ "Rights Status": "Awaiting Rights Review" }),
+    ]);
+    expect(registerTally(assetRegister(root)).rightsPending).toBe(1);
+    expect(registerTally(assetRegister(root)).rightsUnknown).toBe(0);
+
+    writeRegister(root, [
+      registerRow({ "Rights Status": "Rights withdrawn by the Owner — no clearance in force" }),
+    ]);
+    expect(registerTally(assetRegister(root)).rightsPending).toBe(0);
+    expect(registerTally(assetRegister(root)).rightsUnknown).toBe(1);
+    expect(decidePublicServing(one(assetRegister(root), "the rewritten row")).serve).toBe(false);
+  });
+
+  it("throws when the register disappears, rather than serving the rows it remembered", () => {
+    const root = tempRegisterRoot([registerRow()]);
+    expect(assetRegister(root)).toHaveLength(1);
+
+    rmSync(path.join(root, ASSET_REGISTER_PATH));
+
+    expect(() => assetRegister(root)).toThrow(AssetRegistryError);
+    expect(() => assetById("NDM-AST-001", root)).toThrow(AssetRegistryError);
+  });
+
+  it("does not remember an absent register either", () => {
+    const root = mkdtempSync(path.join(tmpdir(), "ndm-registry-"));
+    fixtureRoots.push(root);
+    expect(() => assetRegister(root)).toThrow(AssetRegistryError);
+
+    writeRegister(root, [registerRow()]);
+    expect(assetRegister(root)).toHaveLength(1);
+  });
+
+  it("still reuses the parse while the bytes have not moved", () => {
+    // Freshness is bought with a read and a hash, not with a re-parse per request: 55,941 bytes measured
+    // on 2 November 2026, hashed on every call, parsed only when the digest changes.
+    const rows = [registerRow()];
+    const root = tempRegisterRoot(rows);
+    const first = assetRegister(root);
+    expect(assetRegister(root)).toBe(first);
+
+    writeRegister(root, rows);
+    expect(assetRegister(root)).toBe(first);
+  });
+
+  it("keeps the two lookups on one version of the file", () => {
+    const root = tempRegisterRoot([
+      registerRow({ "Asset ID": "NDM-AST-001", Filename: "first_512.webp" }),
+      registerRow({ "Asset ID": "NDM-AST-002", Filename: "second_512.webp" }),
+    ]);
+    expect(assetRegister(root)).toHaveLength(2);
+
+    writeRegister(root, [
+      registerRow({ "Asset ID": "NDM-AST-002", Filename: "second_512.webp" }),
+    ]);
+    expect(assetByFilename("first_512.webp", root)).toBeNull();
+    expect(assetById("NDM-AST-002", root)?.filename).toBe("second_512.webp");
   });
 });

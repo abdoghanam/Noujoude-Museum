@@ -106,6 +106,22 @@ function rootWithManifest(text: string): string {
   return root;
 }
 
+/**
+ * Replace the manifest a root already has.
+ *
+ * Separate from `rootWithManifest` because the SR-08 cases are about a record that *changes* under a live
+ * cache: one helper makes the root, another rewrites the bytes inside the same root, and the assertion is
+ * what the next read answers.
+ */
+function writeManifestRows(root: string, rows: readonly DerivativeLineage[]): void {
+  mkdirSync(path.join(root, DERIVATIVE_STORE_DIR), { recursive: true });
+  writeFileSync(
+    path.join(root, DERIVATIVE_MANIFEST_PATH),
+    JSON.stringify(manifestObject(rows)),
+    "utf8",
+  );
+}
+
 function lineageRow(overrides: Partial<DerivativeLineage> = {}): DerivativeLineage {
   return {
     assetId: FIRST_ASSET_ID,
@@ -244,6 +260,13 @@ function syntheticLineage(overrides: Partial<DerivativeLineage> = {}): Derivativ
     originalsUnchanged: true,
     storeDirectory: DERIVATIVE_STORE_DIR,
   };
+}
+
+/** The synthetic asset's lineage row, for the cases that write the record to disk and need it to validate. */
+function syntheticRow(overrides: Partial<DerivativeLineage> = {}): DerivativeLineage {
+  const [row] = syntheticLineage(overrides).derivatives;
+  if (row === undefined) throw new Error("the synthetic lineage produced no row");
+  return row;
 }
 
 /** The shipped six checks, bound to a synthetic record, a fixed manifest and a temp store. */
@@ -524,6 +547,99 @@ describe("the manifest cache and its injection seam", () => {
   it("builds the serving URL from the lineage id and percent-encodes anything that is not an id", () => {
     expect(derivativeUrl(FIRST_ASSET_ID)).toBe(`/api/media/${FIRST_ASSET_ID}`);
     expect(derivativeUrl("a b/c")).toBe("/api/media/a%20b%2Fc");
+  });
+});
+
+/**
+ * SR-08 — the lineage record is revalidated on every read.
+ *
+ * These five cases are the regression guard for one defect: the cache used to answer "have I read this
+ * file yet?" and, once it had, nothing short of a process restart could change the answer. That made the
+ * cache a participant in the trust decision, because `serving.ts` check 3 asks the cache — not the disk —
+ * whether a derivative has lineage. A withdrawn or replaced lineage row stayed authoritative for the whole
+ * lifetime of the server, which is the failure mode ASVS V3.5 and AC-4 both describe as a revocation that
+ * is not effective.
+ *
+ * The fix keys the cache on the SHA-256 of the manifest bytes, so these cases are all written against the
+ * file rather than against the setter: rewrite the bytes, call again, and require the new content. Absence
+ * is tested in both directions because "not built yet" and "the record was removed" arrived at the same
+ * answer before, and only one of them should.
+ */
+describe("SR-08: the lineage cache revalidates against the file", () => {
+  it("sees a rewritten digest and filename on the next read, with no reset", () => {
+    const root = rootWithManifest(JSON.stringify(manifestObject([lineageRow()])));
+    expect(derivativeManifest(root)?.derivatives.map((row) => row.sha256)).toEqual([SHA_A]);
+
+    writeManifestRows(root, [lineageRow({ file: "replaced.webp", sha256: SHA_B })]);
+
+    const refreshed = derivativeManifest(root);
+    if (refreshed === null) throw new Error("the rewritten manifest read back as absent");
+    const row = one(refreshed.derivatives, "the rewritten lineage row");
+    expect(row.sha256).toBe(SHA_B);
+    expect(row.file).toBe("replaced.webp");
+    expect(lineageFor(FIRST_ASSET_ID, root)?.file).toBe("replaced.webp");
+  });
+
+  it("sees a record that appears after the store was read as absent", () => {
+    const root = tempRoot();
+    expect(derivativeManifest(root)).toBeNull();
+    writeManifestRows(root, [lineageRow()]);
+    expect(derivativeManifest(root)?.derivatives).toHaveLength(1);
+  });
+
+  it("sees a record that is withdrawn, which is the direction a cache must never get wrong", () => {
+    const root = rootWithManifest(JSON.stringify(manifestObject([lineageRow()])));
+    expect(derivativeManifest(root)).not.toBeNull();
+
+    rmSync(path.join(root, DERIVATIVE_MANIFEST_PATH));
+
+    expect(derivativeManifest(root)).toBeNull();
+    expect(lineageFor(FIRST_ASSET_ID, root)).toBeNull();
+  });
+
+  it("throws on corrupt bytes instead of answering from the copy it parsed last", () => {
+    const root = rootWithManifest(JSON.stringify(manifestObject([lineageRow()])));
+    expect(derivativeManifest(root)).not.toBeNull();
+
+    writeFileSync(path.join(root, DERIVATIVE_MANIFEST_PATH), "{ not json", "utf8");
+
+    expect(() => derivativeManifest(root)).toThrow(DerivativeManifestError);
+  });
+
+  it("still reuses the parse while the bytes have not moved", () => {
+    // The point of the digest is freshness without throwing away the cache: same bytes must give the same
+    // object, or the fix would have bought revocation speed by re-parsing on every request for nothing.
+    const root = rootWithManifest(JSON.stringify(manifestObject([lineageRow()])));
+    const first = derivativeManifest(root);
+    expect(derivativeManifest(root)).toBe(first);
+    writeManifestRows(root, [lineageRow()]);
+    expect(derivativeManifest(root)).toBe(first);
+  });
+
+  it("refuses on the next request once the record on disk claims a different digest", async () => {
+    // The end-to-end form of the same property, because check 3 and check 6 both read through this cache:
+    // a derivative whose lineage row is replaced underneath a running server must stop being served on the
+    // request after the write, not after the restart. Same bytes on disk, new claimed digest in the record.
+    const root = tempRoot();
+    const storeDir = path.join(root, DERIVATIVE_STORE_DIR);
+    mkdirSync(storeDir, { recursive: true });
+    writeFileSync(path.join(storeDir, "synthetic-cleared-asset.webp"), SYNTHETIC_BYTES);
+    writeManifestRows(root, [syntheticRow()]);
+    const serve = createDerivativeServer({
+      ...PRODUCTION_SERVING_DEPENDENCIES,
+      evaluateServing: decidePublicServing,
+      findAsset: (assetId) => (assetId === SYNTHETIC_ID ? syntheticAsset() : null),
+      readLineageManifest: () => derivativeManifest(root),
+      storeDirectory: () => storeDir,
+    });
+
+    expect(served(await serve(SYNTHETIC_ID)).etag).toBe(SYNTHETIC_DIGEST);
+
+    writeManifestRows(root, [syntheticRow({ sha256: SHA_B })]);
+    expect(await serve(SYNTHETIC_ID)).toMatchObject({
+      kind: "refused",
+      reason: "digest_mismatch",
+    });
   });
 });
 

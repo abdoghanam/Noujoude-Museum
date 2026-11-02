@@ -17,6 +17,8 @@
  *   arrive with the record that owns it. Writing one would be the fabricated content §6.1 forbids.
  */
 
+import path from "node:path";
+
 import type { Locale } from "@/domain/locale";
 import type { AssetRecord } from "@/lib/media/asset-record";
 import type { SlotFacts, SlotRecord } from "@/lib/media/slot";
@@ -26,30 +28,75 @@ import {
   type DerivativeLineage,
   type DerivativeManifest,
   derivativeUrl,
-  readDerivativeManifest,
+  readDerivativeManifestSource,
 } from "@/lib/server/media/derivative-store";
 
-let manifestCache: DerivativeManifest | null | undefined;
-
-/** The lineage record, read once per process. `undefined` means not yet read, `null` means absent. */
-export function derivativeManifest(): DerivativeManifest | null {
-  if (manifestCache === undefined) manifestCache = readDerivativeManifest();
-  return manifestCache;
+interface ManifestCacheEntry {
+  /** Resolved directory the bytes came from, so a second root cannot be served the first root's record. */
+  readonly root: string;
+  /** SHA-256 of the manifest file, or null when there is no file. */
+  readonly stamp: string | null;
+  readonly manifest: DerivativeManifest | null;
 }
 
+let sourceCache: ManifestCacheEntry | null = null;
+
+/**
+ * A record a caller supplied instead of the one on disk.
+ *
+ * `undefined` means "nothing was injected", which is why the variable is not simply the manifest type:
+ * injecting `null` is a meaningful state (a page that must render the no-lineage refusal) and has to be
+ * distinguishable from "not injected, go and look". Production code never sets it; `setDerivativeManifest`
+ * is the seam a test or an in-memory build uses, and SR-10 is the open item that makes it throw under
+ * `NODE_ENV=production`.
+ */
+let injected: DerivativeManifest | null | undefined;
+
+/**
+ * The lineage record, revalidated against the file on every call.
+ *
+ * It used to be read once per process, and that made the cache part of the trust decision: a lineage row
+ * rewritten on disk — a derivative swapped for different bytes, an asset removed from the record — could
+ * not be seen until a restart. Same defect class as SR-08 in `registry.ts`, same fix: hash the bytes,
+ * reuse the parsed manifest only when the digest did not move, and let a corrupt record throw on the read
+ * rather than being answered from memory. Absent answers `null`, which is the state a page renders a
+ * refusal from.
+ */
+export function derivativeManifest(root = process.cwd()): DerivativeManifest | null {
+  if (injected !== undefined) return injected;
+  return manifestSnapshot(root).manifest;
+}
+
+function manifestSnapshot(root: string): ManifestCacheEntry {
+  const resolved = path.resolve(root);
+  const { manifest, stamp } = readDerivativeManifestSource(resolved);
+  const cached = sourceCache;
+  if (cached !== null && cached.root === resolved && cached.stamp === stamp) return cached;
+  const entry: ManifestCacheEntry = { manifest, root: resolved, stamp };
+  sourceCache = entry;
+  return entry;
+}
+
+/** Discard both the injected record and the disk cache, so the next call reads the file. */
 export function resetDerivativeManifestCache(): void {
-  manifestCache = undefined;
+  injected = undefined;
+  sourceCache = null;
 }
 
 /** Supply a manifest explicitly — for a test, or for a build that has the record in memory. */
 export function setDerivativeManifest(
   manifest: DerivativeManifest | null,
 ): void {
-  manifestCache = manifest;
+  injected = manifest;
 }
 
-export function lineageFor(assetId: string): DerivativeLineage | null {
-  return derivativeManifest()?.derivatives.find((row) => row.assetId === assetId) ?? null;
+export function lineageFor(
+  assetId: string,
+  root = process.cwd(),
+): DerivativeLineage | null {
+  return (
+    derivativeManifest(root)?.derivatives.find((row) => row.assetId === assetId) ?? null
+  );
 }
 
 /**
@@ -59,9 +106,12 @@ export function lineageFor(assetId: string): DerivativeLineage | null {
  * lineage record that got built by hand cannot become a public URL by being noticed. The route re-runs
  * the same decision; this is the second of two gates, not a substitute for the first.
  */
-export function servedSrcFor(asset: AssetRecord): string | null {
+export function servedSrcFor(
+  asset: AssetRecord,
+  root = process.cwd(),
+): string | null {
   if (!decidePublicServing(asset).serve) return null;
-  const lineage = lineageFor(asset.assetId);
+  const lineage = lineageFor(asset.assetId, root);
   if (lineage === null) return null;
   return derivativeUrl(lineage.assetId);
 }
@@ -93,11 +143,12 @@ export function altTextFor(_asset: AssetRecord, _locale: Locale): string | null 
 export function slotInputFor(
   asset: AssetRecord,
   locale: Locale,
+  root = process.cwd(),
 ): {
   readonly record: SlotRecord;
   readonly facts: SlotFacts;
 } {
-  const lineage = lineageFor(asset.assetId);
+  const lineage = lineageFor(asset.assetId, root);
   return {
     record: {
       assetId: asset.assetId,
@@ -107,6 +158,9 @@ export function slotInputFor(
       width: lineage?.width ?? asset.width,
       height: lineage?.height ?? asset.height,
     },
-    facts: { src: servedSrcFor(asset), altText: altTextFor(asset, locale) },
+    facts: {
+      src: servedSrcFor(asset, root),
+      altText: altTextFor(asset, locale),
+    },
   };
 }
