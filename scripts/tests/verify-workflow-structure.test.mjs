@@ -195,7 +195,85 @@ const red = [
   ['[W10] a literal secret assigned in a shell line is a defect',
     mutate('echo "generated per run, never stored: $(openssl rand -hex 24)"', 'NDM_RUNTIME_PASSWORD=supersecretvalue12345 pnpm db:up'),
     /\[W10\]/],
+  ['[W11] a blocking format check ahead of the test step is a defect',
+    mutate('      - name: Toolchain\n        run: |\n          pnpm install --frozen-lockfile',
+      '      - name: Formatting\n        run: |\n          pnpm format:check\n'
+      + '      - name: Toolchain\n        run: |\n          pnpm install --frozen-lockfile\n          pnpm test'),
+    /\[W11\].*pnpm format:check/],
 ];
+
+// ── W11 fixtures: the ordering claim needs three green shapes, not one ──────────────────────────
+// The rule exists because of a measured pair (register SR-26), so each permitted escape from it gets
+// its own fixture: run the tests first, mark the cosmetic step non-blocking, or put it in another job.
+// A rule with no green case is a rule that passes by shouting at everything, and that is not a gate.
+const W11_FIXTURES = {
+  ordered: `name: tiny
+on: push
+jobs:
+  a:
+    name: A
+    runs-on: ubuntu-latest
+    steps:
+      - name: Tests
+        run: pnpm test
+      - name: Formatting
+        run: pnpm format:check
+`,
+  nonBlocking: `name: tiny
+on: push
+jobs:
+  a:
+    name: A
+    runs-on: ubuntu-latest
+    steps:
+      - name: Formatting
+        continue-on-error: true
+        run: pnpm format:check
+      - name: Tests
+        run: pnpm test
+`,
+  separateJob: `name: tiny
+on: push
+jobs:
+  a:
+    name: A
+    runs-on: ubuntu-latest
+    steps:
+      - name: Formatting
+        run: pnpm format:check
+  b:
+    name: B
+    runs-on: ubuntu-latest
+    needs: a
+    steps:
+      - name: Tests
+        run: pnpm test
+`,
+  blocked: `name: tiny
+on: push
+jobs:
+  a:
+    name: A
+    runs-on: ubuntu-latest
+    steps:
+      - name: Formatting
+        run: pnpm format:check
+      - name: Tests
+        run: pnpm test
+`,
+  testGatesOnly: `name: tiny
+on: push
+jobs:
+  a:
+    name: A
+    runs-on: ubuntu-latest
+    steps:
+      - name: Formatting
+        run: pnpm format:check
+      - name: Dependency-free gates
+        run: pnpm test:gates
+`,
+};
 
 // ── the exemptions, each with its own fixture so the proof is specific ──────────────────────────
 const green = [
@@ -252,6 +330,30 @@ expect('[W9] a suite the local chain runs but this workflow omits is a defect',
 expect('[W9] a suite the chain runs and a step also runs is not a defect',
   GOOD, 0, null, { NDM_EXPECT_SUITES: 'scripts/tests/verify-tables.test.mjs' });
 
+// 3b. W11 — the mask rule, with one fixture per shape it must tolerate and one per shape it must not.
+expect('[W11] tests before formatting is green', W11_FIXTURES.ordered, 0, null);
+expect('[W11] a non-blocking formatting step is green', W11_FIXTURES.nonBlocking, 0, null);
+expect('[W11] formatting in its own job is green', W11_FIXTURES.separateJob, 0, null);
+expect('[W11] pnpm test:gates is not the suite the rule protects', W11_FIXTURES.testGatesOnly, 0, null);
+expect('[W11] blocking formatting before pnpm test is a defect', W11_FIXTURES.blocked, 1, /\[W11\]/);
+
+// 3c. The same rule asserted against the real file's own shape: the committed workflow is the repaired
+//     one, so putting the historical pair back into it must be caught. This is the case that would have
+//     failed on 2 November 2026, when `quality` ran format first and never reached the tests.
+{
+  const ci = readFileSync(path.join(ROOT, '.github', 'workflows', 'ci.yml'), 'utf8');
+  const anchor = '      - name: Unit + integration tests';
+  if (!ci.includes(anchor)) {
+    logFail('[W11] the real workflow with the old order restored is caught', `anchor missing: ${anchor}`);
+  } else {
+    const reintroduced = ci.replace(anchor,
+      '      - name: Formatting check (never writes)\n        run: pnpm format:check\n\n' + anchor);
+    const { rc, out } = runFixture(reintroduced);
+    if (rc === 1 && /\[W11\]/.test(out)) logPass('[W11] the real workflow with the old order restored is caught', '(exit 1)');
+    else logFail('[W11] the real workflow with the old order restored is caught', `exit ${rc}\n${out}`);
+  }
+}
+
 // 4. Several defects at once must all be reported, not just the first one found.
 {
   const yaml = GOOD
@@ -270,8 +372,9 @@ expect('[W9] a suite the chain runs and a step also runs is not a defect',
 {
   const r = spawnSync(process.execPath, [CHECKER], { encoding: 'utf8', cwd: ROOT, timeout: 30_000 });
   const out = (r.stdout || '') + (r.stderr || '');
-  if (r.status === 0) logPass('the real .github/workflows/ci.yml passes all 10 rules', '(exit 0)');
-  else logFail('the real .github/workflows/ci.yml passes all 10 rules', `exit ${r.status}\n${out}`);
+  const rules = `(${(out.match(/\d+ rules/) ?? ['every rule'])[0]})`;
+  if (r.status === 0) logPass('the real .github/workflows/ci.yml passes every rule the checker states', rules);
+  else logFail('the real .github/workflows/ci.yml passes every rule the checker states', `exit ${r.status}\n${out}`);
 }
 {
   const pkg = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8'));

@@ -19,11 +19,27 @@ for (const [k, v] of Object.entries(INERT_ENV)) process.env[k] = v;
 // Integration tests must opt in explicitly and must target `noujoude_test`,
 // never the development database. A missing opt-in fails loudly instead of
 // writing to real data.
-if (!process.env.NDM_ALLOW_INTEGRATION) {
-  vi.mock('@/lib/db', () => {
+//
+// The call sits at the top level because vitest hoists `vi.mock` above the imports and above any
+// condition wrapped around it — measured on vitest 4.1.12, which prints
+// "Although it appears nested, it will be hoisted and executed before any tests run" for the nested
+// form. A guarded `if (!process.env.NDM_ALLOW_INTEGRATION) { vi.mock(…) }` is therefore a guard that
+// does not guard: the mock registers either way. The opt-in test belongs inside the factory, which
+// vitest calls lazily, only when something actually imports the aliased module.
+//
+// `@/lib/db` has no file behind it yet — measured: `src/lib/` holds `media` and `server` only. So both
+// branches refuse, and they refuse for different reasons, because a run that opted in and got a fake
+// database would be a run reporting evidence about nothing.
+vi.mock('@/lib/db', () => {
+  if (process.env.NDM_ALLOW_INTEGRATION) {
     throw new Error(
-      'Integration tests require NDM_ALLOW_INTEGRATION=1 and a noujoude_test database. ' +
-        'Refusing to touch the development database (Technology Standard §3.4).',
+      'NDM_ALLOW_INTEGRATION is set, but @/lib/db has no implementation yet — the database layer is ' +
+        'Phase 2 work (docs/IMPLEMENTATION_PLAN.md line B4). An integration suite cannot be written ' +
+        'against a module that does not exist.',
     );
-  });
-}
+  }
+  throw new Error(
+    'Integration tests require NDM_ALLOW_INTEGRATION=1 and a noujoude_test database. ' +
+      'Refusing to touch the development database (Technology Standard §3.4).',
+  );
+});

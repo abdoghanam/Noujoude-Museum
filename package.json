@@ -40,7 +40,7 @@
     "audit:tables": "node scripts/verify-tables.mjs",
     "audit:compose": "node scripts/verify-compose-config.mjs",
     "audit:workflow": "node scripts/verify-workflow-structure.mjs",
-    "test:gates": "node scripts/tests/verify-tables.test.mjs && node scripts/tests/preflight-asset-reconciliation.test.mjs && node scripts/tests/verify-citations.test.mjs && node scripts/tests/verify-compose-config.test.mjs && node scripts/tests/verify-workflow-structure.test.mjs && node scripts/tests/preflight-pnpm-trap.test.mjs && node scripts/tests/copy-master-spec-output.test.mjs",
+    "test:gates": "node scripts/tests/verify-tables.test.mjs && node scripts/tests/preflight-asset-reconciliation.test.mjs && node scripts/tests/verify-citations.test.mjs && node scripts/tests/verify-compose-config.test.mjs && node scripts/tests/verify-workflow-structure.test.mjs && node scripts/tests/preflight-pnpm-trap.test.mjs && node scripts/tests/copy-master-spec-output.test.mjs && node scripts/tests/build-media-derivatives.test.mjs",
     "test:gate:tables": "node scripts/tests/verify-tables.test.mjs",
     "test:gate:assets": "node scripts/tests/preflight-asset-reconciliation.test.mjs",
     "test:gate:citations": "node scripts/tests/verify-citations.test.mjs",
@@ -48,6 +48,8 @@
     "test:gate:workflow": "node scripts/tests/verify-workflow-structure.test.mjs",
     "test:gate:pnpm-trap": "node scripts/tests/preflight-pnpm-trap.test.mjs",
     "test:gate:spec-copy": "node scripts/tests/copy-master-spec-output.test.mjs",
+    "test:gate:derivatives": "node scripts/tests/build-media-derivatives.test.mjs",
+    "build:derivatives": "node scripts/build-media-derivatives.mjs",
     "docs:spec-copy": "node scripts/copy-master-spec.mjs"
   },
   "dependencies": {
@@ -73,6 +75,6 @@
     "prettier": "^3",
     "typescript": "^5",
     "typescript-eslint": "8.72.1",
-    "vitest": "^3"
+    "vitest": "4.1.12"
   }
 }

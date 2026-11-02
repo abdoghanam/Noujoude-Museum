@@ -1,19 +1,30 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Noujoude — CI gate definition.
 #
-# STATUS: **AUTHORED. NEVER EXECUTED.**
-#   This file has not been run by any CI system, and it cannot be yet:
-#     B-04  no Git repository exists (`git rev-parse` → "not a git repository"),
-#           so there is no remote, no push event and no runner to pick this up;
-#     B-01  the host Node is v24.19.0 and the pinned set needs >=24.22.1;
-#     B-02  `pnpm install` has never been authorized or run, so there is no
-#           `pnpm-lock.yaml` for `--frozen-lockfile` to check;
-#     Phase 2  no `src/payload/payload.config.ts` and no migration exists, so the
-#           compose-backed `db:harden` / `db:verify-privileges` half of the
-#           database job has nothing to harden yet (see the `armed` step).
-#   Do not describe this pipeline as operational, green, or enforcing until a real
-#   run transcript exists in docs/TEST_AND_RELEASE_REPORT.md. Authoring it is the
-#   artefact B-08 / coverage hole H-2 asked for; running it is a later gate.
+# STATUS: **AUTHORED. NEVER EXECUTED BY A RUNNER.**
+#   The three blockers that used to make this file unrunnable have closed, and the fourth reason
+#   stands, so the honest statement is narrower than the one it replaced:
+#     B-04  CLOSED by OD-4 — a local repository exists (`git rev-parse HEAD` answers), and the Owner's
+#           standing instruction is that no remote is created and nothing is pushed. So there is still
+#           no push event and no runner, but not because there is no repository.
+#     B-01  CLOSED by OD-1 — the Node floor is `>=24.22.1 <25` here and `NODE_VERSION` below matches it.
+#     B-02  CLOSED by OD-2 — `pnpm-lock.yaml` exists, is committed, and `--frozen-lockfile` has a
+#           lockfile to check.
+#     Phase 2  STILL OPEN — there is no `src/payload/payload.config.ts` and no migration, so the
+#           compose-backed `db:harden` / `db:verify-privileges` half of the database job has nothing to
+#           harden yet (see the `armed` step).
+#   Do not describe this pipeline as operational, green, or enforcing until a real run transcript
+#   exists in docs/TEST_AND_RELEASE_REPORT.md. Authoring it is the artefact B-08 / coverage hole H-2
+#   asked for; running it is a later gate, and it is a gate the Owner has not opened.
+#
+# ACTION PINS (register SR-14): every `uses:` below names a commit SHA, not a moving tag. The SHAs are
+#   read from the GitHub API rather than recalled — `actions/checkout` v4 = v4.4.0,
+#   `actions/setup-node` v4 = v4.4.0, `actions/upload-artifact` v4 = v4.6.2 — and the version each one
+#   stands for is written on the line above it, because the structural gate over this file
+#   (scripts/verify-workflow-structure.mjs rule W5) requires the `uses:` value to be exactly
+#   `owner/repo@ref`, so a trailing `# v4.4.0` comment on the same line would itself be a defect.
+#   A pinned SHA is the supply-chain half of "the pipeline ran the code we reviewed" (SLSA v1.0
+#   provenance; GitHub Actions security guidance on pinning actions to a commit SHA).
 #
 # WHY IT EXISTS ANYWAY (the specific hole it closes):
 #   ADR-019 measures a residual risk rather than hiding it: the table owner
@@ -69,9 +80,11 @@ jobs:
     name: Documentation integrity
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # actions/checkout v4.4.0
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
 
-      - uses: actions/setup-node@v4
+      # actions/setup-node v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -181,19 +194,30 @@ jobs:
           done
 
   # ── 2. Toolchain quality gate (Standard §2.3 step 9 / plan gate G0) ────────
-  # WILL FAIL until the minimum vertical slice of IMPLEMENTATION_PLAN §3 exists:
-  #   G0.2 typecheck has no source file to check (`src/` holds README.md only);
-  #   G0.3 `vitest.config.ts` sets passWithNoTests:false, so an empty suite fails
-  #        BY DESIGN — the fix is a real test, never a config change.
-  # That red state is information, not a defect in this file.
+  # Gate order is the register's SR-26, and the reason is a measured fact, not a style preference:
+  # `Formatting check` used to be the first check step in this job. `pnpm format:check` exits 1 on the
+  # tree as it stands (measured 2 Nov 2026: 41 files unformatted), a GitHub Actions step fails the job
+  # by default, and the `pnpm test`, `pnpm typecheck` and `pnpm build` steps beneath it were never
+  # reached. The job's colour then reported on prettier indentation while saying nothing at all about
+  # 295 tests, and no transcript distinguished "tests passed" from "tests never ran".
+  #
+  # The fix is that cosmetic checks cannot be able to hide substantive ones:
+  #   • formatting moved to its own parallel `formatting` job — it still fails the workflow, and stays
+  #     blocking, because weakening a gate is not how a mask gets removed;
+  #   • this job runs the checks in the order of what they can prove: typecheck, then the suites, then
+  #     the build.
+  # scripts/verify-workflow-structure.mjs rule W11 now keeps the ordering claim honest: a blocking step
+  # that runs `pnpm format:check` ahead of `pnpm test` in the same job is a defect CI reports.
   quality:
-    name: Install, lint, format, typecheck, test, build
+    name: Install, typecheck, test, lint, build
     runs-on: ubuntu-latest
     needs: docs-gates
     steps:
-      - uses: actions/checkout@v4
+      # actions/checkout v4.4.0
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
 
-      - uses: actions/setup-node@v4
+      # actions/setup-node v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -235,22 +259,69 @@ jobs:
             console.log("lockstep holds: all five packages on " + expected);
           '
 
-      - name: Formatting check (never writes)
-        run: pnpm format:check
+      - name: Typecheck (strict)
+        # First, because it is the check that can say "nothing here compiles" about every file at once.
+        run: pnpm typecheck
+
+      - name: Unit + integration tests
+        # The security half of this job: the rights gate, the six ordered serving refusals and the
+        # route's 404 contract all live in what this step runs. It must be able to report for itself,
+        # which is why nothing cosmetic is allowed to stand in front of it (SR-26).
+        run: pnpm test
 
       - name: Lint
         run: pnpm lint
 
-      - name: Typecheck (strict)
-        run: pnpm typecheck
-
-      - name: Unit + integration tests
-        run: pnpm test
+      - name: H-13 derivative-pipeline regression (positive + negative)
+        # The eighth suite in the `pnpm test:gates` chain, and the one this job is the only host for:
+        # scripts/build-media-derivatives.mjs imports sharp at module scope, so it cannot join the
+        # dependency-free docs-gates job. 25 cases assert both halves of the pipeline's contract — the
+        # real workspace must exit 3 and write nothing while RB-01 is unanswered, and a fixture workspace
+        # carrying an explicit profile plus a clearance ledger must produce bytes whose lineage joins the
+        # register. Without this step the drift W9 exists to catch is exactly what happened: the suite
+        # entered the local chain and CI never ran it. Invoked by path, the command the declared
+        # `pnpm test:gate:derivatives` script runs and the form every other gate step in this repository
+        # uses, because W9 recognises a step by the suite path it runs, not by a pnpm script name.
+        run: node scripts/tests/build-media-derivatives.test.mjs
 
       - name: Production build
         # Directive §15: a successful build is proof the toolchain works. It is
         # never accepted here as proof of a feature.
         run: pnpm build
+
+  # ── 2b. Formatting — blocking, and deliberately not inside `quality` ───────
+  # Register SR-26. A separate job on purpose: `format:check` stays a gate that can fail the workflow,
+  # and being parallel to `quality` it can no longer be the reason `pnpm test` never reported. Making
+  # this step `continue-on-error: true` would have un-hid the tests too, by disabling a check; that is
+  # the outcome SR-26 forbids, so the structure changed instead of the severity.
+  #
+  # The gate's own rule W11 is what keeps it that way: the checker reports a defect if a blocking
+  # `pnpm format:check` step is ever placed ahead of `pnpm test` inside one job again.
+  formatting:
+    name: Prettier check (never writes)
+    runs-on: ubuntu-latest
+    needs: docs-gates
+    steps:
+      # actions/checkout v4.4.0
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      # actions/setup-node v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm at the declared packageManager version
+        run: npm install -g "pnpm@${PNPM_VERSION}"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Formatting check (never writes)
+        # OID-25 records that the repository is not yet formatted, and that closing it is an Owner
+        # decision about scope: `pnpm format` would rewrite 41 files, including the files whose digests
+        # are the Phase 0/1 closure manifest, so a cosmetic pass invalidates measured closure evidence.
+        # This step therefore reports the state rather than silently repairing it.
+        run: pnpm format:check
 
   # ── 3. ADR-019 database privilege gate ─────────────────────────────────────
   # Two halves with different readiness:
@@ -268,9 +339,11 @@ jobs:
       # 1 and 3 depend on both (ARCHITECTURE_DECISIONS §7.2 Owner action 2).
       IMAGE: postgres:18.6-alpine
     steps:
-      - uses: actions/checkout@v4
+      # actions/checkout v4.4.0
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
 
-      - uses: actions/setup-node@v4
+      # actions/setup-node v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -292,7 +365,8 @@ jobs:
 
       - name: Archive the privilege transcript as gate evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        # actions/upload-artifact v4.6.2
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: adr-019-privilege-evidence
           path: privilege-evidence.txt
@@ -385,9 +459,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: quality
     steps:
-      - uses: actions/checkout@v4
+      # actions/checkout v4.4.0
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
 
-      - uses: actions/setup-node@v4
+      # actions/setup-node v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: ${{ env.NODE_VERSION }}
 

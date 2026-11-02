@@ -26,6 +26,10 @@
  *     W9  the gate list CI runs and the list `pnpm test:gates` chains have not drifted apart
  *     W10 no literal secret value appears anywhere — neither assigned in a `run:` block nor set as the
  *         value of an `env:` key whose name contains PASSWORD / SECRET / TOKEN / KEY
+ *     W11 a blocking step that runs `pnpm format:check` does not precede the step that runs `pnpm test`
+ *         inside one job — steps run in list order and a failed step stops the job unless it opts out,
+ *         so the pair SR-26 measured (formatting above the suite) means 295 tests never report and the
+ *         job's colour is a statement about whitespace
  *
  * W7–W9 are the ones that matter here: a CI file can stay green-looking for months while it calls a
  * script that was renamed, a pnpm script that was deleted, or a suite that exists only in one of the
@@ -401,6 +405,42 @@ if (root) {
         }
       });
 
+      // W11 — a cosmetic gate must not be able to mask a substantive one (register SR-26). GitHub runs a
+      // job's steps in list order and stops at the first failure unless that step declares
+      // `continue-on-error: true`, so a blocking `pnpm format:check` above `pnpm test` makes the whole
+      // job's verdict a statement about prettier and says nothing about the suite beneath it. This is
+      // the exact shape measured on this repository on 2 Nov 2026, where `pnpm format:check` exits 1.
+      // The remedy the rule permits is reordering or a separate parallel job — not disabling either gate.
+      {
+        const RUNS_FORMAT_CHECK = /\bpnpm\s+format:check\b/;
+        // `(\s|$)` and not `\b`: `pnpm test:gates` is the dependency-free gate chain, which is a plain
+        // Node run and does not carry the suite this rule exists to protect.
+        const RUNS_TEST = /\bpnpm\s+test(\s|$)/m;
+        const optedOut = (step) => {
+          const flag = get(step, 'continue-on-error');
+          if (!flag) return false;
+          return ['true', 'yes', '1'].includes(scalarText(flag).trim().toLowerCase());
+        };
+        for (const job of jobs.entries) {
+          const steps = itemsOf(get(job.value, 'steps'));
+          let formatStep = null;
+          for (const step of steps) {
+            const text = scalarText(get(step, 'run'));
+            if (!text) continue;
+            if (RUNS_FORMAT_CHECK.test(text) && !optedOut(step) && formatStep === null) formatStep = step;
+            if (RUNS_TEST.test(text) && formatStep !== null) {
+              add('W11', `job "${job.key}" runs \`pnpm format:check\` on line ${formatStep.line} and `
+                + `\`pnpm test\` on line ${step.line}. Steps run in order and a failed step ends the job, `
+                + 'so a formatting finding hides every test result beneath it: run the tests first, give '
+                + 'formatting its own job, or mark the formatting step non-blocking — the rule does not '
+                + 'permit the fourth option, dropping the check', formatStep.line);
+              formatStep = null;
+            }
+          }
+        }
+      }
+
+
       // W9 — CI and `pnpm test:gates` must not drift apart. This is a repository-level statement, so
       // it reads the real package.json when the real workflow is under test. A fixture may not see it:
       // the fixture's own steps would otherwise be accused of omitting the repository's suites. The
@@ -444,6 +484,6 @@ if (defects.length) {
 }
 console.log(`OK: ${rel} parses as block YAML and its ${keysOf(get(root, 'jobs') ?? { kind: 'map', entries: [] }).length} jobs `
   + `name every step, reference real jobs, invoke scripts that exist, agree with pnpm test:gates, `
-  + `and carry no literal secret (10 rules)`);
+  + `and carry no literal secret (11 rules)`);
 console.log('NOTE: this is a structural contract check, not a YAML conformance parser and not a CI run.');
 process.exit(0);

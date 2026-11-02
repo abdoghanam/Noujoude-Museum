@@ -16,3 +16,35 @@
 allowBuilds:
   esbuild: true
   unrs-resolver: true
+
+# `overrides` closes the three advisories that have no upstream fix path (register SR-11, 2 Nov 2026).
+# Each was measured, not assumed:
+#   • dompurify — `pnpm why dompurify` resolves it through monaco-editor, and `pnpm view
+#     monaco-editor@latest dependencies` shows monaco pins `"dompurify": "3.4.15"` exactly. Payload and
+#     @payloadcms/ui are already at the registry latest (3.92.1), so no dependency bump can lift it and
+#     the SAFE_FOR_TEMPLATES critical and the IN_PLACE high stay open otherwise. 3.4.17 is a patch inside
+#     the same 3.4 line monaco already expects.
+#   • happy-dom — `@lexical/headless@latest` (0.53.0) declares `"happy-dom": "^21.0.4"` itself, which is
+#     the evidence that 21 is the line lexical supports. The tree carried 20.14.6 because richtext-lexical
+#     pins @lexical/headless at 0.50.0.
+#   • tinypool needed no override: vitest 3.2.7 declared `tinypool: ^1.1.1`, and vitest 4.1.12 replaced
+#     the worker pool with `obug`, so the two criticals left the graph when vitest was bumped. That is the
+#     root cause, not a suppression.
+# Upper bounds are pinned so a future major cannot arrive silently through a range.
+# The three advisories that stay open are recorded rather than forced, and each reason is measured:
+#   • deepmerge — the advisory names >=4.3.2 as patched, but `pnpm view deepmerge version` reports the
+#     latest published release as 4.3.1. Measured: an override of `>=4.3.2 <5` was written, and
+#     `pnpm install` exited 1 on it. Nothing can install a version the registry has not published, so
+#     this one waits on upstream and is re-checked by the CI audit gate.
+#   • esbuild — 0.18.20 arrives only through @esbuild-kit/esm-loader inside drizzle-kit (the payload
+#     migration loader). Patching it means jumping a native binary across six minors into a code path
+#     nothing here executes: no `payload.config.*` exists, `payload migrate` has never run (SR-24), and
+#     the advisory's surface is esbuild's own dev server, which this project does not start. An override
+#     would be an unverifiable change to a tool Phase 2 needs.
+#   • minimatch — 3.1.5 is held by @eslint/config-array, which declares minimatch@^3. The patched line is
+#     11, a different major with a different export shape; forcing it would break the linter that guards
+#     this repository. The advisory is a ReDoS over attacker-supplied glob patterns, and the patterns here
+#     are the committed ignore lists.
+overrides:
+  dompurify: ">=3.4.17 <4"
+  happy-dom: ">=21.0.4 <22"
