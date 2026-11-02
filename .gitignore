@@ -45,3 +45,8 @@ brand/_tools/_t/*.jpg
 #   Noujoude.photo/   original asset library; originals are never overwritten
 #   docs/REFERENCE_INTEGRITY.json   checksum baseline that proves the above
 # No ignore rule may ever hide a change to those paths.
+
+# Playwright reporter and run-state output, written by a probe run of `pnpm test:e2e` on 2 Nov 2026.
+# Regenerable on every run, so they must never reach the index or a digest manifest.
+playwright-report/
+test-results/

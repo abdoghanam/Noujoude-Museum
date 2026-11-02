@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-02T06:34:10.351Z",
+  "generatedAt": "2026-11-02T06:48:06.577Z",
   "tool": "scripts/verify-citations.mjs",
   "sources": [
     "master = reference/Noujoude_Master_Specification_EN.md (3942 lines)",
@@ -18,7 +18,7 @@
     "doc:AI_CURATOR_GOVERNANCE.md = docs/AI_CURATOR_GOVERNANCE.md (388 lines)",
     "doc:ARCHITECTURE.md = docs/ARCHITECTURE.md (373 lines)",
     "doc:ARCHITECTURE_DECISIONS.md = docs/ARCHITECTURE_DECISIONS.md (1445 lines)",
-    "doc:CHANGELOG.md = docs/CHANGELOG.md (1451 lines)",
+    "doc:CHANGELOG.md = docs/CHANGELOG.md (1461 lines)",
     "doc:DATA_MODEL.md = docs/DATA_MODEL.md (660 lines)",
     "doc:IMPLEMENTATION_PLAN.md = docs/IMPLEMENTATION_PLAN.md (900 lines)",
     "doc:MEDIA_AND_RIGHTS_GOVERNANCE.md = docs/MEDIA_AND_RIGHTS_GOVERNANCE.md (592 lines)",
