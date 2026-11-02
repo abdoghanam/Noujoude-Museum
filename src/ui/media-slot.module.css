@@ -1,0 +1,43 @@
+/* The withheld notice and the served image, kept visually distinct so a reader can tell that the
+   dashed box is a refusal and not a picture that failed to load. */
+
+.withheld {
+  border: 1px dashed var(--ndm-color-muted-stone);
+  color: var(--ndm-text-secondary);
+  font-size: 0.8125rem;
+  padding: var(--ndm-space-3);
+}
+
+/* Reserve the box before the bytes arrive. The ratio is not written here: the served branch sets
+   width and height from decoded pixels, so the browser computes the aspect ratio itself and a
+   mismatch between a filename and a file cannot reach the layout. */
+.image {
+  display: block;
+  height: auto;
+  max-inline-size: 100%;
+}
+
+.list {
+  display: grid;
+  gap: var(--ndm-space-2);
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  margin: 0;
+  padding: 0;
+}
+
+.entry {
+  list-style: none;
+}
+
+.group {
+  display: grid;
+  gap: var(--ndm-space-2);
+}
+
+/* The measured tally. Kept quiet and small: it is a statement of state, not a heading, and it must not
+   read as editorial copy about the collection. */
+.tally {
+  color: var(--ndm-text-secondary);
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+}
