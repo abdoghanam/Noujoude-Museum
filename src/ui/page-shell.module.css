@@ -1,0 +1,48 @@
+.shell {
+  display: grid;
+  gap: var(--ndm-space-4);
+  padding-block: var(--ndm-space-4) var(--ndm-space-5);
+}
+
+.head {
+  border-inline-start: 2px solid var(--ndm-accent-primary);
+  padding-inline-start: var(--ndm-space-3);
+}
+
+.title {
+  font-size: clamp(2rem, 1.4rem + 2.6vw, 3.5rem);
+  letter-spacing: 0.01em;
+}
+
+.purpose {
+  color: var(--ndm-text-secondary);
+  font-size: 1.0625rem;
+}
+
+.notice {
+  border-block-start: 1px solid var(--ndm-color-muted-stone);
+  color: var(--ndm-text-secondary);
+  font-size: 0.875rem;
+  padding-block-start: var(--ndm-space-2);
+}
+
+.slot {
+  border: 1px dashed var(--ndm-color-muted-stone);
+  color: var(--ndm-text-secondary);
+  font-size: 0.875rem;
+  list-style: none;
+  padding: var(--ndm-space-3);
+}
+
+/* §6.1's eight sections, in the order the baseline lists them. */
+.sections {
+  display: grid;
+  gap: var(--ndm-space-4);
+}
+
+.cta {
+  border: 1px solid var(--ndm-accent-primary);
+  display: inline-block;
+  padding: var(--ndm-space-2) var(--ndm-space-4);
+  text-decoration: none;
+}

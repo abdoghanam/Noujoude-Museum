@@ -20,6 +20,25 @@ reference/
 # preflight run. `_manifest.json` inside it is evidence, not a file to beautify.
 Noujoude.photo/
 
+# ─── Quarantined, unknown-provenance tree (added 2 Nov 2026) ─────────────────
+# `brand/**` existed in the workspace before this build and its provenance is unknown: 114 identity
+# files plus 58 `.mjs` tool scripts, untracked, never adopted as the project's code. The Owner's
+# 2 Nov 2026 directive states: "Preserve and quarantine the untracked `brand/` material. Do not
+# delete, modify, or treat it as approved brand identity." A formatter run over it would modify it,
+# so it is excluded — the same reason `eslint.config.mjs` lists `brand/**` in its global ignores.
+brand/
+
+# ─── Citation-addressed documentation (added 2 Nov 2026) ─────────────────────
+# Every file under `docs/` is evidence, not source. Quotations in it are addressed by line number in
+# `docs/CITATION_VERIFICATION.json`, registers cite each other by section and line (this framework's
+# own rows do), and `docs/MASTER_SPECIFICATION.md` is a *generated* verbatim copy whose body must stay
+# byte-identical to `reference/Noujoude_Master_Specification_EN.md` (measured, 2 Nov 2026:
+# `prettier --write docs/*.md` rewrites 6,374 lines across the 14 files, 1,478 of them in the
+# specification copy, which would break `docs/DOCX_MD_ALIGNMENT.json` and the spec-copy suite's
+# byte-identity assertion). Prettier preserves line *counts* here, so the risk is not re-wrapping —
+# it is that the bytes stop being the bytes the gates and the registers point at.
+docs/
+
 # ─── Unknown-provenance root file ────────────────────────────────────────────
 # Present in the workspace before this build; preserved untouched by standing rule
 # ("inspect the actual directory, preserve unknown files"). Not ours to reformat.
@@ -28,6 +47,8 @@ README_Noujoude_Master_Specification_EN111.md
 # ─── Generated evidence artefacts ────────────────────────────────────────────
 # Machine-written by scripts/. Byte stability matters more than formatting, and a
 # reformat would make a regenerated artefact diff against its own previous run.
+# (Since 2 Nov 2026 the `docs/` directory above already excludes every path in this
+# group; they are kept listed individually because each one names *why* it is untouchable.)
 docs/CITATION_VERIFICATION.json
 docs/REFERENCE_INTEGRITY.json
 docs/DOCX_MD_ALIGNMENT.json

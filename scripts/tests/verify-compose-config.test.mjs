@@ -112,26 +112,26 @@ expect('[C2] a bare port mapping with no host IP is a defect',
   mutate(/"127\.0\.0\.1:5432:5432"/, '"5432:5432"'), 1, /\[C2\].*5432:5432/);
 
 expect('[C2] removing the published port is a defect',
-  GOOD.replace(/    ports:\n      - "127\.0\.0\.1:5432:5432"\n/, ''), 1, /\[C2\].*no port mapping/);
+  GOOD.replace(/ {4}ports:\n {6}- "127\.0\.0\.1:5432:5432"\n/, ''), 1, /\[C2\].*no port mapping/);
 
 expect('[C3] an unguarded secret becomes an empty password',
-  mutate(/\$\{NDM_RUNTIME_PASSWORD:\?set in \.env\}/, '${NDM_RUNTIME_PASSWORD}'), 1, /\[C3\].*NDM_RUNTIME_PASSWORD.*without a \:\? guard/);
+  mutate(/\$\{NDM_RUNTIME_PASSWORD:\?set in \.env\}/, '${NDM_RUNTIME_PASSWORD}'), 1, /\[C3\].*NDM_RUNTIME_PASSWORD.*without a :\? guard/);
 
 expect('[C3] a secret that is never wired in is a defect',
-  GOOD.replace(/      NDM_BACKUP_PASSWORD: \$\{NDM_BACKUP_PASSWORD:\?set in \.env\}\n/, ''), 1, /\[C3\].*NDM_BACKUP_PASSWORD is never referenced/);
+  GOOD.replace(/ {6}NDM_BACKUP_PASSWORD: \$\{NDM_BACKUP_PASSWORD:\?set in \.env\}\n/, ''), 1, /\[C3\].*NDM_BACKUP_PASSWORD is never referenced/);
 
 // The shape the real file actually had until 1 Nov 2026: the secret is guarded once and read a second
 // time without a guard. A per-variable rule passes it; Compose then warns `Defaulting to a blank
 // string` and the container is handed an empty value. This case is why C3 counts occurrences.
 expect('[C3] a second, unguarded read of a guarded secret is still a defect',
-  mutate(/\n      NDM_DATABASE: \$\{POSTGRES_DB:\?set POSTGRES_DB in \.env\}/, '\n      NDM_DATABASE: ${POSTGRES_DB}'),
-  1, /\[C3\].*POSTGRES_DB is interpolated without a \:\? guard/);
+  mutate(/\n {6}NDM_DATABASE: \$\{POSTGRES_DB:\?set POSTGRES_DB in \.env\}/, '\n      NDM_DATABASE: ${POSTGRES_DB}'),
+  1, /\[C3\].*POSTGRES_DB is interpolated without a :\? guard/);
 
 // A `#` line inside the environment block is commentary, not a value. Without this case the exemption
 // would be invisible, and the real file needs it: its own comment quotes an unguarded reference to
 // explain why that shape is wrong — the first run of the strengthened rule flagged that comment.
 expect('[C3] an explanatory comment is not an interpolation',
-  GOOD.replace(/    ports:\n/, '      # an unguarded ${POSTGRES_DB} here would default to a blank string\n    ports:\n'),
+  GOOD.replace(/ {4}ports:\n/, '      # an unguarded ${POSTGRES_DB} here would default to a blank string\n    ports:\n'),
   0, /^OK: /);
 
 // The exemption itself needs no separate case: GOOD's healthcheck already reads
@@ -139,34 +139,34 @@ expect('[C3] an explanatory comment is not an interpolation',
 // top of this file proves those bare occurrences are not counted as defects.
 
 expect('[C4] the postgres:18 /data mount path is a defect',
-  mutate(/      - noujoude-pgdata:\/var\/lib\/postgresql\n/, '      - noujoude-pgdata:/var/lib/postgresql/data\n'), 1, /\[C4\].*\/var\/lib\/postgresql\/data/);
+  mutate(/ {6}- noujoude-pgdata:\/var\/lib\/postgresql\n/, '      - noujoude-pgdata:/var/lib/postgresql/data\n'), 1, /\[C4\].*\/var\/lib\/postgresql\/data/);
 
 expect('[C4] no data volume at all is a defect',
-  GOOD.replace(/      - noujoude-pgdata:\/var\/lib\/postgresql\n/, ''), 1, /\[C4\].*no volume mounted/i);
+  GOOD.replace(/ {6}- noujoude-pgdata:\/var\/lib\/postgresql\n/, ''), 1, /\[C4\].*no volume mounted/i);
 
 expect('[C5] a writable bind mount of scripts into the container is a defect',
   mutate(/\.\/scripts\/db:\/opt\/ndm-db:ro/, './scripts/db:/opt/ndm-db'), 1, /\[C5\].*not read-only.*\.\/scripts\/db:\/opt\/ndm-db/);
 
 expect('[C6] dropping the healthcheck is a defect',
-  GOOD.replace(/    healthcheck:\n(?:      .*\n)*/, ''), 1, /\[C6\].*no healthcheck/);
+  GOOD.replace(/ {4}healthcheck:\n(?: {6}.*\n)*/, ''), 1, /\[C6\].*no healthcheck/);
 
 expect('[C6] a healthcheck that never probes readiness is a defect',
   mutate(/pg_isready -U \$\{POSTGRES_SUPERUSER\} -d \$\{POSTGRES_DB\}/, 'true'), 1, /\[C6\].*pg_isready/);
 
 expect('[C7] privileged is forbidden',
-  GOOD.replace(/    restart: unless-stopped\n/, '    restart: unless-stopped\n    privileged: true\n'), 1, /\[C7\].*privileged/);
+  GOOD.replace(/ {4}restart: unless-stopped\n/, '    restart: unless-stopped\n    privileged: true\n'), 1, /\[C7\].*privileged/);
 
 expect('[C7] the docker socket must never be mounted',
-  GOOD.replace(/      - \.\/scripts\/db:\/opt\/ndm-db:ro\n/, '      - /var/run/docker.sock:/var/run/docker.sock:ro\n'), 1, /\[C7\].*docker socket/);
+  GOOD.replace(/ {6}- \.\/scripts\/db:\/opt\/ndm-db:ro\n/, '      - /var/run/docker.sock:/var/run/docker.sock:ro\n'), 1, /\[C7\].*docker socket/);
 
 expect('[C8] no restart policy is a defect',
-  GOOD.replace(/    restart: unless-stopped\n/, ''), 1, /\[C8\]/);
+  GOOD.replace(/ {4}restart: unless-stopped\n/, ''), 1, /\[C8\]/);
 
 expect('[C9] the occupied noujoude-postgres name is rejected',
   mutate(/container_name: ndm-postgres/, 'container_name: noujoude-postgres'), 1, /\[C9\].*noujoude-postgres/);
 
 expect('[C9] an absent container name would collide with the protection glob',
-  GOOD.replace(/    container_name: ndm-postgres\n/, ''), 1, /\[C9\].*container_name is unset/);
+  GOOD.replace(/ {4}container_name: ndm-postgres\n/, ''), 1, /\[C9\].*container_name is unset/);
 
 expect('[C10] an inline default password is a defect',
   mutate(/\$\{NDM_RUNTIME_PASSWORD:\?set in \.env\}/, '${NDM_RUNTIME_PASSWORD:-devpassword}'), 1, /\[C10\].*NDM_RUNTIME_PASSWORD/);
@@ -175,7 +175,7 @@ expect('[C10] an inline default password is a defect',
 expect('several simultaneous defects are all reported',
   GOOD.replace(/image: postgres:18\.6-alpine/, 'image: postgres:16-alpine')
       .replace(/"127\.0\.0\.1:5432:5432"/, '"5432:5432"')
-      .replace(/    container_name: ndm-postgres\n/, ''),
+      .replace(/ {4}container_name: ndm-postgres\n/, ''),
   1, /\[C1\][\s\S]*\[C2\][\s\S]*\[C9\]/);
 
 // ── the committed file must satisfy the same rules the fixtures teach ─────────────────────────────
@@ -193,8 +193,9 @@ const SECRETS = [
 ];
 
 function composeEnv(withValues) {
-  const env = { ...process.env };
-  for (const k of SECRETS) delete env[k];
+  // Copy the environment minus the secret-named keys, so no secret value is ever read, printed,
+  // or constructed by this harness, and nothing dynamic is deleted from the copy.
+  const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !SECRETS.includes(k)));
   if (withValues) for (const k of SECRETS) env[k] = 'ndm_config_check_only';
   return env;
 }

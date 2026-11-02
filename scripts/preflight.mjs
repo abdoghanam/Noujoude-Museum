@@ -48,7 +48,9 @@ record(nodeOk ? 'PASS' : 'FAIL', `Node.js ${node}`,
 
 // ── 2. Package manager ──────────────────────────────────────────────────────
 let pnpmVer = '';
-try { pnpmVer = execSync('pnpm -v', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim(); } catch {}
+// An absent or non-executable pnpm is not an exception here: step 2 below records it as FAIL.
+try { pnpmVer = execSync('pnpm -v', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim(); }
+catch { /* leave pnpmVer empty — the FAIL is recorded in step 2 */ }
 record(pnpmVer ? 'PASS' : 'FAIL', `pnpm ${pnpmVer || 'ABSENT'}`,
   pnpmVer ? `packageManager declares ${pkg.packageManager}` : 'pnpm is the mandated manager (Standard §2.2)');
 
@@ -129,7 +131,6 @@ if (existsSync(AUDIT) && existsSync(PHOTOS)) {
       return out;
     };
     const physical = walkDir(PHOTOS);
-    const byRel = new Map(physical.map((r) => [r, r.replace(/\\/g, '/')]).entries());
     const physicalBasenames = new Set(physical.map((r) => r.split('/').pop().toLowerCase()));
 
     const catalogFilenames = new Set();
@@ -335,7 +336,7 @@ if (!depsAbsent) {
 } else if (depsCheckState !== '' && depsCheckState !== 'undefined' && depsCheckState !== 'install') {
   record('WARN', 'pnpm run deps-before-run',
     `UNRECOGNISED VALUE: global verify-deps-before-run=${depsCheckState} is not one pnpm recognises (install, prompt, error, warn). ` +
-    `Measured 1 Nov 2026: the script ran, exit 0, nothing was fetched — because the dependency check\'s switch has no default case, so an ` +
+    `Measured 1 Nov 2026: the script ran, exit 0, nothing was fetched — because the dependency check's switch has no default case, so an ` +
     `unknown value falls through. That is fall-through, not a guard: a pnpm version bump can turn it back into the armed behaviour. ` +
     'Treat the workspace as unguarded and run the gates as `node scripts/<name>.mjs`; the remedy is still ' +
     '`pnpm config set verify-deps-before-run error --global`.');

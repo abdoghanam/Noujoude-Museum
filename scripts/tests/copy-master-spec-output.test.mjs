@@ -275,7 +275,7 @@ caseRun('the printed body-start line is the real line (every docs/ citation depe
 
 caseRun('alignment JSON absent: the copy states NOT YET VERIFIED instead of inventing a verdict',
   { [SRC_REL]: MULTI },
-  ({ rc, out, wrote }) => {
+  ({ rc, wrote }) => {
     const t = truthOf(wrote);
     return [
       ['exit 0', rc === 0],

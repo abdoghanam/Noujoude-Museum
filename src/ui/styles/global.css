@@ -1,0 +1,154 @@
+/*
+ * src/ui/styles/global.css — the centralized custom-property layer the Owner approved as the
+ * default for this project (FINAL OWNER DIRECTIVE §1: "centralized CSS custom properties and CSS
+ * Modules unless the architecture proves a better approach").
+ *
+ * Every value below is quoted from the governing baseline and is marked with what it is waiting
+ * for. The palette is §12.2 (lines 1668–1685), which itself states that the values "are the
+ * proposed canonical visual specification … and remain subject to formal visual approval" — so
+ * they are carried as `proposed` tokens, not as adopted brand (BA-002 is still open, and OD-16
+ * asks the Owner to supply or waive BA-001…BA-007).
+ *
+ * No webfont is loaded here. §12.5 (line 1725) requires that "Font licenses and production
+ * suitability must be verified before deployment", zero font files exist in this workspace, and
+ * OID-18 is open — so fetching Cormorant Garamond, Inter or Tajawal from a third-party CDN would
+ * be an unapproved deployment of unlicensed material. The stacks below name the intended family
+ * for a locally-installed copy and fall back to the generic role, which is the substitute clause
+ * of the same line ("use an approved substitute without changing the hierarchy or character").
+ */
+
+:root {
+  /* §12.2 proposed canonical palette — BA-002 pending, do not treat as adopted brand. */
+  --ndm-color-noir: #111014;
+  --ndm-color-midnight-velvet: #1a151c;
+  --ndm-color-burgundy: #351522;
+  --ndm-color-burgundy-secondary: #552536;
+  --ndm-color-champagne: #c6a56b;
+  --ndm-color-champagne-soft: #dfc99e;
+  --ndm-color-ivory: #f3ebdd;
+  --ndm-color-archive-paper: #e5d8c3;
+  --ndm-color-muted-stone: #9d9184;
+  --ndm-color-rose: #a96d78;
+  --ndm-color-dark-wood: #30241f;
+  --ndm-color-museum-glass: #d8d9d5;
+
+  /* Semantic layer: roles, not pigments. §12.4 fixes which family may play which role. */
+  --ndm-surface-page: var(--ndm-color-noir);
+  --ndm-surface-raised: var(--ndm-color-midnight-velvet);
+  --ndm-surface-exhibition: var(--ndm-color-burgundy);
+  --ndm-text-primary: var(--ndm-color-ivory);
+  --ndm-text-secondary: var(--ndm-color-muted-stone);
+  --ndm-accent-primary: var(--ndm-color-champagne);
+
+  /*
+   * §12.5 type roles, lines 1716–1722. Arabic falls back to the system Arabic stack because
+   * Tajawal is licensed-unresolved (OID-18); an English display face must not be used for Arabic
+   * body or display text (line 1731), which is why the Arabic stack is kept separate rather than
+   * shared with the display role.
+   */
+  --ndm-font-display: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+  --ndm-font-body: "Inter", "Segoe UI", Helvetica, sans-serif;
+  --ndm-font-arabic-display:
+    "Tajawal", "Noto Naskh Arabic", "Traditional Arabic", serif;
+  --ndm-font-arabic-body: "Tajawal", "Noto Sans Arabic", "Segoe UI", sans-serif;
+
+  /* §12.13 motion timing table, lines 1813–1819 — reference ranges, not a licence to animate all. */
+  --ndm-duration-fast: 150ms;
+  --ndm-duration-standard: 300ms;
+  --ndm-duration-slow-reveal: 800ms;
+  --ndm-duration-cinematic: 1200ms;
+  --ndm-duration-entrance: 2000ms;
+  --ndm-easing-default: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  /* Layout scale is an engineering default; the per-page orders in §6 are what constrain it. */
+  --ndm-space-1: 0.25rem;
+  --ndm-space-2: 0.5rem;
+  --ndm-space-3: 1rem;
+  --ndm-space-4: 2rem;
+  --ndm-space-5: 4rem;
+  --ndm-measure-reading: 68ch;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* Logical properties only, per src/README: the same sheet must serve ltr and rtl. */
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--ndm-surface-page);
+  color: var(--ndm-text-primary);
+  font-family: var(--ndm-font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--ndm-font-display);
+  font-weight: 500;
+  line-height: 1.15;
+  margin-block: 0 var(--ndm-space-2);
+}
+
+p {
+  margin-block: 0 var(--ndm-space-3);
+  max-width: var(--ndm-measure-reading);
+}
+
+a {
+  color: var(--ndm-accent-primary);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+
+/*
+ * Focus is never carried by colour alone (§12.4, line 1710: "Accent colors must not be the only
+ * indicators of state"), so the ring is a shape as well as a hue.
+ */
+:focus-visible {
+  outline: 2px solid var(--ndm-accent-primary);
+  outline-offset: 3px;
+}
+
+[lang="ar"] {
+  font-family: var(--ndm-font-arabic-body);
+}
+
+[lang="ar"] h1,
+[lang="ar"] h2,
+[lang="ar"] h3 {
+  font-family: var(--ndm-font-arabic-display);
+}
+
+/*
+ * §12.13, line 1821 and §16.3, line 2365: reduced motion is honoured and cannot be re-enabled by
+ * branding. The override is written so it also wins against anything the motion layer sets later
+ * in the cascade, and it is exercised by the reduced-motion run recorded in the test plan.
+ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ndm-duration-fast: 0.01ms;
+    --ndm-duration-standard: 0.01ms;
+    --ndm-duration-slow-reveal: 0.01ms;
+    --ndm-duration-cinematic: 0.01ms;
+    --ndm-duration-entrance: 0.01ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

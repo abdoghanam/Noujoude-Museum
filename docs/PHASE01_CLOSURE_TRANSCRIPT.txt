@@ -1,0 +1,777 @@
+NOUJOUDE — PHASE 0/1 CLOSURE TRANSCRIPT
+Generated on this host by the closure batch of the Owner's 2 November 2026 directive.
+Every block below is a command, its exact stdout/stderr, and its exit code as the shell reported it.
+No command output in this file is paraphrased. Secrets are not present: none of these commands prints one.
+
+===== 1. ENVIRONMENT (measured, not assumed) =====
+$ node -v
+v24.22.1
+$ pnpm -v
+11.21.0
+$ docker --version
+Docker version 29.9.2, build a82e528
+$ git --version
+git version 2.56.0.windows.2
+$ git remote -v   (empty output is the evidence: no remote exists)
+EXIT_CODE[git remote -v]=0
+
+===== 2. THE PROJECT CHECKS, IN THE ORDER THE DIRECTIVE LISTS THEM =====
+
+===== typecheck =====
+$ pnpm typecheck
+$ tsc --noEmit
+EXIT_CODE[typecheck]=0
+
+===== lint =====
+$ pnpm lint
+$ eslint .
+EXIT_CODE[lint]=0
+
+===== test =====
+$ pnpm test
+$ vitest run
+
+[1m[46m RUN [49m[22m [36mv3.2.7 [39m[90mE:/no[39m
+
+ [32m✓[39m src/domain/routes.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m src/domain/entry-routing.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 40[2mms[22m[39m
+ [32m✓[39m src/domain/rights.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m src/domain/locale.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m4 passed[39m[22m[90m (4)[39m
+[2m      Tests [22m [1m[32m34 passed[39m[22m[90m (34)[39m
+[2m   Start at [22m 07:48:43
+[2m   Duration [22m 2.99s[2m (transform 436ms, setup 335ms, collect 476ms, tests 97ms, environment 3ms, prepare 2.62s)[22m
+
+EXIT_CODE[test]=0
+
+===== test:gates =====
+$ pnpm test:gates
+$ node scripts/tests/verify-tables.test.mjs && node scripts/tests/preflight-asset-reconciliation.test.mjs && node scripts/tests/verify-citations.test.mjs && node scripts/tests/verify-compose-config.test.mjs && node scripts/tests/verify-workflow-structure.test.mjs && node scripts/tests/preflight-pnpm-trap.test.mjs && node scripts/tests/copy-master-spec-output.test.mjs
+PASS  valid GFM table passes  (exit 0)
+PASS  rows without a trailing pipe still pass (same 3 columns)  (exit 0)
+PASS  escaped pipe inside a cell is content, not a separator  (exit 0)
+PASS  alignment colons in the delimiter row are valid  (exit 0)
+PASS  pipe-led lines inside a code fence are not tables  (exit 0)
+PASS  two valid tables in one file  (exit 0)
+PASS  SPLIT TABLE: orphan data rows without header or delimiter must fail  (exit 1)   [regression proven: the pre-H-9 pipe-count rule would have exited 0 on this fixture]
+PASS  run that begins with a delimiter row has no header  (exit 1)   [regression proven: the pre-H-9 pipe-count rule would have exited 0 on this fixture]
+PASS  header and data rows but no delimiter row at all  (exit 1)   [regression proven: the pre-H-9 pipe-count rule would have exited 0 on this fixture]
+PASS  delimiter row declaring the wrong number of columns  (exit 1)   [the pre-H-9 rule also rejected this fixture — it is coverage, not a red case]
+PASS  uneven data row (the original incident) is still caught  (exit 1)
+PASS  single pipe-led line cannot be a table  (exit 1)   [regression proven: the pre-H-9 pipe-count rule would have exited 0 on this fixture]
+PASS  header plus delimiter with no data rows is flagged  (exit 1)
+PASS  docs/ passes the strengthened rule   (OK: 238 tables in 14 markdown files, each with a header, a delimiter row and a uniform column count)
+
+14 passed, 0 failed
+PASS  clean fixture: one asset whose row agrees with the file  [PASS]
+PASS  an empty catalog against an empty directory reconciles without phantom defects  [PASS]
+PASS  two consistent assets reconcile  [PASS]
+PASS  UNCATALOGUED IMAGE in the directory with no catalog row is detected  [WARN]
+PASS  [regression proven] the pre-H-7 rule reads 1 row, reports 0 problems, and never learns a second file exists
+PASS  MODIFIED original is a FAIL, not a warning  [FAIL]
+PASS  MISSING file named by the catalog is a FAIL  [FAIL]
+PASS  a catalog row contradicted by the file is a FAIL (row claims width 9999)  [FAIL]
+PASS  a fabricated SHA-256 in the catalog is caught as MODIFIED rather than trusted  [FAIL]
+PASS  extension vs container mismatch is detected (WebP bytes inside a .jpg name)  [WARN]
+PASS  filename self-declaration vs measured pixels is detected, by the same rule the audit uses  [WARN]
+PASS  the mismatch count in the gate and in the audit share one implementation  [WARN]
+PASS  shared declarationMismatch() returns the audit wording verbatim
+PASS  a row recording the asset as absent, with no file, is consistent  [PASS]
+PASS  a row recording the asset as absent while a file of that name exists is a contradicted register  [FAIL]
+PASS  a register that honestly records an absent asset is not flagged  [PASS]
+PASS  a missing Noujoude.photo/ is reported as such, not counted as "nothing wrong"
+PASS  a missing catalog is reported as such, not counted as "nothing wrong"
+PASS  a row with an empty cell and a quoted, comma-bearing cell still resolves to the right columns
+PASS  and the checksum column is still the checksum column under that shape (a wrong SHA is MODIFIED)
+PASS  [regression proven] the pre-H-7 reader reports 1 problem on that healthy row, because the empty cell shifted its columns
+PASS  the real library reconciles: 82 rows / 85 files, 1 uncatalogued image, 2 uncatalogued metadata files, 1 wrong format, 18 name/pixel — the findings the audit registers, now visible on every preflight
+
+22 passed, 0 failed
+PASS  fixture sources have the exact line counts the expectations assume (master 40, standard 16, SPEC_A 11)
+PASS  a honestly cited document passes, and every reference form is harvested [exit 0, PASSED, refs 9, defects 0]
+PASS  a document with no citations at all neither crashes nor invents findings [exit 0, PASSED, refs 0, defects 0]
+PASS  a bare reference whose line lies outside its own cited section is REF_SECTION_MISMATCH [exit 1, FAILED, refs 1, defects 1: REF_SECTION_MISMATCH@doc:3]
+PASS  a reference past the end of every bindable source is REF_PAST_END [exit 1, FAILED, refs 1, defects 1: REF_PAST_END@doc:3]
+PASS  a reference onto an empty line is REF_BLANK_TARGET, not a silent pass [exit 1, FAILED, refs 1, defects 1: REF_BLANK_TARGET@doc:3]
+PASS  a reference into a section no bindable source has is REF_SECTION_UNKNOWN [exit 1, FAILED, refs 1, defects 1: REF_SECTION_UNKNOWN@doc:3]
+PASS  a quotation at the wrong line number is LINE_OFF and fails the run [exit 1, FAILED, refs 0, defects 0]
+PASS  a quotation no requirement source contains is NOT_FOUND and fails the run [exit 1, FAILED, refs 0, defects 0]
+PASS  verbatim requirement text quoted without any citation fails as uncited verbatim [exit 1, FAILED, refs 0, defects 0]
+PASS  CORRECTED: the same sentence with the section it actually cites passes [exit 0, PASSED, refs 1, defects 0]
+PASS  CORRECTED: the same sentence with a line inside the section it names passes [exit 0, PASSED, refs 1, defects 0]
+PASS  CORRECTED: a line reference moved off the empty line resolves [exit 0, PASSED, refs 1, defects 0]
+PASS  a backticked sibling-document label binds to the sibling document [exit 0, PASSED, refs 1, defects 0]
+PASS  the same label with a line outside that section mismatches against the DOC, not the spec [exit 1, FAILED, refs 1, defects 1: REF_SECTION_MISMATCH@doc:3]
+PASS  a file label in one table cell cannot claim a number in the next cell [exit 0, PASSED, refs 2, defects 0]
+PASS  references inside a fenced block are excluded, and the exclusion is counted [exit 0, PASSED, refs 0, defects 0]
+PASS  a parenthesised number on a quote-less line is excluded as a possible year [exit 0, PASSED, refs 0, defects 0]
+PASS  the fence exemption ends with the fence; a reference after it is still checked [exit 1, FAILED, refs 1, defects 1: REF_PAST_END@doc:6]
+PASS  [regression proven] the pre-H-8 rule read 0 quote-less lines, checked 0 references and could not exit non-zero; the shipped rule finds 1 defect and exits 1
+PASS  [regression proven] the pre-H-8 rule saw this LINE_OFF, printed it, and exited 0; the shipped rule exits 1
+PASS  [regression proven] the loose binder assigns that number to the Standard (16 lines), which would have manufactured a defect; strict adjacency assigns nothing and the run is clean
+PASS  real docs/ set: 433 quotations verified, 1503 bare references examined, 0 defects, exit 0
+
+23 passed, 0 failed
+verify-citations gate is proven: it sees quote-less references, classifies each defect, and fails the run.
+PASS  a definition that states every invariant passes   (exit 0)
+PASS  [C1] a floating image tag is a defect   (exit 1)
+PASS  [C2] publishing on every interface is a defect   (exit 1)
+PASS  [C2] a bare port mapping with no host IP is a defect   (exit 1)
+PASS  [C2] removing the published port is a defect   (exit 1)
+PASS  [C3] an unguarded secret becomes an empty password   (exit 1)
+PASS  [C3] a secret that is never wired in is a defect   (exit 1)
+PASS  [C3] a second, unguarded read of a guarded secret is still a defect   (exit 1)
+PASS  [C3] an explanatory comment is not an interpolation   (exit 0)
+PASS  [C4] the postgres:18 /data mount path is a defect   (exit 1)
+PASS  [C4] no data volume at all is a defect   (exit 1)
+PASS  [C5] a writable bind mount of scripts into the container is a defect   (exit 1)
+PASS  [C6] dropping the healthcheck is a defect   (exit 1)
+PASS  [C6] a healthcheck that never probes readiness is a defect   (exit 1)
+PASS  [C7] privileged is forbidden   (exit 1)
+PASS  [C7] the docker socket must never be mounted   (exit 1)
+PASS  [C8] no restart policy is a defect   (exit 1)
+PASS  [C9] the occupied noujoude-postgres name is rejected   (exit 1)
+PASS  [C9] an absent container name would collide with the protection glob   (exit 1)
+PASS  [C10] an inline default password is a defect   (exit 1)
+PASS  several simultaneous defects are all reported   (exit 1)
+PASS  the real docker-compose.yml passes all 10 rules   (exit 0)
+PASS  docker compose config renders the real file with the declared invariants   (exit 0, name ndm-postgres)
+PASS  the :? guards bite when neither the environment nor .env supplies the secrets   (exit 1)
+PASS  the declared container name ndm-postgres is free on this host   (3 existing containers, none named ndm-postgres)
+
+25 passed, 0 failed, 0 skipped (dynamic cases need a container engine)
+PASS  the fixture that satisfies every rule reads green   (exit 0)
+PASS  [W7] the armed-step existence probe and prose mentions are not reported   (no W7 line)
+PASS  [W1] a tab in indentation is a defect   (exit 1)
+PASS  [W1] a carriage return is a defect   (exit 1)
+PASS  [W2] a workflow with no jobs block is a defect   (exit 1)
+PASS  [W2] an unknown top-level key is a defect   (exit 1)
+PASS  [W3] a duplicate key in one mapping is a defect   (exit 1)
+PASS  [W3] a dedent to a column that opens no block is a defect   (exit 1)
+PASS  [W3] a line that is neither a key nor a sequence item is a defect   (exit 1)
+PASS  [W3] a block scalar with no body is a defect   (exit 1)
+PASS  [W4] a job without runs-on is a defect   (exit 1)
+PASS  [W4] a job with an empty steps block is a defect   (exit 1)
+PASS  [W4] a job with both steps and uses is a defect   (exit 1)
+PASS  [W4] a job with neither steps nor uses is a defect   (exit 1)
+PASS  [W5] a run step without a name is a defect   (exit 1)
+PASS  [W5] a malformed uses ref is a defect   (exit 1)
+PASS  [W5] a step with neither run nor uses is a defect   (exit 1)
+PASS  [W6] needs naming a job that does not exist is a defect   (exit 1)
+PASS  [W6] a needs cycle is a defect   (exit 1)
+PASS  [W7] a step that runs a script which does not exist is a defect   (exit 1)
+PASS  [W8] a pnpm script package.json does not declare is a defect   (exit 1)
+PASS  [W10] a literal secret in an env mapping is a defect   (exit 1)
+PASS  [W10] a literal secret assigned in a shell line is a defect   (exit 1)
+PASS  [W8] pnpm own subcommands are not project scripts   (exit 0)
+PASS  [W10] an expanded or generated value is not a literal   (exit 0)
+PASS  [W9] a fixture is not accused of repository drift   (exit 0)
+PASS  [W9] a suite the local chain runs but this workflow omits is a defect   (exit 1)
+PASS  [W9] a suite the chain runs and a step also runs is not a defect   (exit 0)
+PASS  several simultaneous defects are all reported   (exit 1)
+PASS  the real .github/workflows/ci.yml passes all 10 rules   (exit 0)
+PASS  the 7 suites pnpm test:gates chains all appear as CI steps   (drift checked both ways)
+PASS  [W7] a renamed gate script inside the real workflow is caught   (exit 1)
+
+32 passed, 0 failed
+PASS  pnpm answers `undefined`, so the built-in default `install` is in force → trap armed  [WARN]
+PASS  an explicit `install` is armed too — the default and the declared value are the same danger  [WARN]
+PASS  the Owner set `error` globally → PASS, and the line says what it was measured to do  [PASS]
+PASS  `warn` passes as non-installing, but must be described as warning AND RUNNING, not as refusing  [PASS]
+PASS  `false` passes on the measured fact (script runs, nothing fetched), not on a mechanism claim  [PASS]
+PASS  `prompt` is only a WARN: it refuses in a non-TTY and can still install at a terminal  [WARN]
+PASS  a project `.npmrc` carrying verify-deps-before-run=error does NOT disarm the trap (H-12 measured)  [WARN]
+PASS  nor does `engine-strict=true`, the other key this file can actually set  [WARN]
+PASS  even the two settings together still leave the check red, because neither is global  [WARN]
+PASS  an unrecognised value is not treated as safe — PASS is reserved for the three measured non-installing values  [WARN]
+PASS  an empty answer degrades to the default rather than to silence  [WARN]
+PASS  the unrecognised-value WARN states the measured fall-through, does not claim an install, and still demands the remedy
+PASS  pnpm missing from PATH entirely → WARN with the default, not a crash and not a PASS  [WARN]
+PASS  node_modules present ⇒ the missing-tree trigger is gone; the global value is still reported  [PASS]
+PASS  a guard plus an installed tree still reads PASS, reported from the tree first  [PASS]
+PASS  the armed state names both Owner remedies and the safe invocation form
+PASS  [regression proven] the file-based rule reports guarded where the effective state is armed — the naive fix would have hidden H-12
+PASS  [regression proven] the mirror case: a global guard with an empty project file reads PASS here and armed under the file rule
+PASS  the real workspace runs check 10 in its measured state [PASS / "node_modules exists"] — node_modules is present, so the missing-tree install path cannot be reached
+
+19 passed, 0 failed
+PASS  multi-byte body: printed "UTF-8 bytes" equals the file size on disk
+PASS  multi-byte body: printed "lines" equals the newline count of the file
+PASS  THE REGRESSION ITSELF: the old formulas are measurably wrong on this same file   [a reverted generator fails here, not silently]
+PASS  pure-ASCII body: a code-unit count is still wrong, because the generated header is not ASCII   [the bug was never body-dependent: the header carries the em dash and curly quotes]
+PASS  body with no final newline: the correction must not subtract (boundary, not symmetry)
+PASS  CRLF source body: bytes exact, one line per line break, and the breaks are not normalised   [a re-flowed body would move every citation line number in docs/]
+PASS  verbatim body is byte-identical to the source and misalignment is zero
+PASS  the printed body-start line is the real line (every docs/ citation depends on it)
+PASS  alignment JSON absent: the copy states NOT YET VERIFIED instead of inventing a verdict   [the header goes to the file, not to stdout — asserting it on stdout would be a vacuous pass]
+PASS  alignment JSON present: its measured numbers and verdict are carried into the header
+PASS  a body-start the generator cannot trust is refused with exit 1 and no partial file   [the self-check is not vacuous: it can and does say no]
+
+11 passed, 0 failed
+EXIT_CODE[test:gates]=0
+
+===== format:check =====
+$ pnpm format:check
+$ prettier --check .
+Checking formatting...
+[[33mwarn[39m] .github/workflows/ci.yml
+[[33mwarn[39m] docker-compose.yml
+[[33mwarn[39m] eslint.config.mjs
+[[33mwarn[39m] playwright.config.ts
+[[33mwarn[39m] scripts/audit-assets.mjs
+[[33mwarn[39m] scripts/check-docx-alignment.mjs
+[[33mwarn[39m] scripts/copy-master-spec.mjs
+[[33mwarn[39m] scripts/lib/asset-declarations.mjs
+[[33mwarn[39m] scripts/lib/csv.mjs
+[[33mwarn[39m] scripts/lib/image-signature.mjs
+[[33mwarn[39m] scripts/preflight.mjs
+[[33mwarn[39m] scripts/show-lines.mjs
+[[33mwarn[39m] scripts/tests/copy-master-spec-output.test.mjs
+[[33mwarn[39m] scripts/tests/preflight-asset-reconciliation.test.mjs
+[[33mwarn[39m] scripts/tests/preflight-pnpm-trap.test.mjs
+[[33mwarn[39m] scripts/tests/verify-citations.test.mjs
+[[33mwarn[39m] scripts/tests/verify-compose-config.test.mjs
+[[33mwarn[39m] scripts/tests/verify-tables.test.mjs
+[[33mwarn[39m] scripts/tests/verify-workflow-structure.test.mjs
+[[33mwarn[39m] scripts/verify-citations.mjs
+[[33mwarn[39m] scripts/verify-compose-config.mjs
+[[33mwarn[39m] scripts/verify-tables.mjs
+[[33mwarn[39m] scripts/verify-workflow-structure.mjs
+[[33mwarn[39m] tests/setup/env.ts
+[[33mwarn[39m] vitest.config.ts
+[[33mwarn[39m] Code style issues found in 25 files. Run Prettier with --write to fix.
+[ELIFECYCLE] Command failed with exit code 1.
+EXIT_CODE[format:check]=1
+
+===== citations =====
+$ node scripts/verify-citations.mjs
+scanned 14 docs/ markdown files, 542 quoted fragments carrying a line reference (skipped 22 quoted strings shorter than 3 tokens)
+VERIFIED 433 | LINE_OFF 0 | LINE_OFF_OTHER_SOURCE 0 | SELF_RECORDING 10 | PROJECT_RECORD 9 | DEFINED_TERM 6 | NOT_FOUND 0 | NO_LINE_REF 90 (of which 0 are verbatim requirement text with no citation)
+BARE REFERENCES (no quotation on the line): 1503 checked, 0 defect(s) [1503 resolve]
+
+wrote docs/CITATION_VERIFICATION.json
+CITATION GATE PASSED: every quotation is where its line reference says, and every bare reference resolves
+EXIT_CODE[citations]=0
+
+===== tables =====
+$ node scripts/verify-tables.mjs
+OK: 238 tables in 14 markdown files, each with a header, a delimiter row and a uniform column count
+EXIT_CODE[tables]=0
+
+===== preflight =====
+$ node scripts/preflight.mjs
+WARN | Noujoude.photo/ reconciliation
+     | 1 image file(s) in the directory with NO catalog row: logo_presentation_scene_16x9_v3.webp | 2 non-image file(s) not catalogued (manifests/notes): _pending_review_AI_generated/GENERATED_ASSETS_MANIFEST_AR.md, _pending_review_AI_generated/_manifest.json | 1 WRONG_FORMAT (extension vs container): vintage_collector_desk_16x9.jpg: .jpg holding image/webp | 18 NAME/PIXEL mismatch(es): brand_seal_monogram_1024.webp → filename declares 1024px, longest side is 512px (512x512); logo_badge_burgundy_1024.webp → filename declares 1024px, longest side is 512px (512x512); logo_stacked_vertical_1024x1536.webp → filename declares 1024x1536, file is 341x512 … (catalog rows 82, physical files 85)
+PASS | Node.js 24.22.1
+     | satisfies engines.node ">=24.22.1 <25"
+PASS | pnpm 11.21.0
+     | packageManager declares pnpm@11.21.0
+PASS | Docker
+     | server reachable; compose: 5.6.1 — required for postgres:18.6-alpine (ADR-004)
+PASS | .env
+     | present (values intentionally not read into this report)
+PASS | reference/ integrity
+     | 7 files match baseline checksums
+PASS | src/
+     | contains app, domain, README.md, types, ui
+PASS | docker-compose.yml contract
+     | docker-compose.yml states the pinned image, the loopback-only publish, the postgres:18 mount root, the read-only script mounts, the seven required secret guards, a pg_isready healthcheck, no host-escape affordance and an ndm- container name (10 rules)
+PASS | CI workflow structure
+     | .github/workflows/ci.yml parses as block YAML and its 4 jobs name every step, reference real jobs, invoke scripts that exist, agree with pnpm test:gates, and carry no literal secret (10 rules)
+PASS | pnpm run deps-before-run
+     | node_modules exists, so the auto-install path no longer fires from a missing tree; global setting: error
+
+10 checks: 0 FAIL, 1 WARN, 9 PASS
+EXIT_CODE[preflight]=0
+
+===== build =====
+$ pnpm build
+$ next build
+▲ Next.js 16.4.3 (Turbopack)
+- Environments: .env
+✓ Running next.config.mjs took 87ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 1735ms
+  Running TypeScript ...
+  Finished TypeScript in 8.1s ...
+  Collecting page data using 3 workers ...
+  Generating static pages using 3 workers (0/2) ...
+✓ Generating static pages using 3 workers (2/2) in 323ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /_not-found
+├ ƒ /[locale]
+├ ƒ /[locale]/about
+├ ƒ /[locale]/artifacts/[artifact-slug]
+├ ƒ /[locale]/collections
+├ ƒ /[locale]/collections/[collection-slug]
+├ ƒ /[locale]/contact
+├ ƒ /[locale]/curator
+├ ƒ /[locale]/privacy
+├ ƒ /[locale]/search
+├ ƒ /[locale]/stories
+├ ƒ /[locale]/stories/[story-slug]
+├ ƒ /[locale]/terms
+├ ƒ /[locale]/the-museum
+├ ƒ /[locale]/worlds
+└ ƒ /[locale]/worlds/[country-slug]
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+EXIT_CODE[build]=0
+
+===== audit =====
+$ pnpm audit --audit-level=high
+┌─────────────────────┬────────────────────────────────────────────────────────┐
+│ critical            │ Tinypool: Prototype Pollution gadget in worker options │
+│                     │ leads to Remote Code Execution                         │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Package             │ tinypool                                               │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Vulnerable versions │ <=2.1.0                                                │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Patched versions    │ >=2.1.1                                                │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Paths               │ .>vitest>tinypool                                      │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ More info           │ https://github.com/advisories/GHSA-5gmw-xhrv-c9v3      │
+└─────────────────────┴────────────────────────────────────────────────────────┘
+┌─────────────────────┬────────────────────────────────────────────────────────┐
+│ critical            │ Tinypool: Prototype Pollution Gadget to RCE in run()   │
+│                     │ options                                                │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Package             │ tinypool                                               │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Vulnerable versions │ <2.1.2                                                 │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Patched versions    │ >=2.1.2                                                │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Paths               │ .>vitest>tinypool                                      │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ More info           │ https://github.com/advisories/GHSA-85c8-ppgw-ccpr      │
+└─────────────────────┴────────────────────────────────────────────────────────┘
+┌─────────────────────┬────────────────────────────────────────────────────────┐
+│ critical            │ DOMPurify SAFE_FOR_TEMPLATES bypass: split template    │
+│                     │ expressions survive in attached shadow root content on │
+│                     │ DOM output modes                                       │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Package             │ dompurify                                              │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Vulnerable versions │ >=3.4.4 <=3.4.16                                       │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Patched versions    │ >=3.4.17                                               │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Paths               │ .>@payloadcms/next>@payloadcms/ui>@monaco-editor/      │
+│                     │ react>monaco-editor>dompurify                          │
+│                     │                                                        │
+│                     │ .>@payloadcms/plugin-cloud-storage>@payloadcms/        │
+│                     │ ui>@monaco-editor/react>monaco-editor>dompurify        │
+│                     │                                                        │
+│                     │ .>@payloadcms/richtext-lexical>@payloadcms/            │
+│                     │ next>@payloadcms/ui>@monaco-editor/react>monaco-       │
+│                     │ editor>dompurify                                       │
+│                     │                                                        │
+│                     │ ... Found 4 paths, run `pnpm why dompurify` for more   │
+│                     │ information                                            │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ More info           │ https://github.com/advisories/GHSA-cg2g-xh64-v4q7      │
+└─────────────────────┴────────────────────────────────────────────────────────┘
+┌─────────────────────┬────────────────────────────────────────────────────────┐
+│ high                │ DOMPurify IN_PLACE: hook that removes a parent or      │
+│                     │ sibling leaves the detached subtree's event handlers   │
+│                     │ armed (incomplete fix for GHSA-p98j-92pf-mc4p)         │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Package             │ dompurify                                              │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Vulnerable versions │ <=3.4.16                                               │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Patched versions    │ >=3.4.17                                               │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Paths               │ .>@payloadcms/next>@payloadcms/ui>@monaco-editor/      │
+│                     │ react>monaco-editor>dompurify                          │
+│                     │                                                        │
+│                     │ .>@payloadcms/plugin-cloud-storage>@payloadcms/        │
+│                     │ ui>@monaco-editor/react>monaco-editor>dompurify        │
+│                     │                                                        │
+│                     │ .>@payloadcms/richtext-lexical>@payloadcms/            │
+│                     │ next>@payloadcms/ui>@monaco-editor/react>monaco-       │
+│                     │ editor>dompurify                                       │
+│                     │                                                        │
+│                     │ ... Found 4 paths, run `pnpm why dompurify` for more   │
+│                     │ information                                            │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ More info           │ https://github.com/advisories/GHSA-mrv2-3pqr-j5jr      │
+└─────────────────────┴────────────────────────────────────────────────────────┘
+┌─────────────────────┬────────────────────────────────────────────────────────┐
+│ high                │ Happy DOM: Incomplete fix for CVE-2026-33943:          │
+│                     │ unsanitized import alias leads to host code execution  │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Package             │ happy-dom                                              │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Vulnerable versions │ >=17.0.0 <=21.0.3                                      │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Patched versions    │ >=21.0.4                                               │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Paths               │ .>@payloadcms/richtext-lexical>@lexical/               │
+│                     │ headless>happy-dom                                     │
+│                     │                                                        │
+│                     │ .>vitest>happy-dom                                     │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ More info           │ https://github.com/advisories/GHSA-834v-8h66-3h79      │
+└─────────────────────┴────────────────────────────────────────────────────────┘
+┌─────────────────────┬────────────────────────────────────────────────────────┐
+│ high                │ Happy DOM: SSRF via iframe and link stylesheet when    │
+│                     │ parsing untrusted HTML                                 │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Package             │ happy-dom                                              │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Vulnerable versions │ <=20.14.6                                              │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Patched versions    │ >=20.14.7                                              │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Paths               │ .>@payloadcms/richtext-lexical>@lexical/               │
+│                     │ headless>happy-dom                                     │
+│                     │                                                        │
+│                     │ .>vitest>happy-dom                                     │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ More info           │ https://github.com/advisories/GHSA-c8p4-j97h-3vg8      │
+└─────────────────────┴────────────────────────────────────────────────────────┘
+15 vulnerabilities found
+Severity: 4 low | 5 moderate | 3 high | 3 critical
+EXIT_CODE[audit]=1
+
+===== 3. STRUCTURAL MEASUREMENTS OF THE TREE AT CLOSURE =====
+$ git ls-files -- pnpm-lock.yaml
+pnpm-lock.yaml
+EXIT_CODE=0
+
+$ git ls-files -- .env
+EXIT_CODE=0
+
+$ git check-ignore -v .env
+.gitignore:11:.env	.env
+EXIT_CODE=0
+
+$ git status --porcelain
+ M .gitignore
+ M .prettierignore
+ M docs/ARCHITECTURE.md
+ M docs/ARCHITECTURE_DECISIONS.md
+ M docs/CHANGELOG.md
+ M docs/CITATION_VERIFICATION.json
+ M docs/DATA_MODEL.md
+ M docs/IMPLEMENTATION_PLAN.md
+ M docs/MEDIA_AND_RIGHTS_GOVERNANCE.md
+ M docs/OWNER_INPUT_REGISTER.md
+ M docs/REQUIREMENTS_TRACEABILITY.md
+ M docs/SECURITY_AND_PERMISSIONS.md
+ M docs/TEST_AND_RELEASE_REPORT.md
+ M eslint.config.mjs
+ M package.json
+ M pnpm-lock.yaml
+ M scripts/audit-assets.mjs
+ M scripts/check-docx-alignment.mjs
+ M scripts/preflight.mjs
+ M scripts/tests/copy-master-spec-output.test.mjs
+ M scripts/tests/verify-compose-config.test.mjs
+ M scripts/tests/verify-tables.test.mjs
+ M scripts/verify-citations.mjs
+ M scripts/verify-workflow-structure.mjs
+ M src/README.md
+ M tsconfig.json
+?? .tmp_closure_run.txt
+?? .tmp_fmt_final.txt
+?? brand/
+?? docs/BRAND_ASSET_INVENTORY.csv
+?? docs/DEPENDENCY_AUDIT_2026-11-02.txt
+?? docs/PHASE01_CLOSURE_TRANSCRIPT.txt
+?? docs/PHASE1_DISCOVERY_AND_READINESS.md
+?? docs/QUALITY_ACCEPTANCE_FRAMEWORK.md
+?? docs/ROUTE_RUNTIME_EVIDENCE.txt
+?? next.config.mjs
+?? src/app/
+?? src/domain/
+?? src/types/
+?? src/ui/
+EXIT_CODE=0
+
+$ git ls-files
+.env.example
+.github/workflows/ci.yml
+.gitignore
+.npmrc
+.prettierignore
+Noujoude.photo/_pending_review_AI_generated/GENERATED_ASSETS_MANIFEST_AR.md
+Noujoude.photo/_pending_review_AI_generated/_manifest.json
+Noujoude.photo/_pending_review_AI_generated/collection_artifacts_4x3.webp
+Noujoude.photo/_pending_review_AI_generated/collection_coins_4x3.webp
+Noujoude.photo/_pending_review_AI_generated/collection_first_day_covers_4x3.webp
+Noujoude.photo/_pending_review_AI_generated/collection_souvenirs_4x3.webp
+Noujoude.photo/_pending_review_AI_generated/world_egypt_hero_16x9.webp
+Noujoude.photo/_pending_review_AI_generated/world_libya_hero_16x9.webp
+Noujoude.photo/_pending_review_AI_generated/world_mauritania_hero_16x9.webp
+Noujoude.photo/_pending_review_AI_generated/world_morocco_hero_16x9.webp
+Noujoude.photo/_pending_review_AI_generated/world_sudan_hero_16x9.webp
+Noujoude.photo/_pending_review_AI_generated/world_syria_hero_16x9.webp
+Noujoude.photo/ai_curator_sanctum_16x9.jpg
+Noujoude.photo/ai_curator_sparkle_1024.webp
+Noujoude.photo/app_interface_showcase_16x9.jpg
+Noujoude.photo/archive_chamber.webp
+Noujoude.photo/arrival_hall_morning.webp
+Noujoude.photo/bg_dark_museum_bokeh.webp
+Noujoude.photo/bg_ivory_petals.webp
+Noujoude.photo/brand_muse_golden_hour.webp
+Noujoude.photo/brand_seal_monogram_1024.webp
+Noujoude.photo/burgundy_velvet_texture.webp
+Noujoude.photo/certificate_authenticity_1024.webp
+Noujoude.photo/certificate_identity_scene_4x3.webp
+Noujoude.photo/champagne_gold_marble_texture.webp
+Noujoude.photo/collection_gallery_shelves_16x9.jpg
+Noujoude.photo/collector_lounge_night.webp
+Noujoude.photo/contact_envelope_1024.webp
+Noujoude.photo/control_center_desk_16x9.jpg
+Noujoude.photo/curator_hands_emotional_moment_16x9.webp
+Noujoude.photo/dark_museum_wood_texture.webp
+Noujoude.photo/family_letters_1024.webp
+Noujoude.photo/family_letters_bundle_1x1.jpg
+Noujoude.photo/favorite_heart_1024.webp
+Noujoude.photo/floral_section_background_16x9.webp
+Noujoude.photo/gift_boutique.webp
+Noujoude.photo/glass_dome_looking_up.webp
+Noujoude.photo/gold_embroidery_detail_1x1.jpg
+Noujoude.photo/gold_leaf_dark_texture.webp
+Noujoude.photo/golden_hour_hall.webp
+Noujoude.photo/grand_entrance_dusk.webp
+Noujoude.photo/grand_staircase.webp
+Noujoude.photo/heritage_jewelry_1024.webp
+Noujoude.photo/historical_documents_atmosphere_4x3.jpg
+Noujoude.photo/interface_collection_page_4x3.jpg
+Noujoude.photo/ivory_marble_texture.webp
+Noujoude.photo/ivory_silk_texture.webp
+Noujoude.photo/launch_banner_16x9.jpg
+Noujoude.photo/light_rays_dust.webp
+Noujoude.photo/loading_golden_rays.webp
+Noujoude.photo/location_paris_1024.webp
+Noujoude.photo/logo_badge_burgundy_1024.webp
+Noujoude.photo/logo_presentation_scene_16x9_v3.webp
+Noujoude.photo/logo_stacked_vertical_1024x1536.webp
+Noujoude.photo/logo_wordmark_1024x768.webp
+Noujoude.photo/luxury_library_night.webp
+Noujoude.photo/luxury_night.webp
+Noujoude.photo/main_entrance_mobile_9x16.webp
+Noujoude.photo/main_gallery_burgundy.webp
+Noujoude.photo/marble_corridor.webp
+Noujoude.photo/master_atmosphere_definitive.webp
+Noujoude.photo/mobile_app_scene_9x16.jpg
+Noujoude.photo/morning_gallery.webp
+Noujoude.photo/museum_building_1024.webp
+Noujoude.photo/museum_cafe_morning.webp
+Noujoude.photo/old_paper_texture.webp
+Noujoude.photo/overlay_glass_reflections.webp
+Noujoude.photo/perfume_vanity_1024.webp
+Noujoude.photo/premium_packaging_identity_1x1.webp
+Noujoude.photo/private_archive_room_16x9.webp
+Noujoude.photo/rare_stamp_1024.webp
+Noujoude.photo/rare_stamps_glass_cabinet_4x3.jpg
+Noujoude.photo/rose_courtyard_golden_hour.webp
+Noujoude.photo/rose_marble_texture.webp
+Noujoude.photo/rose_petals_floating.webp
+Noujoude.photo/search_discovery_1024.webp
+Noujoude.photo/section_transition_background_16x9.webp
+Noujoude.photo/social_announcement_seal_1x1.jpg
+Noujoude.photo/social_instagram_1024.webp
+Noujoude.photo/telephone_1024.webp
+Noujoude.photo/user_account_1024.webp
+Noujoude.photo/vintage_collector_desk_16x9.jpg
+Noujoude.photo/warm_candlelight.webp
+Noujoude.photo/watermark_system_16x9.webp
+Noujoude.photo/wax_seal_texture_macro_1x1.jpg
+README_Noujoude_Master_Specification_EN111.md
+docker-compose.yml
+docs/A5_PRIVILEGE_EVIDENCE.txt
+docs/AI_CURATOR_GOVERNANCE.md
+docs/ARCHITECTURE.md
+docs/ARCHITECTURE_DECISIONS.md
+docs/ASSET_INVENTORY_AUDIT.csv
+docs/CHANGELOG.md
+docs/CITATION_TRIAGE_2026-10-31.superseded.txt
+docs/CITATION_VERIFICATION.json
+docs/DATA_MODEL.md
+docs/DOCX_MD_ALIGNMENT.json
+docs/IMPLEMENTATION_PLAN.md
+docs/MASTER_SPECIFICATION.md
+docs/MEDIA_AND_RIGHTS_GOVERNANCE.md
+docs/OWNER_INPUT_REGISTER.md
+docs/REFERENCE_INTEGRITY.json
+docs/REQUIREMENTS_TRACEABILITY.md
+docs/SECURITY_AND_PERMISSIONS.md
+docs/TEST_AND_RELEASE_REPORT.md
+docs/asset-audit-summary.json
+eslint.config.mjs
+package.json
+playwright.config.ts
+pnpm-lock.yaml
+pnpm-workspace.yaml
+reference/Noujoude_Asset_and_Brand_Requirements_EN.md
+reference/Noujoude_Gap_Closure_Register_EN.csv
+reference/Noujoude_Line_by_Line_Traceability_EN.csv
+reference/Noujoude_Master_Execution_Directive_EN.md
+reference/Noujoude_Master_Specification_EN.docx
+reference/Noujoude_Master_Specification_EN.md
+reference/Noujoude_Technology_and_Security_Standard_EN.md
+scripts/audit-assets.mjs
+scripts/check-docx-alignment.mjs
+scripts/copy-master-spec.mjs
+scripts/db/harden-append-only.sh
+scripts/db/init-roles.sh
+scripts/db/run-privilege-tests.sh
+scripts/db/verify-privileges.sh
+scripts/lib/asset-declarations.mjs
+scripts/lib/csv.mjs
+scripts/lib/image-signature.mjs
+scripts/preflight.mjs
+scripts/show-lines.mjs
+scripts/tests/copy-master-spec-output.test.mjs
+scripts/tests/preflight-asset-reconciliation.test.mjs
+scripts/tests/preflight-pnpm-trap.test.mjs
+scripts/tests/verify-citations.test.mjs
+scripts/tests/verify-compose-config.test.mjs
+scripts/tests/verify-tables.test.mjs
+scripts/tests/verify-workflow-structure.test.mjs
+scripts/verify-citations.mjs
+scripts/verify-compose-config.mjs
+scripts/verify-tables.mjs
+scripts/verify-workflow-structure.mjs
+src/README.md
+tests/setup/env.ts
+tsconfig.json
+vitest.config.ts
+EXIT_CODE=0
+
+$ find src -type f
+src/app/[locale]/about/page.tsx
+src/app/[locale]/artifacts/[artifact-slug]/page.tsx
+src/app/[locale]/collections/page.tsx
+src/app/[locale]/collections/[collection-slug]/page.tsx
+src/app/[locale]/contact/page.tsx
+src/app/[locale]/curator/page.tsx
+src/app/[locale]/layout.tsx
+src/app/[locale]/page.module.css
+src/app/[locale]/page.tsx
+src/app/[locale]/privacy/page.tsx
+src/app/[locale]/search/page.tsx
+src/app/[locale]/stories/page.tsx
+src/app/[locale]/stories/[story-slug]/page.tsx
+src/app/[locale]/terms/page.tsx
+src/app/[locale]/the-museum/page.tsx
+src/app/[locale]/worlds/page.tsx
+src/app/[locale]/worlds/[country-slug]/page.tsx
+src/domain/entry-routing.test.ts
+src/domain/locale.test.ts
+src/domain/locale.ts
+src/domain/rights.test.ts
+src/domain/rights.ts
+src/domain/routes.test.ts
+src/domain/routes.ts
+src/README.md
+src/types/environment.d.ts
+src/ui/detail-page.module.css
+src/ui/detail-page.tsx
+src/ui/layout.module.css
+src/ui/page-shell.module.css
+src/ui/page-shell.tsx
+src/ui/styles/global.css
+EXIT_CODE=0
+
+$ grep -c ^### ADR- docs/ARCHITECTURE_DECISIONS.md
+grep: ADR-: No such file or directory
+docs/ARCHITECTURE_DECISIONS.md:40
+EXIT_CODE=2
+
+$ ls docs
+A5_PRIVILEGE_EVIDENCE.txt
+AI_CURATOR_GOVERNANCE.md
+ARCHITECTURE.md
+ARCHITECTURE_DECISIONS.md
+ASSET_INVENTORY_AUDIT.csv
+BRAND_ASSET_INVENTORY.csv
+CHANGELOG.md
+CITATION_TRIAGE_2026-10-31.superseded.txt
+CITATION_VERIFICATION.json
+DATA_MODEL.md
+DEPENDENCY_AUDIT_2026-11-02.txt
+DOCX_MD_ALIGNMENT.json
+IMPLEMENTATION_PLAN.md
+MASTER_SPECIFICATION.md
+MEDIA_AND_RIGHTS_GOVERNANCE.md
+OWNER_INPUT_REGISTER.md
+PHASE01_CLOSURE_TRANSCRIPT.txt
+PHASE1_DISCOVERY_AND_READINESS.md
+QUALITY_ACCEPTANCE_FRAMEWORK.md
+REFERENCE_INTEGRITY.json
+REQUIREMENTS_TRACEABILITY.md
+ROUTE_RUNTIME_EVIDENCE.txt
+SECURITY_AND_PERMISSIONS.md
+TEST_AND_RELEASE_REPORT.md
+asset-audit-summary.json
+EXIT_CODE=0
+
+
+===== 3b. STRUCTURAL MEASUREMENTS, CORRECTED BLOCK =====
+The two lines above this heading that show EXIT_CODE=2 were this harness passing an unquoted
+pattern to grep. The commands are re-run here with their arguments quoted; the exit codes below are
+the ones that count, and the flawed lines are left in place rather than edited out.
+
+$ grep -c '^### ADR-' docs/ARCHITECTURE_DECISIONS.md
+33
+EXIT_CODE=0
+
+$ ls docs/*.md | wc -l
+14
+EXIT_CODE=0
+
+$ find src -type f | wc -l
+32
+EXIT_CODE=0
+
+$ git ls-files | wc -l
+150
+EXIT_CODE=0
+
+$ git status --porcelain | wc -l
+40
+EXIT_CODE=0
+
+$ node -e "console.log(Object.keys(require('./package.json').scripts).length)"
+39
+EXIT_CODE=0
+
+===== 4. WHAT THESE EXITS DO AND DO NOT PROVE (interpretation, not command output) =====
+Green here: typecheck, lint, unit tests, the seven gate regression suites, the citation gate, the table
+gate, preflight and a real production build over 16 routes on this host.
+Red and reported as red: format:check (exit 1 over 25 files, none under src/ or docs/), because the Owner
+authorized one .prettierignore correction and forbade broad reformatting; and pnpm audit (exit 1, 15
+vulnerabilities, 3 critical, 3 high) = blocker B-11, because every remedy is a version change the
+installation mandate withholds. OID-23 and OID-24 are the Owner decisions that would clear them.
+Not proved by any of it: application behaviour beyond the rendered shells (no content, no rights-cleared
+asset, no database, no CMS write path, no auth, no AI retrieval), accessibility, performance, security
+headers in a deployed response, CI (B-08 - the workflow has never executed on a runner), or any restore.
+The falsifiability records that make the greens worth something live in these files, with their exit codes
+quoted in place: eslint.config.mjs header comment (five load defects found by running the lint gate, plus
+the eval-probe red at 8 errors and the clean-tree green at 0), docs/SECURITY_AND_PERMISSIONS.md 16.3 (the
+same probe as an SV-level record, and the wildcard-bind socket finding), docs/ROUTE_RUNTIME_EVIDENCE.txt
+(the 18 HTTP probes of the built shell, including the 0.0.0.0:3122 netstat line), and the PASS lines in
+section 2 above, which are the regression suites failing on purpose against reverted fixtures.
+
+===== 5. STATE AT CLOSURE =====
+Phase 0: exit criteria of the Owner's directive 14 are met (see docs/IMPLEMENTATION_PLAN.md Level A, 14 of
+14 rows, and Gate 0 Passed with a named approver).
+Phase 1: the directive's Phase 1 lines are met - compatibility matrix, ADRs (33), initialized src/ (32
+files), scripts and types, linting restored and executing, tests executing, env example, Git checkpoint.
+Not closed by this record: Gate 5 (release), Level B beyond 3 of 12, L2 signature, B-05, B-06, B-07, B-08,
+B-11, B-12. Closure of Phase 0/1 is not application readiness and not a production approval.

@@ -15,7 +15,7 @@
  */
 
 import { createHash } from 'node:crypto';
-import { readFileSync, writeFileSync, readdirSync, statSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, readdirSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { parseCsv } from './lib/csv.mjs';
 import { sniffFormat, readDimensions } from './lib/image-signature.mjs';

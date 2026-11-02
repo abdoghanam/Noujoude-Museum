@@ -103,7 +103,7 @@ function norm(s) {
   return s
     .replace(/[‘’]/g, "'").replace(/[“”]/g, '"')
     .replace(/[–—]/g, '-')
-    .replace(/ /g, ' ')
+    .replace(/\u00a0/g, ' ')
     .toLowerCase();
 }
 
@@ -202,7 +202,6 @@ const missingHeadings = headings.filter((h) => {
 // Direction matters: content only in the DOCX is a loss in the Markdown working
 // copy; content only in the Markdown is an addition. Both are reported, neither is
 // silently averaged into a single "similarity %" that would hide which side drifted.
-const mdOnlyCommon = mdOnly.filter((w) => /^[a-z]{5,}$/.test(w));
 const docxOnlyCommon = docxOnly.filter((w) => /^[a-z]{5,}$/.test(w));
 
 const substantiveMisses = missingParas.filter((t) => !/\bhttps\b/.test(t));

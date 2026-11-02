@@ -1,0 +1,19 @@
+.sections {
+  display: grid;
+  gap: var(--ndm-space-4);
+}
+
+.slotList {
+  display: grid;
+  gap: var(--ndm-space-2);
+  margin: 0;
+  padding: 0;
+}
+
+.sectionTitle {
+  color: var(--ndm-text-secondary);
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  margin-block-end: var(--ndm-space-2);
+  text-transform: uppercase;
+}

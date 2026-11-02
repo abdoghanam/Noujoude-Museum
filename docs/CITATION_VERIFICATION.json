@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-01T19:13:56.951Z",
+  "generatedAt": "2026-11-02T06:05:49.658Z",
   "tool": "scripts/verify-citations.mjs",
   "sources": [
     "master = reference/Noujoude_Master_Specification_EN.md (3942 lines)",
@@ -9,23 +9,25 @@
     "trace-csv = reference/Noujoude_Line_by_Line_Traceability_EN.csv (8176 lines)",
     "env-example = .env.example (83 lines)",
     "docker-compose = docker-compose.yml (64 lines)",
-    "package.json = package.json (76 lines)",
-    "tsconfig = tsconfig.json (40 lines)",
+    "package.json = package.json (79 lines)",
+    "tsconfig = tsconfig.json (43 lines)",
     "vitest-config = vitest.config.ts (38 lines)",
     "playwright-config = playwright.config.ts (65 lines)",
-    "eslint-config = eslint.config.mjs (75 lines)",
+    "eslint-config = eslint.config.mjs (199 lines)",
     "manifest = Noujoude.photo/_pending_review_AI_generated/_manifest.json (232 lines)",
     "doc:AI_CURATOR_GOVERNANCE.md = docs/AI_CURATOR_GOVERNANCE.md (388 lines)",
-    "doc:ARCHITECTURE.md = docs/ARCHITECTURE.md (290 lines)",
-    "doc:ARCHITECTURE_DECISIONS.md = docs/ARCHITECTURE_DECISIONS.md (1166 lines)",
-    "doc:CHANGELOG.md = docs/CHANGELOG.md (1080 lines)",
+    "doc:ARCHITECTURE.md = docs/ARCHITECTURE.md (373 lines)",
+    "doc:ARCHITECTURE_DECISIONS.md = docs/ARCHITECTURE_DECISIONS.md (1445 lines)",
+    "doc:CHANGELOG.md = docs/CHANGELOG.md (1386 lines)",
     "doc:DATA_MODEL.md = docs/DATA_MODEL.md (660 lines)",
-    "doc:IMPLEMENTATION_PLAN.md = docs/IMPLEMENTATION_PLAN.md (861 lines)",
+    "doc:IMPLEMENTATION_PLAN.md = docs/IMPLEMENTATION_PLAN.md (900 lines)",
     "doc:MEDIA_AND_RIGHTS_GOVERNANCE.md = docs/MEDIA_AND_RIGHTS_GOVERNANCE.md (592 lines)",
-    "doc:OWNER_INPUT_REGISTER.md = docs/OWNER_INPUT_REGISTER.md (289 lines)",
-    "doc:REQUIREMENTS_TRACEABILITY.md = docs/REQUIREMENTS_TRACEABILITY.md (545 lines)",
-    "doc:SECURITY_AND_PERMISSIONS.md = docs/SECURITY_AND_PERMISSIONS.md (717 lines)",
-    "doc:TEST_AND_RELEASE_REPORT.md = docs/TEST_AND_RELEASE_REPORT.md (965 lines)"
+    "doc:OWNER_INPUT_REGISTER.md = docs/OWNER_INPUT_REGISTER.md (359 lines)",
+    "doc:PHASE1_DISCOVERY_AND_READINESS.md = docs/PHASE1_DISCOVERY_AND_READINESS.md (323 lines)",
+    "doc:QUALITY_ACCEPTANCE_FRAMEWORK.md = docs/QUALITY_ACCEPTANCE_FRAMEWORK.md (457 lines)",
+    "doc:REQUIREMENTS_TRACEABILITY.md = docs/REQUIREMENTS_TRACEABILITY.md (576 lines)",
+    "doc:SECURITY_AND_PERMISSIONS.md = docs/SECURITY_AND_PERMISSIONS.md (843 lines)",
+    "doc:TEST_AND_RELEASE_REPORT.md = docs/TEST_AND_RELEASE_REPORT.md (1041 lines)"
   ],
   "recordedSources": [
     "audit-csv = docs/ASSET_INVENTORY_AUDIT.csv (84 lines)",
@@ -33,19 +35,19 @@
     "gap-csv = reference/Noujoude_Gap_Closure_Register_EN.csv (19 lines)"
   ],
   "summary": {
-    "files": 12,
-    "fragments": 533,
-    "verified": 427,
+    "files": 14,
+    "fragments": 542,
+    "verified": 433,
     "drifted": 0,
     "driftedOtherSource": 0,
     "notFound": 0,
     "selfRecording": 10,
-    "projectRecord": 10,
+    "projectRecord": 9,
     "definedTerm": 6,
-    "noReference": 86,
+    "noReference": 90,
     "uncitedVerbatim": 0,
-    "unmatched": 21,
-    "bareRefs": 1247,
+    "unmatched": 22,
+    "bareRefs": 1503,
     "bareRefDefects": 0
   },
   "interpretation": "VERIFIED = the quotation occurs at (or within a few lines of) a line reference written on the quotation's own markdown line or on the line above/below it inside the same block. Both citation styles are read: `line N` / `(N)` and the registers' declared house style `§11.9 1613–1617`, `G.2 3672`, `Directive 194`. LINE_OFF = genuine quotation, right file, wrong line number. LINE_OFF_OTHER_SOURCE = the quotation exists in a different reference file than the line attributes it to. SELF_RECORDING = the quoted text is a value this project recorded in its own audit registers, or a cell of the Owner's gap-closure register; those carry no requirement line number, so this is a class, not a defect. DEFINED_TERM = a short (≤ 8 token) controlled-vocabulary label with no nearby number, where this same document cites the exact source line the label was found on — the term is anchored once at its definition and repeated as vocabulary, which is not a missing citation. NOT_FOUND = no requirement source contains the quotation; treat as suspect and either restore the source wording or rewrite it as a paraphrase without quotation marks. NO_LINE_REFERENCE = quoted material with no nearby line number, which includes this repository's own vocabulary and is not a citation; when it is verbatim requirement text it is additionally listed as uncited verbatim. Elided quotations (ellipsis or bracketed note) are matched by their surviving runs in order inside a three-line window, so an honest truncated quote is not mistaken for a fabricated one. Quoted strings of fewer than three tokens are skipped (summary.unmatched). SEPARATELY, summary.bareRefs counts the line references that sit on lines carrying no quotation at all — citations made by paraphrase plus number, which the quotation pass cannot see. Each is tested for the claims a number makes without any text to match: REF_PAST_END (no bindable source is that long), REF_BLANK_TARGET (the line named is empty in every candidate), REF_SECTION_MISMATCH (the citation names a section that its source has, and the line lies outside it), REF_SECTION_UNKNOWN (the citation names a section absent from every bindable structured source). These are defects, not classes: a line reference that does not resolve, or that puts a line inside the wrong section, is a citation this repository cannot stand behind. What no check here asserts is that the paraphrase summarises the line correctly — that needs the text or a reader, and neither is simulated. A bare parenthesised `(N)` is excluded from this pass on quote-less lines, where it is indistinguishable from a year or a quantity.",
@@ -1270,28 +1272,28 @@
       "file": "docs/ARCHITECTURE.md",
       "checks": [
         {
-          "docLine": 40,
+          "docLine": 52,
           "fragment": "7 checks: 1 FAIL, 2 WARN, 4 PASS",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 40,
+          "docLine": 52,
           "fragment": "8 checks: 1 FAIL, 2 WARN, 5 PASS",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 40,
+          "docLine": 52,
           "fragment": "9 checks: 1 FAIL, 2 WARN, 6 PASS",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 196,
+          "docLine": 247,
           "fragment": "no unnecessary client-side JavaScript",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -1895,35 +1897,35 @@
           ]
         },
         {
-          "docLine": 955,
+          "docLine": 1234,
           "fragment": "1 FAIL, 1 WARN, 5 PASS",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 960,
+          "docLine": 1239,
           "fragment": "1 FAIL, 2 WARN, 4 PASS",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 989,
+          "docLine": 1268,
           "fragment": "1 FAIL, 2 WARN, 4 PASS",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 1019,
+          "docLine": 1298,
           "fragment": "Compose 5.3.1 verified reachable",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 1051,
+          "docLine": 1330,
           "fragment": "Failed to start the systemd user session",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
@@ -1941,7 +1943,7 @@
         "defined_term": 0,
         "noReference": 16,
         "uncitedVerbatim": 0,
-        "ref_ok": 58,
+        "ref_ok": 130,
         "ref_defects": 0
       }
     },
@@ -1992,7 +1994,14 @@
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 381,
+          "docLine": 224,
+          "fragment": "no application code exists yet",
+          "status": "NO_LINE_REFERENCE",
+          "verbatimIn": [],
+          "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
+        },
+        {
+          "docLine": 430,
           "fragment": "A-01…A-09 all Standard §4.2",
           "refScope": "adjacent-line",
           "status": "PROJECT_RECORD",
@@ -2007,63 +2016,63 @@
           ]
         },
         {
-          "docLine": 456,
+          "docLine": 505,
           "fragment": "tooling cannot write into `reference/`",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 497,
+          "docLine": 546,
           "fragment": "every cross-reference in `docs/` is correct",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 605,
+          "docLine": 654,
           "fragment": "`sh -n` only … it has never run",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 605,
+          "docLine": 654,
           "fragment": "the ADR-019 privilege boundary is designed and scripted but not proven",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 607,
+          "docLine": 656,
           "fragment": "ADR-019's behavioural proof remains owed and unexecuted",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 690,
+          "docLine": 739,
           "fragment": "New executed evidence for the blocker that really binds the database track",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 803,
+          "docLine": 852,
           "fragment": "a step calling a script that no longer exists",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 813,
+          "docLine": 862,
           "fragment": "verified by reading only",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 935,
+          "docLine": 984,
           "fragment": "Object.keys(require('./package.json').scripts).length",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
@@ -2079,7 +2088,7 @@
         "self_recording": 0,
         "project_record": 1,
         "defined_term": 0,
-        "noReference": 13,
+        "noReference": 14,
         "uncitedVerbatim": 0,
         "ref_ok": 26,
         "ref_defects": 0
@@ -2991,14 +3000,14 @@
           ]
         },
         {
-          "docLine": 49,
+          "docLine": 50,
           "fragment": "console.log(Object.keys(require('./package.json').scripts).length)",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 122,
+          "docLine": 126,
           "fragment": "Commit only coherent working milestones",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3015,14 +3024,14 @@
           ]
         },
         {
-          "docLine": 126,
+          "docLine": 130,
           "fragment": "Do not create or assume a remote repository",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 244,
+          "docLine": 260,
           "fragment": "Run a clean install, typecheck, test, and production build before proceeding.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3037,14 +3046,14 @@
           ]
         },
         {
-          "docLine": 253,
+          "docLine": 269,
           "fragment": "candidate pinned set",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 265,
+          "docLine": 281,
           "fragment": "Execute in dependency-aware batches. Do not stop after planning.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3059,7 +3068,7 @@
           ]
         },
         {
-          "docLine": 286,
+          "docLine": 302,
           "fragment": "Test fresh database creation and upgrade from the immediately preceding schema.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3074,7 +3083,7 @@
           ]
         },
         {
-          "docLine": 304,
+          "docLine": 320,
           "fragment": "Do not fabricate content to make six equal-size exhibitions",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3094,7 +3103,7 @@
           ]
         },
         {
-          "docLine": 318,
+          "docLine": 334,
           "fragment": "Test positive and negative access cases for all twenty Control Center modules",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3113,7 +3122,7 @@
           ]
         },
         {
-          "docLine": 318,
+          "docLine": 334,
           "fragment": "A visible button is not accepted as an implemented feature.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3132,7 +3141,7 @@
           ]
         },
         {
-          "docLine": 331,
+          "docLine": 347,
           "fragment": "a backup job reporting success is not proof of recoverability",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3147,7 +3156,7 @@
           ]
         },
         {
-          "docLine": 345,
+          "docLine": 361,
           "fragment": "A gate may be marked Passed only with recorded evidence and an identified approver.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3162,7 +3171,7 @@
           ]
         },
         {
-          "docLine": 349,
+          "docLine": 365,
           "fragment": "Master Specification adopted; requirement IDs assigned; scope and change-control authority established.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3177,7 +3186,7 @@
           ]
         },
         {
-          "docLine": 350,
+          "docLine": 366,
           "fragment": "Official identity fields approved; actual Morocco inventory loaded; claims/evidence, image permissions, and re",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3194,7 +3203,7 @@
           ]
         },
         {
-          "docLine": 350,
+          "docLine": 366,
           "fragment": "no invented collection information",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3211,7 +3220,7 @@
           ]
         },
         {
-          "docLine": 351,
+          "docLine": 367,
           "fragment": "Public routes and page behavior complete; approved visual system applied; English and Arabic layouts reviewed;",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3226,7 +3235,7 @@
           ]
         },
         {
-          "docLine": 352,
+          "docLine": 368,
           "fragment": "Canonical Control Center modules and essential screens available; permissions enforced; data relationships and",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3241,7 +3250,7 @@
           ]
         },
         {
-          "docLine": 353,
+          "docLine": 369,
           "fragment": "AI source scope, citation, uncertainty, privacy, and safety tests passed; legal/privacy policies approved; no ",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3256,7 +3265,7 @@
           ]
         },
         {
-          "docLine": 354,
+          "docLine": 370,
           "fragment": "Security verification, performance, monitoring, backups, restore testing, SEO checks, and release regression a",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3271,7 +3280,7 @@
           ]
         },
         {
-          "docLine": 356,
+          "docLine": 372,
           "fragment": "The product is not considered complete because all pages exist",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3287,7 +3296,7 @@
           ]
         },
         {
-          "docLine": 364,
+          "docLine": 380,
           "fragment": "Confirm the institutional identity inputs.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3302,7 +3311,7 @@
           ]
         },
         {
-          "docLine": 365,
+          "docLine": 381,
           "fragment": "Build and verify the actual artifact inventory and rights register.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3317,7 +3326,7 @@
           ]
         },
         {
-          "docLine": 366,
+          "docLine": 382,
           "fragment": "Approve final editorial content in each locale.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3332,7 +3341,7 @@
           ]
         },
         {
-          "docLine": 367,
+          "docLine": 383,
           "fragment": "Approve design tokens, logo assets, font licenses, and responsive rules.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3347,7 +3356,7 @@
           ]
         },
         {
-          "docLine": 368,
+          "docLine": 384,
           "fragment": "Approve the physical ERD and data dictionary against this logical model.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3362,7 +3371,7 @@
           ]
         },
         {
-          "docLine": 369,
+          "docLine": 385,
           "fragment": "Approve legal/privacy notices for the real entity and jurisdiction.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3377,7 +3386,7 @@
           ]
         },
         {
-          "docLine": 370,
+          "docLine": 386,
           "fragment": "Verify implementation against requirement IDs and test evidence.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3394,7 +3403,7 @@
           ]
         },
         {
-          "docLine": 371,
+          "docLine": 387,
           "fragment": "Resolve all P0 defects and record Owner acceptance.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3410,94 +3419,66 @@
           ]
         },
         {
-          "docLine": 425,
+          "docLine": 441,
           "fragment": "Object.keys(require('./package.json').scripts).length",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 427,
+          "docLine": 443,
           "fragment": "not machine-validated (no YAML parser on this host)",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 520,
-          "fragment": "Couldn't find any pages or app directory",
-          "status": "NO_LINE_REFERENCE",
-          "verbatimIn": [],
-          "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
-        },
-        {
-          "docLine": 534,
+          "docLine": 558,
           "fragment": "Phase 1 is not accepted",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 535,
+          "docLine": 559,
           "fragment": "Phase 1 is unfinished work the architect abandoned",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 535,
+          "docLine": 559,
           "fragment": "Phase 1 is finished and something else is owed",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 543,
+          "docLine": 567,
           "fragment": "Initialize application in `src/`",
           "status": "DEFINED_TERM",
           "verbatimIn": [
             "reference/Noujoude_Master_Execution_Directive_EN.md:250"
           ],
           "anchoredAt": [
-            "directive:250, cited by this document on line 540, 716, 717"
+            "directive:250, cited by this document on line 102, 103, 564, 572, 753, 754"
           ],
           "note": "controlled-vocabulary label: this document cites the source line it comes from, so repeating the label is not a missing citation"
         },
         {
-          "docLine": 556,
+          "docLine": 583,
           "fragment": "Establish scripts, **types**",
           "status": "DEFINED_TERM",
           "verbatimIn": [
             "reference/Noujoude_Master_Execution_Directive_EN.md:251"
           ],
           "anchoredAt": [
-            "directive:251, cited by this document on line 122, 540, 549, 716"
+            "directive:251, cited by this document on line 126, 564, 753"
           ],
           "note": "controlled-vocabulary label: this document cites the source line it comes from, so repeating the label is not a missing citation"
         },
         {
-          "docLine": 585,
-          "fragment": "the real workspace must read WARN / TRAP ARMED",
-          "status": "NO_LINE_REFERENCE",
-          "verbatimIn": [],
-          "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
-        },
-        {
-          "docLine": 586,
-          "fragment": "no dependency install",
-          "status": "NO_LINE_REFERENCE",
-          "verbatimIn": [],
-          "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
-        },
-        {
-          "docLine": 599,
-          "fragment": "Phase 1 is blocked exclusively by Owner decisions",
-          "status": "NO_LINE_REFERENCE",
-          "verbatimIn": [],
-          "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
-        },
-        {
-          "docLine": 636,
+          "docLine": 673,
           "fragment": "frontend hiding is not authorization",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3512,7 +3493,7 @@
           ]
         },
         {
-          "docLine": 641,
+          "docLine": 678,
           "fragment": "A general 'Verified' badge must not imply that the object's authenticity or ownership has been established",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3533,7 +3514,7 @@
           ]
         },
         {
-          "docLine": 674,
+          "docLine": 711,
           "fragment": "unavailable is not zero",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3548,7 +3529,7 @@
           ]
         },
         {
-          "docLine": 686,
+          "docLine": 723,
           "fragment": "Pending Human Approval",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3565,7 +3546,7 @@
           ]
         },
         {
-          "docLine": 686,
+          "docLine": 723,
           "fragment": "Awaiting Rights Review",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3582,7 +3563,7 @@
           ]
         },
         {
-          "docLine": 686,
+          "docLine": 723,
           "fragment": "AI-generated illustrative visuals must never be presented as original artifact photographs",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3599,7 +3580,7 @@
           ]
         },
         {
-          "docLine": 690,
+          "docLine": 727,
           "fragment": "Do not publish an SLA based solely on this internal objective.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3616,7 +3597,7 @@
           ]
         },
         {
-          "docLine": 690,
+          "docLine": 727,
           "fragment": "Closed as proposed baseline; provider proof/Owner approval pending",
           "refScope": "own-line",
           "status": "SELF_RECORDING",
@@ -3633,13 +3614,13 @@
           ]
         },
         {
-          "docLine": 697,
+          "docLine": 734,
           "fragment": "It's recommended to always make sure that `prettier --write .` only formats what you want in your project. Use",
           "refScope": "own-line",
           "status": "PROJECT_RECORD",
           "source": "docs/TEST_AND_RELEASE_REPORT.md",
           "cited": 18,
-          "actual": 690,
+          "actual": 727,
           "citationsOnLine": [
             "18",
             "21"
@@ -3650,7 +3631,7 @@
           ]
         },
         {
-          "docLine": 709,
+          "docLine": 746,
           "fragment": "Administrative users must use strong authentication. MFA is mandatory for Owner and privileged administrative ",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3669,7 +3650,7 @@
           ]
         },
         {
-          "docLine": 710,
+          "docLine": 747,
           "fragment": "dependency audit and vulnerability response process",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3684,7 +3665,7 @@
           ]
         },
         {
-          "docLine": 713,
+          "docLine": 750,
           "fragment": "Never overwrite or delete originals. Inventory all files and preserve checksums.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3699,14 +3680,14 @@
           ]
         },
         {
-          "docLine": 718,
+          "docLine": 755,
           "fragment": "Do not run `pnpm install` … until OD-2 is explicitly approved",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 725,
+          "docLine": 762,
           "fragment": "No commerce framework, payment provider, cart schema, order schema, or sales analytics is to be installed for ",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -3725,28 +3706,28 @@
           ]
         },
         {
-          "docLine": 771,
+          "docLine": 808,
           "fragment": "The Project Owner formally adopts the current Master Specification as the project's governing baseline. The Pr",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 771,
+          "docLine": 808,
           "fragment": "Do not alter the Master Specification's requirements simply to make a gate pass",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 816,
+          "docLine": 855,
           "fragment": "NDM-AST-041 vintage_collector_desk_16x9.jpg → WRONG_FORMAT",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 844,
+          "docLine": 883,
           "fragment": "the pipe name is registered and nothing answers on it",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
@@ -3762,9 +3743,9 @@
         "self_recording": 1,
         "project_record": 1,
         "defined_term": 2,
-        "noReference": 19,
+        "noReference": 15,
         "uncitedVerbatim": 0,
-        "ref_ok": 73,
+        "ref_ok": 84,
         "ref_defects": 0
       }
     },
@@ -5042,7 +5023,7 @@
           ]
         },
         {
-          "docLine": 19,
+          "docLine": 21,
           "fragment": "For every owner input, implement the independent technical workflow, record the dependency, keep unapproved co",
           "refScope": "adjacent-line",
           "status": "VERIFIED",
@@ -5057,7 +5038,14 @@
           ]
         },
         {
-          "docLine": 58,
+          "docLine": 42,
+          "fragment": "no Owner fact has arrived",
+          "status": "NO_LINE_REFERENCE",
+          "verbatimIn": [],
+          "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
+        },
+        {
+          "docLine": 64,
           "fragment": "The following facts remain Owner Input Required until documented and approved",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5076,7 +5064,7 @@
           ]
         },
         {
-          "docLine": 58,
+          "docLine": 64,
           "fragment": "Legal nature and operating status of the collection or institution.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5095,7 +5083,7 @@
           ]
         },
         {
-          "docLine": 58,
+          "docLine": 64,
           "fragment": "The website MUST NOT imply a legal museum designation, public institution status, accreditation, certification",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5114,7 +5102,7 @@
           ]
         },
         {
-          "docLine": 58,
+          "docLine": 64,
           "fragment": "official museum name, tagline, approved description, contact details, default language, supported languages, a",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5133,7 +5121,7 @@
           ]
         },
         {
-          "docLine": 59,
+          "docLine": 65,
           "fragment": "More than a collection... it's a story.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5153,7 +5141,7 @@
           ]
         },
         {
-          "docLine": 59,
+          "docLine": 65,
           "fragment": "English is natural museum/editorial language, not literal Arabic translation.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5173,7 +5161,7 @@
           ]
         },
         {
-          "docLine": 59,
+          "docLine": 65,
           "fragment": "It must not silently substitute or machine-generate an unapproved translation.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5193,7 +5181,7 @@
           ]
         },
         {
-          "docLine": 60,
+          "docLine": 66,
           "fragment": "Official physical location, if intended for publication.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5212,7 +5200,7 @@
           ]
         },
         {
-          "docLine": 60,
+          "docLine": 66,
           "fragment": "Do not create a literal fantasy palace or imply a Paris/French physical location based on aesthetic references",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5231,7 +5219,7 @@
           ]
         },
         {
-          "docLine": 60,
+          "docLine": 66,
           "fragment": "`location_paris_1024.webp` does not establish the museum's location.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5250,7 +5238,7 @@
           ]
         },
         {
-          "docLine": 61,
+          "docLine": 67,
           "fragment": "Actual founding history and dates.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5273,7 +5261,7 @@
           ]
         },
         {
-          "docLine": 61,
+          "docLine": 67,
           "fragment": "Founder, Owner, collector, or institutional representative attribution.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5296,7 +5284,7 @@
           ]
         },
         {
-          "docLine": 61,
+          "docLine": 67,
           "fragment": "Actual founder story and attributions.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5319,7 +5307,7 @@
           ]
         },
         {
-          "docLine": 61,
+          "docLine": 67,
           "fragment": "The museum's legal status, accreditation, location, partnerships, or founder history.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5342,7 +5330,7 @@
           ]
         },
         {
-          "docLine": 61,
+          "docLine": 67,
           "fragment": "Approved institutional identity and mission",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5365,7 +5353,7 @@
           ]
         },
         {
-          "docLine": 63,
+          "docLine": 69,
           "fragment": "Official contact details, **only when approved**",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5383,7 +5371,7 @@
           ]
         },
         {
-          "docLine": 69,
+          "docLine": 75,
           "fragment": "must be based on the Owner-approved institutional story",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5401,7 +5389,7 @@
           ]
         },
         {
-          "docLine": 70,
+          "docLine": 76,
           "fragment": "Category records do not prove that real objects are available. Only real, owner-supplied and properly reviewed",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5418,7 +5406,7 @@
           ]
         },
         {
-          "docLine": 72,
+          "docLine": 78,
           "fragment": "ownership, provenance, authenticity evidence",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5433,7 +5421,7 @@
           ]
         },
         {
-          "docLine": 75,
+          "docLine": 81,
           "fragment": "The CMS must not automatically mark an artifact authentic because it has a source, provenance note, or curator",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5454,7 +5442,7 @@
           ]
         },
         {
-          "docLine": 75,
+          "docLine": 81,
           "fragment": "A general 'Verified' badge must not imply that the object's authenticity or ownership has been established.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5475,7 +5463,7 @@
           ]
         },
         {
-          "docLine": 75,
+          "docLine": 81,
           "fragment": "AI must not approve, verify, or publish its own content.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5496,7 +5484,7 @@
           ]
         },
         {
-          "docLine": 82,
+          "docLine": 88,
           "fragment": "A file that exists is not automatically licensed, approved, or production-ready.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5513,7 +5501,7 @@
           ]
         },
         {
-          "docLine": 82,
+          "docLine": 88,
           "fragment": "Image authorship, copyright, or license status.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5530,7 +5518,7 @@
           ]
         },
         {
-          "docLine": 83,
+          "docLine": 89,
           "fragment": "One-to-many or many-to-many where rights differ by use",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5545,7 +5533,7 @@
           ]
         },
         {
-          "docLine": 84,
+          "docLine": 90,
           "fragment": "Store optimized derivatives separately and preserve original-to-derivative lineage.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5562,7 +5550,7 @@
           ]
         },
         {
-          "docLine": 84,
+          "docLine": 90,
           "fragment": "Country hero images are illustrative exhibition visuals unless independently verified as photographs of actual",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5579,7 +5567,7 @@
           ]
         },
         {
-          "docLine": 85,
+          "docLine": 91,
           "fragment": "The HEX values below are the source-defined proposed canonical palette. They are the implementation working ba",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5599,7 +5587,7 @@
           ]
         },
         {
-          "docLine": 85,
+          "docLine": 91,
           "fragment": "Verify files, weights, shaping, and license",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5619,7 +5607,7 @@
           ]
         },
         {
-          "docLine": 85,
+          "docLine": 91,
           "fragment": "Treat final font licenses and visual sign-off as explicit approvals, not assumptions.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5639,7 +5627,7 @@
           ]
         },
         {
-          "docLine": 91,
+          "docLine": 97,
           "fragment": "Approval of operational costs, providers, and formal service commitments.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5656,7 +5644,7 @@
           ]
         },
         {
-          "docLine": 92,
+          "docLine": 98,
           "fragment": "Target monthly availability objective for V1 is 99.5%, subject to the actual provider/support plan and formal ",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5681,7 +5669,7 @@
           ]
         },
         {
-          "docLine": 92,
+          "docLine": 98,
           "fragment": "They are engineering acceptance targets, not public contractual SLAs.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5706,7 +5694,7 @@
           ]
         },
         {
-          "docLine": 93,
+          "docLine": 99,
           "fragment": "Approved privacy notice",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5724,7 +5712,7 @@
           ]
         },
         {
-          "docLine": 93,
+          "docLine": 99,
           "fragment": "Approved terms of use",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5742,7 +5730,7 @@
           ]
         },
         {
-          "docLine": 93,
+          "docLine": 99,
           "fragment": "Inquiry PII is role-restricted; inquiries are excluded from public search and AI retrieval; retention actions ",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5760,7 +5748,7 @@
           ]
         },
         {
-          "docLine": 161,
+          "docLine": 178,
           "fragment": "Routine engineering choices must not be escalated as Owner questions.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5775,7 +5763,7 @@
           ]
         },
         {
-          "docLine": 197,
+          "docLine": 214,
           "fragment": "Owner Input Required",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5794,7 +5782,7 @@
           ]
         },
         {
-          "docLine": 236,
+          "docLine": 253,
           "fragment": "The page must not invent the institution's legal status, physical building, founder's biography, origin date, ",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5818,9 +5806,166 @@
         "self_recording": 0,
         "project_record": 0,
         "defined_term": 0,
-        "noReference": 0,
+        "noReference": 1,
         "uncitedVerbatim": 0,
         "ref_ok": 34,
+        "ref_defects": 0
+      }
+    },
+    {
+      "file": "docs/PHASE1_DISCOVERY_AND_READINESS.md",
+      "checks": [],
+      "refChecks": [],
+      "counts": {
+        "verified": 0,
+        "drifted": 0,
+        "drifted_other_source": 0,
+        "notFound": 0,
+        "self_recording": 0,
+        "project_record": 0,
+        "defined_term": 0,
+        "noReference": 0,
+        "uncitedVerbatim": 0,
+        "ref_ok": 117,
+        "ref_defects": 0
+      }
+    },
+    {
+      "file": "docs/QUALITY_ACCEPTANCE_FRAMEWORK.md",
+      "checks": [
+        {
+          "docLine": 89,
+          "fragment": "Do not inflate any score",
+          "status": "NO_LINE_REFERENCE",
+          "verbatimIn": [],
+          "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
+        },
+        {
+          "docLine": 107,
+          "fragment": "record an explicit risk acceptance",
+          "status": "NO_LINE_REFERENCE",
+          "verbatimIn": [],
+          "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
+        },
+        {
+          "docLine": 120,
+          "fragment": "by CAP-3 in dimension 01's accessibility-adjacent security-adjacent pairing and by CAP-5 in dimension 05",
+          "status": "NO_LINE_REFERENCE",
+          "verbatimIn": [],
+          "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
+        },
+        {
+          "docLine": 122,
+          "fragment": "The experience must respect `prefers-reduced-motion`; essential information and navigation must remain availab",
+          "refScope": "own-line",
+          "status": "VERIFIED",
+          "source": "reference/Noujoude_Master_Specification_EN.md",
+          "cited": 1821,
+          "actual": 1821,
+          "citationsOnLine": [
+            "1821",
+            "2365"
+          ],
+          "namedSources": [
+            "master",
+            "any"
+          ]
+        },
+        {
+          "docLine": 122,
+          "fragment": "Reduced-motion behavior cannot be disabled by branding settings",
+          "refScope": "own-line",
+          "status": "VERIFIED",
+          "source": "reference/Noujoude_Master_Specification_EN.md",
+          "cited": 2365,
+          "actual": 2365,
+          "citationsOnLine": [
+            "1821",
+            "2365"
+          ],
+          "namedSources": [
+            "master",
+            "any"
+          ]
+        },
+        {
+          "docLine": 232,
+          "fragment": "the documentation is nearly finished",
+          "status": "NO_LINE_REFERENCE",
+          "verbatimIn": [],
+          "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
+        },
+        {
+          "docLine": 232,
+          "fragment": "the product nearly works",
+          "status": "NO_LINE_REFERENCE",
+          "verbatimIn": [],
+          "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
+        },
+        {
+          "docLine": 237,
+          "fragment": "Initialize application in `src/`",
+          "refScope": "own-line",
+          "status": "VERIFIED",
+          "source": "reference/Noujoude_Master_Execution_Directive_EN.md",
+          "cited": 250,
+          "actual": 250,
+          "citationsOnLine": [
+            "250"
+          ],
+          "namedSources": [
+            "directive"
+          ]
+        },
+        {
+          "docLine": 375,
+          "fragment": "0 CI runs and **no executed control**",
+          "status": "NO_LINE_REFERENCE",
+          "verbatimIn": [],
+          "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
+        },
+        {
+          "docLine": 432,
+          "fragment": "explicit risk acceptance",
+          "refScope": "own-line",
+          "status": "VERIFIED",
+          "source": "reference/Noujoude_Master_Specification_EN.md",
+          "cited": 3929,
+          "actual": 3929,
+          "citationsOnLine": [
+            "3929"
+          ],
+          "namedSources": [
+            "master"
+          ]
+        },
+        {
+          "docLine": 452,
+          "fragment": "adopt the corrected Quality Acceptance Framework",
+          "status": "NO_LINE_REFERENCE",
+          "verbatimIn": [],
+          "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
+        },
+        {
+          "docLine": 453,
+          "fragment": "not usable as an acceptance record until the Owner approves it",
+          "status": "NO_LINE_REFERENCE",
+          "verbatimIn": [],
+          "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
+        }
+      ],
+      "refChecks": [],
+      "counts": {
+        "verified": 4,
+        "drifted": 0,
+        "drifted_other_source": 0,
+        "notFound": 0,
+        "self_recording": 0,
+        "project_record": 0,
+        "defined_term": 0,
+        "noReference": 8,
+        "uncitedVerbatim": 0,
+        "ref_ok": 56,
         "ref_defects": 0
       }
     },
@@ -5828,19 +5973,7 @@
       "file": "docs/REQUIREMENTS_TRACEABILITY.md",
       "checks": [
         {
-          "docLine": 24,
-          "fragment": "Implemented and Verified",
-          "status": "DEFINED_TERM",
-          "verbatimIn": [
-            "reference/Noujoude_Master_Execution_Directive_EN.md:288"
-          ],
-          "anchoredAt": [
-            "directive:288, cited by this document on line 5, 7, 35, 103, 478, 514"
-          ],
-          "note": "controlled-vocabulary label: this document cites the source line it comes from, so repeating the label is not a missing citation"
-        },
-        {
-          "docLine": 35,
+          "docLine": 49,
           "fragment": "Implemented and Verified",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5857,7 +5990,7 @@
           ]
         },
         {
-          "docLine": 35,
+          "docLine": 49,
           "fragment": "Blocked by Owner Input",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5874,43 +6007,55 @@
           ]
         },
         {
-          "docLine": 38,
+          "docLine": 52,
           "fragment": "Implemented and Verified",
           "status": "DEFINED_TERM",
           "verbatimIn": [
             "reference/Noujoude_Master_Execution_Directive_EN.md:288"
           ],
           "anchoredAt": [
-            "directive:288, cited by this document on line 5, 7, 35, 103, 478, 514"
+            "directive:288, cited by this document on line 5, 7, 49, 128, 505, 541"
           ],
           "note": "controlled-vocabulary label: this document cites the source line it comes from, so repeating the label is not a missing citation"
         },
         {
-          "docLine": 68,
+          "docLine": 55,
           "fragment": "Implemented and Verified",
           "status": "DEFINED_TERM",
           "verbatimIn": [
             "reference/Noujoude_Master_Execution_Directive_EN.md:288"
           ],
           "anchoredAt": [
-            "directive:288, cited by this document on line 5, 7, 35, 103, 478, 514"
+            "directive:288, cited by this document on line 5, 7, 49, 128, 505, 541"
           ],
           "note": "controlled-vocabulary label: this document cites the source line it comes from, so repeating the label is not a missing citation"
         },
         {
-          "docLine": 84,
+          "docLine": 93,
           "fragment": "Implemented and Verified",
           "status": "DEFINED_TERM",
           "verbatimIn": [
             "reference/Noujoude_Master_Execution_Directive_EN.md:288"
           ],
           "anchoredAt": [
-            "directive:288, cited by this document on line 5, 7, 35, 103, 478, 514"
+            "directive:288, cited by this document on line 5, 7, 49, 128, 505, 541"
           ],
           "note": "controlled-vocabulary label: this document cites the source line it comes from, so repeating the label is not a missing citation"
         },
         {
-          "docLine": 163,
+          "docLine": 109,
+          "fragment": "Implemented and Verified",
+          "status": "DEFINED_TERM",
+          "verbatimIn": [
+            "reference/Noujoude_Master_Execution_Directive_EN.md:288"
+          ],
+          "anchoredAt": [
+            "directive:288, cited by this document on line 5, 7, 49, 128, 505, 541"
+          ],
+          "note": "controlled-vocabulary label: this document cites the source line it comes from, so repeating the label is not a missing citation"
+        },
+        {
+          "docLine": 188,
           "fragment": "No silent rewriting or alternate tagline",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5925,7 +6070,60 @@
           ]
         },
         {
-          "docLine": 182,
+          "docLine": 193,
+          "fragment": "No stretching or proportion distortion.",
+          "refScope": "own-line",
+          "status": "VERIFIED",
+          "source": "reference/Noujoude_Master_Specification_EN.md",
+          "cited": 1745,
+          "actual": 1757,
+          "citationsOnLine": [
+            "1745-1765",
+            "3323-3339",
+            "114"
+          ],
+          "namedSources": [
+            "any",
+            "directive"
+          ]
+        },
+        {
+          "docLine": 193,
+          "fragment": "Do not recreate the official logo from text when the approved asset exists.",
+          "refScope": "own-line",
+          "status": "VERIFIED",
+          "source": "reference/Noujoude_Master_Specification_EN.md",
+          "cited": 1745,
+          "actual": 1761,
+          "citationsOnLine": [
+            "1745-1765",
+            "3323-3339",
+            "114"
+          ],
+          "namedSources": [
+            "any",
+            "directive"
+          ]
+        },
+        {
+          "docLine": 194,
+          "fragment": "Official Arabic name and approved Noujoude Arabic rendering",
+          "refScope": "own-line",
+          "status": "VERIFIED",
+          "source": "reference/Noujoude_Master_Specification_EN.md",
+          "cited": 3183,
+          "actual": 3183,
+          "citationsOnLine": [
+            "3183",
+            "1745-1765",
+            "3323-3339"
+          ],
+          "namedSources": [
+            "any"
+          ]
+        },
+        {
+          "docLine": 209,
           "fragment": "Future scope must not be used as a dependency for V1 acceptance.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5941,7 +6139,7 @@
           ]
         },
         {
-          "docLine": 192,
+          "docLine": 219,
           "fragment": "Real artifact inventory and factual data",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5959,7 +6157,7 @@
           ]
         },
         {
-          "docLine": 225,
+          "docLine": 252,
           "fragment": "No single 'status' field may be used",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5974,7 +6172,7 @@
           ]
         },
         {
-          "docLine": 297,
+          "docLine": 324,
           "fragment": "the only canonical module map",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -5993,7 +6191,7 @@
           ]
         },
         {
-          "docLine": 298,
+          "docLine": 325,
           "fragment": "genuine screen behavior",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -6014,7 +6212,7 @@
           ]
         },
         {
-          "docLine": 371,
+          "docLine": 398,
           "fragment": "Never overwrite originals",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -6031,13 +6229,13 @@
           ]
         },
         {
-          "docLine": 371,
+          "docLine": 398,
           "fragment": "all 82 audited assets match their recorded SHA-256",
           "refScope": "own-line",
           "status": "PROJECT_RECORD",
           "source": "docs/ARCHITECTURE_DECISIONS.md",
           "cited": 194,
-          "actual": 975,
+          "actual": 1254,
           "citationsOnLine": [
             "194",
             "192-193"
@@ -6048,7 +6246,7 @@
           ]
         },
         {
-          "docLine": 383,
+          "docLine": 410,
           "fragment": "Pending Human Approval",
           "refScope": "adjacent-line",
           "status": "VERIFIED",
@@ -6063,7 +6261,7 @@
           ]
         },
         {
-          "docLine": 383,
+          "docLine": 410,
           "fragment": "Awaiting Rights Review",
           "refScope": "adjacent-line",
           "status": "VERIFIED",
@@ -6078,7 +6276,7 @@
           ]
         },
         {
-          "docLine": 416,
+          "docLine": 443,
           "fragment": "No silent downgrade of RPO/RTO, accessibility, performance, or security requirements.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -6096,7 +6294,7 @@
           ]
         },
         {
-          "docLine": 453,
+          "docLine": 480,
           "fragment": "A backup job reporting success is not proof of recoverability; only a tested restore is acceptable evidence.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -6115,7 +6313,7 @@
           ]
         },
         {
-          "docLine": 482,
+          "docLine": 509,
           "fragment": "Do not use mock functionality as release evidence.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -6135,37 +6333,7 @@
           ]
         },
         {
-          "docLine": 491,
-          "fragment": "the application layer is a **contract only, with zero implementation**",
-          "refScope": "own-line",
-          "status": "PROJECT_RECORD",
-          "source": "docs/ARCHITECTURE.md",
-          "cited": 299,
-          "actual": 5,
-          "citationsOnLine": [
-            "299"
-          ],
-          "namedSources": [
-            "directive"
-          ]
-        },
-        {
-          "docLine": 491,
-          "fragment": "actual implemented architecture",
-          "refScope": "own-line",
-          "status": "VERIFIED",
-          "source": "reference/Noujoude_Master_Execution_Directive_EN.md",
-          "cited": 299,
-          "actual": 299,
-          "citationsOnLine": [
-            "299"
-          ],
-          "namedSources": [
-            "directive"
-          ]
-        },
-        {
-          "docLine": 495,
+          "docLine": 522,
           "fragment": "No item below this line is evidence of implemented behaviour",
           "refScope": "own-line",
           "status": "PROJECT_RECORD",
@@ -6180,7 +6348,7 @@
           ]
         },
         {
-          "docLine": 498,
+          "docLine": 525,
           "fragment": "CONTRACT — UNIMPLEMENTED … None is a satisfied control",
           "refScope": "own-line",
           "status": "PROJECT_RECORD",
@@ -6195,7 +6363,7 @@
           ]
         },
         {
-          "docLine": 499,
+          "docLine": 526,
           "fragment": "no AI Curator, no retrieval layer, no provider, no model, no index, no test",
           "refScope": "own-line",
           "status": "PROJECT_RECORD",
@@ -6210,7 +6378,7 @@
           ]
         },
         {
-          "docLine": 500,
+          "docLine": 527,
           "fragment": "No asset in this project is production-ready, rights-cleared, approved, optimized, integrated or verified",
           "refScope": "own-line",
           "status": "PROJECT_RECORD",
@@ -6225,7 +6393,7 @@
           ]
         },
         {
-          "docLine": 501,
+          "docLine": 528,
           "fragment": "No application has been tested, because no application exists",
           "refScope": "own-line",
           "status": "PROJECT_RECORD",
@@ -6240,7 +6408,7 @@
           ]
         },
         {
-          "docLine": 502,
+          "docLine": 529,
           "fragment": "Nothing in this file is a released version",
           "refScope": "own-line",
           "status": "PROJECT_RECORD",
@@ -6255,7 +6423,7 @@
           ]
         },
         {
-          "docLine": 523,
+          "docLine": 554,
           "fragment": "Many-to-one **or many-to-many** according to documented periods",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -6271,7 +6439,7 @@
           ]
         },
         {
-          "docLine": 525,
+          "docLine": 556,
           "fragment": "Current review status",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -6287,7 +6455,7 @@
           ]
         },
         {
-          "docLine": 525,
+          "docLine": 556,
           "fragment": "Reviewer and review timestamp",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -6303,7 +6471,7 @@
           ]
         },
         {
-          "docLine": 525,
+          "docLine": 556,
           "fragment": "a review decision on a claim or defined set of claims",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -6319,7 +6487,7 @@
           ]
         },
         {
-          "docLine": 526,
+          "docLine": 557,
           "fragment": "Supporting source/evidence links",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -6336,7 +6504,7 @@
           ]
         },
         {
-          "docLine": 526,
+          "docLine": 557,
           "fragment": "Sources support claims, not merely the artifact in the abstract",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -6353,7 +6521,7 @@
           ]
         },
         {
-          "docLine": 538,
+          "docLine": 569,
           "fragment": "Implemented and Verified",
           "refScope": "adjacent-line",
           "status": "VERIFIED",
@@ -6372,16 +6540,16 @@
       ],
       "refChecks": [],
       "counts": {
-        "verified": 22,
+        "verified": 24,
         "drifted": 0,
         "drifted_other_source": 0,
         "notFound": 0,
         "self_recording": 0,
-        "project_record": 8,
+        "project_record": 7,
         "defined_term": 4,
         "noReference": 4,
         "uncitedVerbatim": 0,
-        "ref_ok": 435,
+        "ref_ok": 432,
         "ref_defects": 0
       }
     },
@@ -7975,7 +8143,7 @@
         "defined_term": 0,
         "noReference": 2,
         "uncitedVerbatim": 0,
-        "ref_ok": 144,
+        "ref_ok": 145,
         "ref_defects": 0
       }
     },
@@ -7983,7 +8151,7 @@
       "file": "docs/TEST_AND_RELEASE_REPORT.md",
       "checks": [
         {
-          "docLine": 19,
+          "docLine": 17,
           "fragment": "Do not claim a feature is implemented without verifying behavior",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -8002,7 +8170,7 @@
           ]
         },
         {
-          "docLine": 19,
+          "docLine": 17,
           "fragment": "Do not fake records or metrics",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -8021,7 +8189,7 @@
           ]
         },
         {
-          "docLine": 19,
+          "docLine": 17,
           "fragment": "No invented metrics, security compliance, or backup success claims.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -8040,21 +8208,21 @@
           ]
         },
         {
-          "docLine": 38,
+          "docLine": 36,
           "fragment": "absent from the local cache",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 340,
+          "docLine": 338,
           "fragment": "Not supplied in any reference document",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 342,
+          "docLine": 340,
           "fragment": "Pending Human Approval",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -8069,7 +8237,7 @@
           ]
         },
         {
-          "docLine": 342,
+          "docLine": 340,
           "fragment": "Awaiting Rights Review",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -8084,49 +8252,49 @@
           ]
         },
         {
-          "docLine": 358,
+          "docLine": 356,
           "fragment": "Object.keys(require('./package.json').scripts).length",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 389,
+          "docLine": 397,
           "fragment": "run together (`pnpm test:gates`)",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 467,
+          "docLine": 504,
           "fragment": "carrying a line reference",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 561,
+          "docLine": 598,
           "fragment": "the only FAIL remains B-01",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 650,
+          "docLine": 687,
           "fragment": "cache UNKNOWN because `docker images` cannot run",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 650,
+          "docLine": 687,
           "fragment": "validated by the engine",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 653,
+          "docLine": 690,
           "fragment": "A backup job reporting success is not proof of recoverability; only a tested restore is acceptable evidence",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -8143,14 +8311,14 @@
           ]
         },
         {
-          "docLine": 656,
+          "docLine": 693,
           "fragment": "WHAT IS DELIBERATELY NOT HERE",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 677,
+          "docLine": 714,
           "fragment": "Never modify, rename, overwrite, or delete original source files.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -8165,56 +8333,42 @@
           ]
         },
         {
-          "docLine": 687,
+          "docLine": 724,
           "fragment": "When you want to check if your files are formatted, you can run Prettier with the `--check` flag (or `-c`). Th",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 687,
+          "docLine": 724,
           "fragment": "Everything formatted properly",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 687,
+          "docLine": 724,
           "fragment": "Something wasn't formatted properly",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 687,
+          "docLine": 724,
           "fragment": "Something's wrong with Prettier",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 688,
+          "docLine": 725,
           "fragment": "[warn] Code style issues found in 2 files. Run Prettier with --write to fix.",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
           "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
         },
         {
-          "docLine": 715,
-          "fragment": "implementation audit pending",
-          "status": "NO_LINE_REFERENCE",
-          "verbatimIn": [],
-          "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
-        },
-        {
-          "docLine": 720,
-          "fragment": "implementation tests pending",
-          "status": "NO_LINE_REFERENCE",
-          "verbatimIn": [],
-          "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
-        },
-        {
-          "docLine": 731,
+          "docLine": 772,
           "fragment": "A gate may be marked Passed only with recorded evidence and an identified approver.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -8229,7 +8383,7 @@
           ]
         },
         {
-          "docLine": 737,
+          "docLine": 778,
           "fragment": "Master Specification adopted; requirement IDs assigned; scope and change-control authority established.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -8246,7 +8400,7 @@
           ]
         },
         {
-          "docLine": 738,
+          "docLine": 779,
           "fragment": "Official identity fields approved; actual Morocco inventory loaded; claims/evidence, image permissions, and re",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -8263,7 +8417,7 @@
           ]
         },
         {
-          "docLine": 739,
+          "docLine": 780,
           "fragment": "Public routes and page behavior complete; approved visual system applied; English and Arabic layouts reviewed;",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -8278,7 +8432,7 @@
           ]
         },
         {
-          "docLine": 740,
+          "docLine": 781,
           "fragment": "Canonical Control Center modules and essential screens available; permissions enforced; data relationships and",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -8293,7 +8447,7 @@
           ]
         },
         {
-          "docLine": 741,
+          "docLine": 782,
           "fragment": "AI source scope, citation, uncertainty, privacy, and safety tests passed; legal/privacy policies approved; no ",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -8309,7 +8463,7 @@
           ]
         },
         {
-          "docLine": 742,
+          "docLine": 783,
           "fragment": "Security verification, performance, monitoring, backups, restore testing, SEO checks, and release regression a",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -8324,7 +8478,7 @@
           ]
         },
         {
-          "docLine": 744,
+          "docLine": 785,
           "fragment": "The product is not considered complete because all pages exist.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -8343,7 +8497,7 @@
           ]
         },
         {
-          "docLine": 744,
+          "docLine": 785,
           "fragment": "Approve the physical ERD and data dictionary against this logical model.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -8362,7 +8516,7 @@
           ]
         },
         {
-          "docLine": 744,
+          "docLine": 785,
           "fragment": "Verify implementation against requirement IDs and test evidence.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -8381,7 +8535,7 @@
           ]
         },
         {
-          "docLine": 777,
+          "docLine": 818,
           "fragment": "No critical/high security defect remains unresolved without explicit risk acceptance by the authorized Owner.",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -8401,7 +8555,7 @@
           ]
         },
         {
-          "docLine": 800,
+          "docLine": 841,
           "fragment": "Do not fake records or metrics in production screens",
           "refScope": "own-line",
           "status": "VERIFIED",
@@ -8416,7 +8570,7 @@
           ]
         },
         {
-          "docLine": 827,
+          "docLine": 868,
           "fragment": "body byte-identical to source: YES",
           "status": "NO_LINE_REFERENCE",
           "verbatimIn": [],
@@ -8432,9 +8586,9 @@
         "self_recording": 0,
         "project_record": 0,
         "defined_term": 0,
-        "noReference": 17,
+        "noReference": 15,
         "uncitedVerbatim": 0,
-        "ref_ok": 35,
+        "ref_ok": 37,
         "ref_defects": 0
       }
     }

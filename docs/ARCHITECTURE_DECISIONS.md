@@ -924,21 +924,300 @@ because the plan assigns H-1 to Phase 2 and this window is Phase 0 + Phase 1.
 
 ---
 
+### ADR-026 — Centralised CSS custom properties are the token layer; CSS Modules scope the components
+**Status:** Accepted by Owner directive dated 2 November 2026. Recorded there as the styling and token
+approach default, and written up as a decided item at `docs/QUALITY_ACCEPTANCE_FRAMEWORK.md` line 348, with
+the standing escape that the architecture may yet prove a better approach.
+
+**Context.** The values a token layer must carry come from product, not from tooling:
+`reference/Noujoude_Master_Specification_EN.md` §12.2 (lines 1668–1686) for the palette, §12.5
+(lines 1712–1732) for the four type roles, and §12.13 (lines 1805–1822) for the motion timing table. That
+document names no CSS authoring tool anywhere, which is precisely why the question was open rather than
+answered. `docs/PHASE1_DISCOVERY_AND_READINESS.md` line 85 records that the styling and the font-arrival
+choices were the unproposed prerequisites sitting under the design dimensions, and `src/README.md` line 44
+already states the direction rule the sheets are written to.
+
+**Decision.** One centralised custom-property block in `src/ui/styles/global.css` is the token layer — the
+only place a colour, a duration, an easing curve, a spacing step or a font stack is written as a value.
+Component styling is CSS Modules, colocated with the component it styles. Logical properties
+(`margin-block`, `padding-inline`, `inset-inline-start`) are mandatory rather than preferred, because one
+sheet has to serve ltr and rtl; a physical direction property in a component sheet is a defect against this
+ADR. Rejected for the public surfaces: Tailwind, UnoCSS, and a styled-component approach bound to the CMS's
+own UI layer.
+
+**Evidence already in place.** `src/ui/styles/global.css` lines 20–70 is the block: twelve palette values at
+lines 22–33, four font-role stacks at lines 49–53, five durations and one easing curve at lines 56–61, and
+the layout scale at lines 64–69. Lines 137–154 are the reduced-motion override, written so that it also wins
+later in the cascade. Three modules consume it: `src/ui/page-shell.module.css`,
+`src/ui/layout.module.css`, `src/ui/detail-page.module.css`. Neither Tailwind nor UnoCSS appears in
+`package.json` lines 53–77 or in `pnpm-lock.yaml` — measured by direct search of both files on 2 November
+2026, the same search that returned nothing for the motion packages (ADR-027, ADR-028).
+
+**Consequences.** This decides where values live and how they are scoped. What it does **not** authorize:
+- installing a styling package of any kind, in this or any later batch, without the Owner-visible step;
+- treating the twelve values as adopted brand — they are the specification's proposed canonical set, BA-002
+  is open, and the block carries them as `proposed` for exactly that reason;
+- licensing, self-hosting or fetching a font. Lines 12–18 of `src/ui/styles/global.css` give the reason no
+  webfont is loaded: the licence is unresolved (BA-003, OID-18) and zero font files exist in this workspace;
+- a contrast, colour-pair or accessibility pass inferred from the token file alone — nothing has rendered;
+- turning this ADR into the design-system deliverable, which `docs/PHASE1_DISCOVERY_AND_READINESS.md`
+  line 255 keeps as a separate file carrying `proposed` states until BA-001–BA-004 close;
+- any deployment.
+
+**Verification.** The artefact today is the file itself plus the three modules, inspected as written above.
+What will prove the *rule* rather than the file is the token-to-traceability method the framework names for
+the brand dimension at `docs/QUALITY_ACCEPTANCE_FRAMEWORK.md` line 50, and a check that no component sheet
+declares a literal colour and no physical direction property appears in a module. Neither check exists and
+neither has run.
+
+---
+
+### ADR-027 — Motion engine ownership, part 1: GSAP owns cinematic timelines and scroll-driven scenes
+**Status:** Accepted by Owner directive dated 2 November 2026 as the **selection** of an engine. Installing
+that engine is a separate Owner-visible act and has not happened.
+
+**Context.** The governing source is `reference/Noujoude_Master_Specification_EN.md` §12.13
+(lines 1805–1822): it specifies motion by effect and by reference duration and names no library. The tone it
+has to satisfy is §12.1 (lines 1660–1667), cinematic but restrained, richness from space, material and light
+rather than from the volume of effects, and §16.3 (line 2365) bars branding from switching reduced-motion
+behaviour off. The engine split as an open decision is recorded at `docs/PHASE1_DISCOVERY_AND_READINESS.md`
+line 170 — including the rule that no competing engines may be added — and the same question as Owner input
+at line 225; the decided form is `docs/QUALITY_ACCEPTANCE_FRAMEWORK.md` line 349.
+
+**Decision.** GSAP, including its scroll-driven plugin, owns the cinematic class: entrance sequences,
+corridor-like transitions, archive-like openings, and any scene whose timeline is driven by scroll position.
+One surface, one owner — a scene under GSAP is not also animated by a keyframe or a component transition on
+the same properties. Its timings come from the token values in `src/ui/styles/global.css` lines 56–61, not
+from literals inside a timeline definition.
+
+**Consequences.** Not authorized by this ADR: adding the package to `package.json`, shipping it in a bundle,
+animating one surface, or counting any motion dimension as started. The standing rule survives the decision
+— `docs/DEPENDENCY_AUDIT_2026-11-02.txt` line 17 records that uncontrolled dependency installation is not
+authorized, which is the same gate that holds an advisory remediation and holds this install. Before the
+install: the per-dependency justification sheet required at `docs/PHASE1_DISCOVERY_AND_READINESS.md` line 85,
+and a measured bundle baseline to size it against. It authorizes no deployment and no motion score.
+
+**Verification.** Three things, none of which exists yet: the justification sheet, a bundle measurement
+before and after the install, and the scene-by-scene review with its reduced-motion run named at
+`docs/QUALITY_ACCEPTANCE_FRAMEWORK.md` line 53. This ADR is authored; it executed nothing.
+
+---
+
+### ADR-028 — Motion engine ownership, part 2: Motion for React owns component-level interaction
+**Status:** Accepted by Owner directive dated 2 November 2026 as the **selection** of an engine. Neither
+engine named in ADR-027 or this ADR is installed.
+
+**Context.** Same governing sources: `reference/Noujoude_Master_Specification_EN.md` §12.13 (lines 1805–1810)
+for the small-scale effects the specification admits — its approved list includes delicate hover feedback —
+and lines 1811–1822 for the reference durations and the reduced-motion obligation. The decided split is
+`docs/QUALITY_ACCEPTANCE_FRAMEWORK.md` line 349; the open form it replaced is
+`docs/PHASE1_DISCOVERY_AND_READINESS.md` line 170.
+
+**Honest state of the tree.** Neither `gsap` nor `motion` is declared in `package.json` lines 53–77, and
+neither resolves in `pnpm-lock.yaml` — both measured by direct search of both files on 2 November 2026. This
+ADR therefore records a choice, not a capability, and must not be read as a claim that a motion library is
+present, importable, bundle-tested or reachable. `docs/DEPENDENCY_AUDIT_2026-11-02.txt` line 17 is the rule
+that keeps the install out of this batch, and it says so about a security fix, which is the strongest form
+the rule has appeared in here.
+
+**Decision.** Motion for React owns component-level interaction: hover, press, focus, the enter and exit of
+individual elements, and transitions confined inside one component. ADR-027 owns the scene; this ADR owns the
+element inside the scene; ADR-029 owns the case that needs no engine at all.
+
+**Consequences.** Not authorized: the install, a bundle entry, an animated component, rewriting an existing
+module sheet to use the library, a second styling substrate justified by this selection (ADR-026 is
+unaffected), or a motion score. The install remains an Owner-visible step with the same justification sheet
+and bundle baseline as ADR-027. No deployment.
+
+**Verification.** Future: the sheet, a rendered component measured against `src/ui/styles/global.css`
+lines 56–61, and the reduced-motion run. Executed today: nothing, and the absence of the packages is the
+evidence that nothing could have been executed.
+
+---
+
+### ADR-029 — Plain CSS transitions own simple state changes, and no element may have two motion owners
+**Status:** Accepted by Owner directive dated 2 November 2026 as the third part of the engine split.
+
+**Context.** The durations and the easing curve already exist as tokens in `src/ui/styles/global.css`
+lines 56–61, and the override that must beat every engine sits at lines 137–154 of that file. The governing
+requirement is `reference/Noujoude_Master_Specification_EN.md` §12.13 (lines 1811–1822), which supplies the
+reference timing table and the obligation to respect `prefers-reduced-motion`, read with §16.3 (line 2365).
+The prohibition this ADR implements is the one written into `docs/PHASE1_DISCOVERY_AND_READINESS.md`
+line 170: each class of motion has one owner and no competing engines are added.
+
+**Decision.** Any state change a single transition can express — colour, opacity, border, focus ring, a small
+transform on hover — is written in CSS against the token durations, with no library loaded to perform it.
+Ownership is declared per motion surface, never inherited by accident: a surface names ADR-027, ADR-028 or
+this ADR before it animates, and two owners on one property of one element is a defect *even while both
+engines are uninstalled*. Where any engine and the override disagree, the reduced-motion block in
+`src/ui/styles/global.css` lines 137–154 wins over whatever a later motion layer sets.
+
+**Consequences.** Not authorized: a fourth engine; an implementation-time decision that overrides the split
+because it is convenient; motion that survives reduced motion; the installation of anything. A surface with
+no declared owner does not acquire one at implementation time — it gets a review comment against this ADR.
+Nothing here licenses a deployment or a rendered claim.
+
+**Verification.** Today: the override exists at the cited lines, and the modules under `src/ui/` contain no
+library call, because no library is installed. Future: a static check that every animated element names
+exactly one owner, plus the reduced-motion run at `docs/QUALITY_ACCEPTANCE_FRAMEWORK.md` line 53. No motion
+or accessibility test has been executed.
+
+---
+
+### ADR-030 — Lenis smooth scrolling is deferred, not rejected
+**Status:** Accepted by Owner directive dated 2 November 2026 as a deferral, with a named re-opening
+condition.
+
+**Context.** `docs/PHASE1_DISCOVERY_AND_READINESS.md` line 171 sets native scrolling as the baseline and
+makes any smooth-scroll engine conditional on mobile, keyboard, accessibility and performance testing; the
+same register records at line 76 that the mandate itself treats it as optional. The specification names no
+scroll library — `reference/Noujoude_Master_Specification_EN.md` §12.13 (lines 1805–1822) speaks in effects
+and durations only.
+
+**Decision.** Do not adopt Lenis in this phase, and do not strike it. Re-evaluation trigger: after the motion
+phase has run and measured whether scroll behaviour is needed at all — that is, once a scroll problem has
+been named and reproduced and has survived the fixes that need no engine (the scene budgets of ADR-027, image
+decoding, layout shift) — and never at the cost of keyboard or assistive-technology scroll behaviour or of
+`prefers-reduced-motion`, which the override at `src/ui/styles/global.css` lines 137–154 keeps authoritative.
+Re-opening requires the per-dependency sheet and the bundle baseline of ADR-027, not a new argument; deferral
+is a dated state, not a preference.
+
+**Consequences.** Not authorized: installing it, hijacking the scroll for entrance effects, wrapping content
+in a container that hides it from assistive technology, and asserting that native scrolling is insufficient —
+that assertion has not been measured and this ADR does not make it. The package is absent from
+`package.json` lines 53–77 and from `pnpm-lock.yaml`, no scroll behaviour is implemented, and nothing here
+reaches a deployment.
+
+**Verification.** The trigger depends on a measurement that does not exist yet: the motion phase's own scroll
+evidence, recorded in `docs/TEST_AND_RELEASE_REPORT.md` beside the transcripts it already holds for executed
+gates, plus a keyboard and assistive-technology scroll pass and a reduced-motion run. Until that evidence
+exists, the correct statement of this row is *deferred*, and no test may be cited for it.
+
+---
+
+### ADR-031 — Rare Pieces is an editorial treatment applied within Collections, not a new route
+**Status:** Accepted by Owner directive dated 2 November 2026, recorded there as the Rare Pieces decision and
+written up as closed at `docs/QUALITY_ACCEPTANCE_FRAMEWORK.md` line 352.
+
+**Context.** The route table is `reference/Noujoude_Master_Specification_EN.md` §4.2 (lines 406–428) and the
+primary navigation list is §4.1 (lines 391–404). Neither carries a Rare Pieces route, while the mandate names
+Rare Pieces as a surface — a real gap between a named surface and a closed navigation contract, which is why
+a decision was owed. `docs/QUALITY_ACCEPTANCE_FRAMEWORK.md` line 352 records the decided form: no new route,
+an editorial collection treatment resolved out of the existing specification and canonical routes.
+
+**Decision and its consequence, measured in the code.** Rare Pieces is a curatorial treatment of Collection
+detail: an editorial layer over `collection-detail` and `artifact-detail`, not a location in the URL space.
+`src/domain/routes.ts` lines 17–32 declares fifteen route keys and lines 50–161 registers exactly those,
+mirroring the §4.2 table; no `rare-pieces` segment appears anywhere in the file. The assertion is not left to
+reading: `src/domain/routes.test.ts` line 34 asserts that no registry entry carries the segment, and line 14
+pins the key list to the fifteen. **This is the one claim in this batch that was executed** — the suite ran
+on 2 November 2026 and `pnpm test` exited **0**, four files and 34 tests, fourteen of them
+`src/domain/routes.test.ts`, recorded at `docs/IMPLEMENTATION_PLAN.md` line 520.
+
+**Consequences.** Not authorized: adding a `rare-pieces` segment, giving it a navigation slot, or generating
+it in a sitemap; the primary-navigation projection and the language-switcher rule of §4.2 (line 428) both
+derive from this registry, at lines 176–184 and 224–234 of `src/domain/routes.ts`, so one extra key would
+silently widen both. This
+ADR fixes a *location*, not content: the editorial treatment itself needs the Collection detail implementation
+and Owner-supplied curatorial copy, neither of which exists, so nothing about Rare Pieces is shippable on the
+strength of this row. Nor does it authorize a deployment, a new dependency, or a renumbering of any route.
+
+**Verification.** Executed: the two assertions above, exit 0 on 2 November 2026. Future: a navigation and
+sitemap test that fails on any route key outside the fifteen — the same shape the registry test already uses.
+The treatment's own acceptance cases belong to the page work, not to this ADR.
+
+---
+
+### ADR-032 — The untracked `brand/` directory is preserved and quarantined
+**Status:** Accepted by Owner directive dated 2 November 2026, recorded there as the brand-material decision
+and written up as a decided item at `docs/QUALITY_ACCEPTANCE_FRAMEWORK.md` line 353.
+
+**Context.** What is on disk was measured here on 2 November 2026, not inherited: `brand/` holds **306**
+files. **114** of them are the identity deliverables under `brand/png/` and `brand/svg/`; **58** are `.mjs`
+scripts (five in `brand/_tools/`, fifty-three in `brand/_trace/`); the remainder is font files, probe rasters,
+manifests, notes and one Python script. `git ls-files brand` returns nothing and `git status --porcelain`
+reports the directory untracked, so nothing in it is this project's committed code and its provenance is
+unknown. The brand supply itself stays with the Owner: OD-16 at `docs/PHASE1_DISCOVERY_AND_READINESS.md`
+line 231 and `docs/QUALITY_ACCEPTANCE_FRAMEWORK.md` line 340, against the seven brand and asset approvals in
+`reference/Noujoude_Master_Specification_EN.md` §21.3 (lines 3207–3218).
+
+**Decision.** Preserve and quarantine. The tree stays on disk byte-unchanged, and it is excluded from every
+gate that could rewrite it or judge it: from linting through the global ignores at `eslint.config.mjs`
+lines 46–64, where `brand/**` sits on line 63, and from formatting through `.prettierignore` lines 23–29,
+where `brand/` sits on line 29. It stays uncommitted. It earns no brand credit: the admissibility rule at
+`docs/QUALITY_ACCEPTANCE_FRAMEWORK.md` line 50 states that unapproved derivative material is not brand
+implementation, and the framework's dimension-02 row says the quarantined tree scores nothing there.
+
+**Consequences.** Not authorized by this ADR: deleting, renaming, moving, reformatting, editing or linting
+any file in it; committing it; publishing or serving any file from it as an asset; using it to pass a gate;
+and inferring from its existence that the Owner adopted a logo, a palette, a monogram or a font. Two
+mechanical notes belong here, because the quarantine is thinner than it looks. First, `.gitignore` lines
+39–41 exclude only the intermediate trace rasters, so what keeps the rest out of a commit is the empty index
+and the two tool exclusions above, not ignore rules. Second, the comment at `.gitignore` lines 35–38 says the
+generating scripts are tracked on purpose; measured against the index, none of them is — the ignore-file note
+and the repository state disagree, and the state is what this ADR records. Ignoring is not deleting, and
+quarantining is not adopting. No deployment, no publication and no brand claim follows from this row.
+
+**Verification.** Today the artefacts are the measurements above, the two exclusion lines, and an empty
+`git ls-files brand` result. Future: a repository check asserting that `git ls-files brand/` stays empty and
+that the formatting command reports nothing under the tree, so a later batch cannot quietly widen the
+quarantine. Neither assertion has been written or run; the counts here came from direct enumeration.
+
+---
+
+### ADR-033 — Security documentation is extended in place; no competing security document is created
+**Status:** Accepted by Owner directive dated 2 November 2026 as the document-plan decision, recorded as a
+decided item at `docs/QUALITY_ACCEPTANCE_FRAMEWORK.md` line 354.
+
+**Context.** The instrument already exists. `docs/SECURITY_AND_PERMISSIONS.md` runs to 716 lines, numbered 0
+through 15, its last heading at line 705, and §0 opens with a status banner and an evidence rule that governs
+everything below it. The plan this ADR discharges is `docs/QUALITY_ACCEPTANCE_FRAMEWORK.md` line 377, which
+places the security verification plan — case IDs, methods, numeric exit criteria and the ASVS and Top 10
+mapping — inside that document and creates no separate file. The existing decisions are already wired into it
+in both directions: ADR-019 closes its §2.4 finding 2, ADR-020 closes its §2.4 finding 1 and adds invariant
+A-10 to §2.5, ADR-025 rewrites its authentication row and adds a revocation bullet, and `eslint.config.mjs`
+lines 33–39 points its own recorded precision gap back at that document. A second security file would fork
+that history and split the citation surface the gates address.
+
+**Decision.** Extend `docs/SECURITY_AND_PERMISSIONS.md`. New security material continues its section sequence
+after the last current section rather than starting a parallel numbering, and inherits §0's evidence rule:
+planned is not tested, and a control exists as a contract until a transcript proves it. Where a decision
+changes a security posture, the decision lives in this file as an ADR and the control lives there, as it does
+for ADR-019, ADR-020 and ADR-025.
+
+**Consequences.** Not authorized: creating a competing, partial or shadow security document; closing a
+finding by writing it into the extension; asserting ASVS conformance, certification, penetration-test results
+or any security metric from document structure; and — unchanged by this row — deploying, adding a credential,
+or installing a dependency. The extension also does not soften the prohibitions its final section restates,
+nor convert an unverified control into an accepted risk; the framework's own correction is that a High
+finding with no evidence blocks acceptance, and no ADR trades that away.
+
+**Verification.** Mechanical and already running over the file: both documentation gates scan every markdown
+file under `docs/`, so the extension inherits line-addressable citation checking and the column-count rule,
+and were re-run at the insertion of this ADR. Behavioural verification stays exactly where §0 and the test
+inventory of §3 put it: the named cases, then the negative authorization tests ADR-019 and ADR-025 make
+release-blocking. Beyond the two documentation gates, nothing asserted in this ADR has been executed.
+
+---
+
 ## 7. Phase 1 exit criteria
 
 | # | Criterion | State |
 |---|---|---|
-| 1 | ADRs recorded with rationale and rejected alternatives | ✅ this document — **25 ADRs** (ADR-001 … ADR-025). Measurement method: `grep -c '^### ADR-' docs/ARCHITECTURE_DECISIONS.md` → `25`, and the ID list printed by `grep -o '^### ADR-[0-9]*'` is contiguous with no gaps and no duplicates. Re-measured 31 October 2026 after this batch. |
-| 2 | Compatibility matrix verified against official sources, not inherited | ⚠️ §3 is verified for every package row, but §3.2 records **three open compatibility assumptions** (A-C1 PostgreSQL 18.6 ↔ the pinned adapter; A-C2 Zod against the rest of the installed tree; A-C3 the concrete `graphql` 16.x patch). A-C1 is the one that touches a written baseline, and it cannot be closed without B-09 + B-01. Counted by `grep -c '^\*\*A-C[0-9]'` → `3`. |
+| 1 | ADRs recorded with rationale and rejected alternatives | ✅ this document — **33 ADRs** (ADR-001 … ADR-033). Measurement method: `grep -c '^### ADR-' docs/ARCHITECTURE_DECISIONS.md` → `33`, and the ID list printed by `grep -o '^### ADR-[0-9]*'` is contiguous with no gaps and no duplicates. Re-measured 2 November 2026: **ADR-026 … ADR-033** were added in this window to record the Owner-approved defaults granted in the final Directive §1 — the token layer and CSS Modules, the two-part motion-engine ownership (GSAP for cinematic timelines and scroll scenes, Motion for React for component interaction) with plain CSS for simple transitions and no element carrying two motion owners, Lenis deferred rather than rejected, Rare Pieces as an editorial treatment inside Collections, the untracked `brand/` tree preserved and quarantined, and security documentation extended in place. **Every one is a decision with a written rationale, not a transcription of the directive**, and each names what it excludes |
+| 2 | Compatibility matrix verified against official sources, not inherited | ⚠️ §3 is verified for every package row. §3.2's three assumptions moved on 1 November 2026: **A-C2 (Zod) and A-C3 (the `graphql` patch) are closed empirically** by the authorized install — `zod` resolves to the pinned 4.6.7 and `graphql` to 16.14.2, with 17.0.2 not pulled — while **A-C1 (PostgreSQL 18.6 against the pinned adapter) stays open**, because closing it is empirical and needs `pnpm db:up` → `pnpm migrate` → `pnpm db:verify-privileges`, none of which is this window's scope. Counted by `grep -c '^\*\*A-C[0-9]'` → `3` (three rows recorded, one still unresolved) |
 | 3 | Version-selection gate of Standard §2.3 executed | ✅ with **four** documented discrepancies (D-01 … D-04 in §4; counted by `grep -c '^\*\*D-0'` → `4`). D-03 was itself corrected in this batch: its original "resolved" verdict was a stale measurement, now superseded by §7.2. |
-| 4 | Application initialized in `src/` | ⚠️ **dependency half done, scaffold not done.** Re-measured 1 November 2026: `pnpm install` executed under OD-2, so B-01/B-02 no longer stand in this row's way — `src/` still holds `README.md` only because initializing the application was outside the authorized scope of that batch |
-| 5 | Scripts, types, linting, tests, environment examples | ⚠️ **authored, and now partly executed.** `.env` was created under OD-3 on 1 November 2026 (38 assignments, 6 locally generated secrets, 14 Owner-supplied values deliberately left empty); `format:check` and `lint` have executed and both fail with measured exit codes (1 and 2), `typecheck` exits 0 over 19 JavaScript files with no `checkJs`, and `test` exits 1 with `No test files found`. The CI workflow file remains authored and unexecuted (B-08) |
-| 6 | Coherent Git checkpoint | ✅ **met 1 November 2026 under OD-4.** `git init` ran on a tree with no repository in `E:\no` or any parent — no existing history was found, so none was overwritten — and commit `aedeee0` on branch `main` records 150 files / 49,699 insertions. `git remote -v` is empty: no remote was created and nothing was pushed |
-| 7 | Clean install → typecheck → test → production build (Standard §2.3 step 9) | ⚠️ **the install and the three later legs have now executed; only the first leg is green, and hollowly.** 1 November 2026: `pnpm install` exit 0; `pnpm typecheck` exit 0 but over `scripts/**/*.mjs` only (0 `.ts` files exist); `pnpm test` exit 1; `pnpm build` exit 1 with `Couldn't find any pages or app directory`. The chain is not satisfied, and the reason is now the absent application rather than the absent toolchain |
+| 4 | Application initialized in `src/` | ✅ **met 2 November 2026.** The 1 November reading is kept as history: `src/` held `README.md` only, because initializing the application was outside that batch's authorized scope. It now holds **31 code and style files / 1,752 lines** — the locale contract, the canonical route registry, the fail-closed media-rights gate, 15 canonical routes across both locales plus the generated not-found, and the design tokens as CSS custom properties consumed through CSS Modules. `next.config.mjs` exists and is loaded by the build. **This is initialization, not a product:** no Payload configuration, no collection, no migration, no database access, no image pipeline, no Control Center, no editorial sentence. Per Directive §15 the shell is not evidence of a feature, and `src/README.md` states which claims it can and cannot support |
+| 5 | Scripts, types, linting, tests, environment examples | ✅ **met, with one red leg reported rather than removed.** Re-measured 2 November 2026: `pnpm typecheck` exits **0** over **51** project files (13 `.ts` + 18 `.tsx`, 26 under `src/`) and exits 2 when a probe makes a type error; `pnpm lint` exits **0** with each configured guard proved to fire; `pnpm test` exits **0** with 4 files and 34 assertions, red-green proved on the rights gate; the seven gate regression suites run under `pnpm test:gates` at exit **0** (146 assertions); `.env` has existed since 1 November under OD-3. **`pnpm format:check` exits 1 over 25 pre-existing tooling and configuration files** and stays red on purpose: the Owner authorized only the justified `.prettierignore` correction and forbade broad reformatting, and a whole-tree reformat would shift `scripts/preflight.mjs` line 112, which `docs/` cites by number. The CI workflow file remains authored and unexecuted (B-08) |
+| 6 | Coherent Git checkpoint | ✅ **met 1 November 2026 under OD-4, and re-met at each milestone since.** `git init` ran on a tree with no repository in `E:\no` or any parent — no existing history was found, so none was overwritten — and commit `aedeee0` on branch `main` records 150 files / 49,699 insertions. A second checkpoint, `9522379`, records the Owner authorization window and its measured results; the closure checkpoint for this window is named by ID in `docs/PHASE01_CLOSURE.json`. `git remote -v` is empty: no remote was created and nothing was pushed, and the untracked `brand/` tree remains untracked and uncommitted (ADR-032) |
+| 7 | Clean install → typecheck → test → production build (Standard §2.3 step 9) | ✅ **all four legs exit 0, measured 2 November 2026 on this host.** `pnpm install` exit 0 (against the committed lockfile, with the supply-chain guard armed under OD-7 so no `pnpm run` silently installs); `pnpm typecheck` exit 0 over real typed code, not over a JavaScript-only tree; `pnpm test` exit 0 with 34 assertions; `pnpm build` exit 0 emitting **16** routes, which `pnpm start` then serves. **The chain is satisfied; what it satisfies is a shell** — there is no migration step in it, because no schema exists, and Standard §12's remaining nine checks (integration, E2E, accessibility, security, scanning, restore, SEO, performance) belong to Phases 2–8. One leg outside this chain is red: `pnpm audit --audit-level=high` exits 1 (**B-11**), and `format:check` exits 1 as explained in row 5 |
 
-Items 4–5 are delivered as reviewable files so the dependency install becomes a single, deliberate next
-action. They are explicitly *not* evidence of a working application; per Directive §15, a config file is not
-a completed feature.
+Items 4–7 were, on 31 October, delivered as reviewable files so that the dependency install remained a single,
+deliberate next action. That framing is now superseded by measurement: the install happened, the application was
+initialized, and the four-leg chain exits 0. What has **not** changed is the rule that makes the change honest —
+per Directive §15 a config file, a route, or a component is not proof of a completed feature, so rows 4 and 7
+evidence an initialized and buildable **shell**, and every claim in this table stops at the class of the evidence
+behind it. `docs/QUALITY_ACCEPTANCE_FRAMEWORK.md` rule 8 is what enforces that stopping point.
 
 Nothing above the line changes the status of ADR-019: the append-only grant set is criterion-5 configuration
 ("scripts"), and its **proof** is not a Phase 1 exit criterion in the Directive's own list — it is a Phase 2

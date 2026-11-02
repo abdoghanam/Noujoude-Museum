@@ -49,7 +49,6 @@ function oldRuleWouldPass(text) {
   return true;                                            // old checker would have exited 0
 }
 
-const cases = [];
 let pass = 0;
 let fail = 0;
 

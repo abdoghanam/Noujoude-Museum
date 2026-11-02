@@ -32,6 +32,14 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 
+# Intermediate renders from the identity work. The scripts that made them are tracked
+# on purpose — "layered, not traced" is a claim about process, and the process is the
+# evidence — but the 11 MB of probe images they emitted are reproducible by re-running
+# brand/_tools and are not an asset. Nothing here is deleted; it stays on disk.
+brand/_trace/*.png
+brand/_trace/*.jpg
+brand/_tools/_t/*.jpg
+
 # NOTE — deliberately NOT ignored, and deliberately protected:
 #   reference/        read-only product, traceability, technology and asset inputs
 #   Noujoude.photo/   original asset library; originals are never overwritten

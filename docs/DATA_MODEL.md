@@ -5,7 +5,7 @@
 **Phase:** 2 input (design contract authored after Phase 0 audit + Phase 1 architecture)
 **Status:** **Design contract; no schema deployed — there is no database and no migration yet.**
 **Date:** 31 October 2026
-**Governing decisions:** `docs/ARCHITECTURE_DECISIONS.md` (ADR-001 … ADR-025, §3 compatibility matrix, §4 discrepancies D-01…D-04)
+**Governing decisions:** `docs/ARCHITECTURE_DECISIONS.md` (ADR-001 … ADR-033, §3 compatibility matrix, §4 discrepancies D-01…D-04)
 **Governing requirements:** `reference/Noujoude_Master_Specification_EN.md` §8–§11 (cited by original line number),
 `reference/Noujoude_Technology_and_Security_Standard_EN.md` §3, §15
 **Working copy of the product spec:** `docs/MASTER_SPECIFICATION.md` (discrepancy log S-01…S-15 in its §2)

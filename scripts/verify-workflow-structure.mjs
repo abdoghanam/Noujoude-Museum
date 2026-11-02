@@ -261,7 +261,7 @@ if (bytes.includes(0x0d)) add('W1', 'carriage-return byte: the workflow must sta
 {
   const indentedTabs = raw.split('\n').map((l, i) => [l, i + 1])
     .filter(([l]) => /^[ ]*\t/.test(l));
-  for (const [l, n] of indentedTabs) add('W1', 'tab used in indentation', n);
+  for (const [, n] of indentedTabs) add('W1', 'tab used in indentation', n);
 }
 if (bytes.length && bytes[bytes.length - 1] !== 0x0a) add('W1', 'file does not end with a newline');
 if (raw.includes('\uFFFD')) add('W1', 'the file does not decode as UTF-8');

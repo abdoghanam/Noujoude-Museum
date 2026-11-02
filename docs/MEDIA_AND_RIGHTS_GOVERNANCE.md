@@ -475,7 +475,7 @@ Blocker identifiers in this section are **RB-nn** (media/rights). They are disti
 `preflight.mjs` proved that **82 of 82 checksums match the recorded baseline** — the originals under
 `Noujoude.photo/` are **provably unmodified**, and every file under `reference/` is fingerprinted in
 `docs/REFERENCE_INTEGRITY.json` so a future edit to an original is detected rather than assumed away
-(`ARCHITECTURE_DECISIONS.md` §7.1, lines 965–967). That sentence must be read exactly:
+(`ARCHITECTURE_DECISIONS.md` §7.1, lines 1258–1260). That sentence must be read exactly:
 
 - It **is** evidence of **preservation**: integrity, immutability, and correct handling by the tooling.
 - It **is not** evidence of **rights**, of authenticity, of approval, of suitability, or of clearance. A

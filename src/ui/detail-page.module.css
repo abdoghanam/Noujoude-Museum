@@ -1,0 +1,18 @@
+/* src/ui/detail-page.module.css — the empty-state line inside a detail shell. */
+
+.identity {
+  margin-block-start: var(--ndm-space-4);
+  max-inline-size: var(--ndm-measure-reading);
+  color: var(--ndm-text-secondary);
+}
+
+.kind {
+  font-style: italic;
+}
+
+.identity code {
+  font-family: ui-monospace, "Cascadia Mono", monospace;
+  font-size: 0.95em;
+  overflow-wrap: anywhere;
+  color: var(--ndm-text-primary);
+}

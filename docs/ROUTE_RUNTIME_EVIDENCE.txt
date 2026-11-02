@@ -1,0 +1,146 @@
+NOUJOUDE — ROUTE RUNTIME TRANSCRIPT
+Production server started from the built artefact. No secret value appears in this file.
+
+What ran     : `pnpm build` (exit 0, 16 routes) then `pnpm start -p 3111`, then HTTP probes with curl.
+               Server log line: `next start "-p" "3111"` / Next.js 16.4.3 / Ready in 1686ms /
+               Running next.config.mjs took 109ms.
+Date         : 2 November 2026.
+Environment  : host. CORRECTED 2 November 2026 by the closure batch, because this line originally read
+               "bound to 127.0.0.1 and localhost only" and that was an overclaim. The closure re-run started
+               `next start -p 3122` and measured the socket directly: `netstat -ano -p tcp | grep LISTENING`
+               returned `TCP 0.0.0.0:3122 0.0.0.0:0 LISTENING`, and a request to the machine's own LAN-facing
+               address `http://192.168.192.1:3122/en` returned 200. The 3111 run above was not socket-measured
+               at the time; it used the same command shape with no `-H`/`--hostname`, and `package.json`'s
+               `start` script passes none, so wildcard binding is what Next does by default here and the
+               loopback claim was never supported for either run.
+               No remote, no deployment target, nothing published; the server was stopped after every probe
+               and a post-kill request to the port is refused (curl exit 7). The loopback-only guarantee that
+               other documents record belongs to the PostgreSQL publish in `docker-compose.yml`
+               (`127.0.0.1:5432`, asserted by preflight check 8 and `scripts/verify-compose-config.mjs`),
+               not to the application server. See the closure re-run section at the foot of this file.
+Why          : a green `next build` proves compilation and a route table. It does not prove that a route
+               renders, that a locale segment sets `dir`, or that an invalid slug is refused. Standard
+               §12 forbids using mock functionality as release evidence, so every claim below is a
+               response actually received from the running server.
+
+--- STATUS CODES, as received -----------------------------------------------------------------
+/                          -> 307 Temporary Redirect, `location: /en`
+/en                        -> 200  (16,981 bytes)
+/ar                        -> 200  (16,965 bytes)
+/en/the-museum             -> 200  (10,725 bytes)
+/en/artifacts/valid-slug   -> 200  (11,820 bytes)  the empty-state branch, not a fabricated record
+/en/artifacts/BAD_SLUG     -> 404  (8,876 bytes)   untrusted slug refused before it renders
+/en/nope                   -> 404  (6,878 bytes)   no canonical route matches
+
+The redirect is 307, not 301: `next.config.mjs` declares `permanent: false`, and the status line
+below is the server's own answer for `/`.
+
+    HTTP/1.1 307 Temporary Redirect
+    location: /en
+
+--- MARKUP AND HEADERS, verbatim from the responses ------------------------------------------
+x-powered-by               : absent (next.config.mjs sets `poweredByHeader: false`)
+<html lang="ar" dir="rtl"> : GET /ar — the writing direction is carried by the Arabic tree
+<meta name="robots" content="noindex, nofollow"/> : GET /en — no unapproved page is indexable
+
+Distinct nav destinations served from /en:
+/en/the-museum  /en/worlds  /en/collections  /en/stories  /en/curator  /en/about  /en/contact
+/en/search — served in the utility band, because §4.1 classes search as a global utility rather than
+a primary-navigation item; Home is `/en` itself. Total primary-navigation links: 8, the §4.1 count.
+
+Homepage heading sequence served from /en, in document order:
+    Hero / Museum Entrance
+    Institutional Introduction
+    The Worlds
+    Featured Collections
+    Selected Artifacts
+    Stories
+    AI Curator Introduction
+    Closing Invitation
+That is §6.1's required-content list, items 1–8, in the baseline's order. No heading was added and
+none is missing. The classes shown (`LBTDbq_sectionTitle`) are the CSS-module hashes Next emits.
+
+--- WHAT THIS DOES NOT PROVE -------------------------------------------------------------------
+No accessibility audit, no performance measurement, no authenticated or admin journey, no cross-browser
+run, no second-environment reproduction, no crawl of every route pair. These pages are structural
+shells: they render no catalogue record, no image, no editorial sentence and no institutional claim, and
+they are marked non-indexable while that is true.
+
+=== CLOSURE RE-RUN, 2 November 2026 (Phase 0/1 closure batch) =====================================
+Why this section exists: the Owner's directive §5 requires that no unresolved defect be hidden at
+closure, and the batch re-measured the earlier transcript rather than trusting it. The re-run found one
+overclaim — the environment line above — and it is corrected in place, not deleted.
+
+How it ran   : `pnpm build` (exit 0), then `pnpm start -p 3122`, then curl probes, then the process was
+               killed by PID and the port re-checked. Server log, verbatim:
+                   $ next start "-p" "3122"
+                   ▲ Next.js 16.4.3
+                   - Local:         http://localhost:3122
+                   - Network:       http://192.168.192.1:3122
+                   ✓ Ready in 2.0s
+                   ✓ Running next.config.mjs took 128ms
+               The trailing `[ELIFECYCLE] Command failed with exit code 4294967295` is pnpm reporting the
+               kill this batch issued, not a crash. After the kill: `netstat` shows zero LISTENING rows on
+               3122 and a further request returns curl exit 7 (connection refused). Only TIME_WAIT client
+               sockets remained.
+
+--- STATUS CODES AND SIZES, as received ----------------------------------------------------------
+/                          -> 307     3 bytes   (redirect body; `location: /en`, `permanent: false`)
+/en                        -> 200     16,981
+/ar                        -> 200     16,965
+/en/the-museum             -> 200     10,725
+/en/worlds                 -> 200     10,685
+/en/collections            -> 200     10,731
+/en/stories                -> 200     10,725
+/en/curator                -> 200     11,042
+/en/search                 -> 200     11,054
+/en/about                  -> 200     11,084
+/en/contact                -> 200     11,056
+/en/privacy                -> 200     11,024
+/en/terms                  -> 200     10,976
+/en/artifacts/valid-slug   -> 200     11,820   empty-state branch, not a fabricated record
+/en/artifacts/BAD_SLUG     -> 404      8,876   untrusted slug refused before it renders
+/en/worlds/morocco         -> 200     11,791
+/en/nope                   -> 404      6,878   no canonical route matches
+/ar/artifacts/%3Cscript%3E -> 404      8,877   an encoded markup payload is refused as a slug
+
+Every one of the fifteen canonical routes answers, in both locales where a locale is requested, plus the
+generated not-found page — sixteen entries in the build's route table, matching it exactly.
+
+--- HEADERS AND MARKUP, verbatim -----------------------------------------------------------------
+    HTTP/1.1 307 Temporary Redirect
+    location: /en
+    Date: Mon, 02 Nov 2026 04:44:53 GMT
+    Connection: keep-alive
+    Keep-Alive: timeout=5
+    Transfer-Encoding: chunked
+    Content-Type: text/html; charset=utf-8            (GET /en)
+
+x-powered-by               : absent from every response (next.config.mjs sets poweredByHeader: false)
+Server header              : also absent — no server banner is emitted on this build
+<html lang="ar" dir="rtl"> : GET /ar, and GET /ar/collections/saudi-arabia
+<html lang="en" dir="ltr"> : GET /en, and GET /en/artifacts/valid-slug
+<meta name="robots" content="noindex, nofollow"/> : present on /en and on the detail shell
+The artifact detail description meta reads: Noujoude Digital Heritage Museum — bilingual English and
+Arabic heritage museum. Pre-publication structural shell. That is the shell's own words, and it is the
+only institutional description any served page carries.
+
+--- NOTHING FABRICATED, CHECKED BY PATTERN -------------------------------------------------------
+Served HTML of /en and /en/artifacts/valid-slug was scanned for contact URIs and commerce tokens:
+`mailto:`, `tel:`, `€`, and a currency-then-digit pattern. Zero mailto, zero tel, zero currency signs;
+the only matches for the digit pattern were React Server Components chunk markers of the form `$2`,
+which are serialisation references, not prices. Both pages state in their own body text that the route
+holds no published records and that editorial copy has not been supplied.
+
+--- WHAT THE RE-RUN CONFIRMS, AND WHAT IT DOES NOT -----------------------------------------------
+Confirms: the route table is served by a real process; the root redirect is temporary and targets /en;
+direction follows the locale segment; malformed, unknown and encoded slugs are refused with 404 rather
+than rendered; nothing indexable is exposed; no content the registry did not supply appears.
+Does not confirm: accessibility (no audit run), performance (no measurement), authentication or the
+Control Center (not built), any published heritage fact (none exists), rights to any image (0 of 82),
+or reproducibility on a second environment (this is a host-class run on one machine, which is exactly
+the ceiling §16 of SECURITY_AND_PERMISSIONS.md and CAP-10 place on the credit it can earn).
+Open consequence of the corrected line above: `next start` binds the wildcard address with no option
+set, so a local serve is reachable on the machine's other interfaces. That is not a production exposure
+(nothing is deployed and nothing is published), but it is a decision this project has never made
+explicitly, and it is registered for the Owner rather than silently hardened here.

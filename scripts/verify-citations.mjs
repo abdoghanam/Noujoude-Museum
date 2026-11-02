@@ -564,7 +564,6 @@ for (const f of docFiles) {
   // body — so the original's YAML front matter, whose `title:` lines are the Owner's words and not
   // this repository's, is never mistaken for an uncited quotation here.
   let scanText = text;
-  let scannedTo = null;
   if (f === 'MASTER_SPECIFICATION.md') {
     const lines = text.split(/\r?\n/);
     const row = lines.find((l) => /^\| Line offset inside this copy \|/.test(l));
@@ -578,7 +577,6 @@ for (const f of docFiles) {
       process.exitCode = 1;
       continue;
     }
-    scannedTo = found; // header-only: lines 1..found
     scanText = lines.slice(0, found).join('\n');
   }
   const docLines = scanText.split('\n');
@@ -741,7 +739,6 @@ for (const f of docFiles) {
     const ctxBare = ctxAt(i, blockOf(i)[1]);
     for (const base of ctxBare.refs) {
       if (base.form === 'bare') continue;
-      const ref = { ...base, ctx: ctxBare };
       // Requirement sources first, exactly as house rule 4 says: an unlabelled number is a requirement
       // line number. A file label joins the set only when the citation itself writes it, and then
       // replaces it — `Standard §10 line 241` is a claim about the Standard, and nothing else.

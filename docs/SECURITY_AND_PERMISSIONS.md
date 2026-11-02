@@ -713,4 +713,130 @@ success claims** · no deployment to production without Owner authorization · n
 accessibility, performance, or security requirements.
 
 *End of NDM-SEC-001. Every control above is a contract. Verification is pending; nothing here is evidence of a
-running system.*
+running system. Verification of the controls in sections 4 to 13 is scheduled in the appended §16 below, whose
+closing paragraph carries that plan's own non-claim; every §16 case is scheduled pending and none is marked
+Passed.*
+
+---
+
+## 16. Verification plan — how each control above gets proved
+
+Sections §0–§15 state the controls and their required tests; this section states **how each control is to be
+proved**, one case at a time. It is the verification half of the contract, not new requirement text, and it
+adds nothing to §§0–15. Every case is scheduled **pending**: `Master Spec §20.6 line 3159` forbids marking a gate
+Passed without recorded evidence and a named approver, and this document records neither for any case below. A
+case carries seven fields — an ID, the control it verifies with the section it comes from, the **environment
+class** it will run in, the method (a command, a harness, or a planned test path already listed in §3), a
+**numeric exit criterion**, the **phase that owns executing it**, and **what remains unproven until then**. The
+plan maps §2.3's 240 matrix cells, §2.5's invariants, §4's C-01…C-10, §6's controls, §7's ASVS areas, §8's
+session rules, §9's audit rules, §10's media rules, §11's recovery rules, §13's twelve CI checks, and the AI
+boundary §1.3 names.
+
+### 16.1 The environment-class ladder, which caps every claim below
+
+Five classes, in ascending order: `disposable-harness → local-container → host → second-environment →
+production`. The rule that governs this whole section — restated here in the document's own voice, first
+enforced by `docs/QUALITY_ACCEPTANCE_FRAMEWORK.md` rule 8 — is that **a claim may not reach above the class of
+the evidence behind it.** A `disposable-harness` result proves the design of the fixture's subject and nothing
+else; a `host` result proves a detector fires against files on this machine, not that a running application
+behaves; only a `production` result could support the phrase *verified as running*. The two exit-coded
+measurements this repository already holds sit at the bottom two rungs: the privilege harness
+(`docs/A5_PRIVILEGE_EVIDENCE.txt`) at `disposable-harness`, and the dependency audit
+(`docs/DEPENDENCY_AUDIT_2026-11-02.txt`) at `host`. The rights decision spec and the client-boundary lint guard,
+re-run when this section was written, are `host`-class **unit and lint** runs — they prove a pure function and a
+selector behave, which the ladder caps and which prove nothing about enforcement. The rest are scheduled.
+
+### 16.2 Verification case register
+
+| Case | Control verified (source section) | Environment class | Method | Numeric exit criterion | Owning phase | What remains unproven until then |
+|---|---|---|---|---|---|---|
+| SV-01 | Database role separation and privilege matrix (see §5) | `disposable-harness` | `scripts/db/run-privilege-tests.sh` in a throwaway container, transcript `docs/A5_PRIVILEGE_EVIDENCE.txt` | 34 grant-state assertions and 14 of 14 behavioural cases A–N match, exit 0 | A.5 owns this run; Phase 2 re-runs it | It may not be cited as application authorization, a migration test, a restore, or a production claim |
+| SV-02 | Same matrix on this project's own runtime identity (see §5, §5.4) | `local-container` | `pnpm db:up` then `pnpm migrate`, `pnpm db:harden`, `pnpm db:verify-privileges` | 0 grant-state deviations and 14 of 14 refusals against the real schema | Phase 2, re-checked by CI job `db-privileges` | This project's database does not exist yet, so SV-01 proves the grant design, not its application here |
+| SV-03 | Deny-by-default access control per collection and global (§2.5 A-01, A-02) | `local-container` | `src/lib/access/collections.access.integration.ts`, direct REST and Local API calls | 0 collections or globals ship an open default, and every unauthorized direct-API write returns 403 | Phase 6 | Predicates and hooks are unbuilt; nothing enforces a default yet |
+| SV-04 | Object-level authorization and IDOR refusal (§2.5 A-04) | `local-container` | per-module negative cross-object tests under `src/lib/access/` | 0 cross-object reads or writes succeed, and a deliberate 404-versus-403 choice recorded for each module | Phase 6 | The existence-disclosure choice is undecided and untested |
+| SV-05 | The 20-module positive and negative matrix (§2.3, §2.5 A-07) | `local-container` | `tests/e2e/permissions/module-01-executive-overview.spec.ts` … `module-20-archive-recovery.spec.ts` | all 240 cells exercised, 14 of 14 negative cases return 403 per module, and 0 allowed by hiding a menu | Phase 6 | No `tests/e2e/` file exists; the matrix is derived from the requirement baseline, not from behaviour |
+| SV-06 | No frontend-only authorization (§2.5 A-09, §6.11) | `host` then `local-container` | ESLint client guard plus a runtime assertion that no decision object reaches the client | 0 authorization decisions acted on in client scope, and 0 findings under the client selector | Phase 6 | A selector firing is not enforcement; see SV-10 for the gap it cannot close |
+| SV-07 | CMS boundary against raw SQL, shell, secret and host-admin input (§4 C-01 to C-10) | `local-container` | negative API suite injecting SQL and command strings into every text field, plus an import scan of `src/` | 0 executable payloads persisted, 0 `child_process` import found, and SQL or DDL via the app role refused at the database not only in the UI | Phase 6 | Handlers are unbuilt; the refusal must be measured against a live route |
+| SV-08 | Public-serving rights decision as pure logic (§10 M-01, M-11 and STT-002) | `host` | `vitest run src/domain/rights.test.ts` | 9 of 9 assertions pass, exit 0, and all 82 catalogued assets resolve to a refusal | Phase 2 owns the rule | It tests only the function; no storage adapter calls it, so no byte is yet refused in a response |
+| SV-09 | Serving-layer enforcement of the rights gate through a real adapter (§10 M-01) | `local-container` then `production` | HTTP request for a private original and for an uncleared derivative on the deployed serving path | 0 requests for an uncleared asset ID return bytes, and every such request is refused before storage emits any object | Phase 6 | There is no bucket, adapter, or serving route; the rule is implemented but unreached |
+| SV-10 | Client-boundary secret-leak guard (§6.11, §4 C-04) | `host` | `eslint` over a probe reading a non-`NEXT_PUBLIC_` variable | the probe yields exit 1 with the `no-restricted-syntax` selector firing, and a `page.tsx` probe of the same variable yields exit 0, proving the recorded exemption is real | Phase 6 and the build-time boundary | `src/app/**/page.tsx` and `layout.tsx` are exempt, so the definitive control is SV-11 on build artifacts, not this selector |
+| SV-11 | Secret scanning of build output, source maps, rendered admin HTML and logs (§6.10, SEC-005) | `host` then `local-container` | planned scanner carrying a seeded false positive, a planted token that must be caught | at least 1 planted secret produces a non-zero exit and 0 planted secrets slip through before the scanner may be trusted | Phase 2 work item 2.10 | Secret scanning is not implemented anywhere in this repository and is absent from `ci.yml`; an untested scanner is an unverified control |
+| SV-12 | Dependency scanning (§6.10, §13 check 8, §13.1) | `host` | `pnpm audit --audit-level=high`, transcript `docs/DEPENDENCY_AUDIT_2026-11-02.txt` | green needs 0 findings at Critical or High; the recorded run is red at exit 1 with 15 vulnerabilities, 3 critical and 3 high | Phase 2 work item 2.10 keeps it running | No fix is applied, because each fix is a dependency upgrade the installation mandate bars; CI job `security-scans` has never run |
+| SV-13 | Session and cookie controls (§8) | `local-container` | capture `Set-Cookie` on a real authenticated response, then expiry, revocation and re-auth tests | Secure, HttpOnly and SameSite on every authenticated response, and 0 sessions usable past the bounded revocation window | Phase 6, the second-factor half deferred | No HTTPS deployment, no session issued, and no identity provider exists, so revocation is unmeasured |
+| SV-14 | Audit-event completeness and audit-table integrity (§9, §2.4 finding 2) | `local-container` | one privileged action per event type, then attempt `UPDATE` and `DELETE` on the audit table as the runtime identity | 1 audit row per privileged action with 0 missing, and 0 successful `UPDATE` or `DELETE` of an audit row by the runtime role | Phase 6 | Only the harness grant design shows today; no running application writes a real audit row yet |
+| SV-15 | Rate limiting and abuse on the named route families (§6.6) | `local-container` | `tests/e2e/security/rate-limit.spec.ts` over auth, forms, search, AI and upload | 5 of 5 families answer 429 at or past threshold, and 0 expensive public route is unthrottled | Phase 5 | `RATE_LIMIT_REDIS_URL` is declared, unpopulated, and has no consumer |
+| SV-16 | Backup and restore verification (§11) | `second-environment` then `production` | a restore runbook executed against a real backup, producing a transcript with measured RPO and RTO | 1 completed restore whose measured RPO and RTO fall inside the §11 targets, and 0 reliance on a backup job's exit 0 as proof | Phase 8 | Nothing has ever been restored; the §11 targets are unpublished proposals and provider feasibility is unknown |
+| SV-17 | ASVS 5.0.0 Level 2 mapping status (§7) | `host` then `second-environment` | pin the published ASVS 5.0.0 requirement IDs into each §7 control area and attach an evidence path | 0 of the 15 §7 control areas left without a pinned requirement ID and a resolvable evidence path | Phase 5 and Phase 6 | No requirement ID is transcribed and no assessor engaged; a target, never a compliance claim |
+| SV-18 | OWASP Top 10 2025 mapping (§1, §7) | `host` then `second-environment` | map each 2025 category to a project control and an SV case, pinning the numbering against the published edition before any statement | 10 of 10 categories mapped to at least one control and one case, and 0 categories unmapped | Phase 5 | The 2025 category numbering is not transcribed here and is not asserted, mirroring §7's discipline for the ASVS IDs |
+| SV-19 | AI Curator retrieval boundary (§1.3, §2.3, §17.5 in the source spec) | `local-container` then `second-environment` | red-team suite under `tests/e2e/ai/` plus one retrieval test that orders permission before the model | 0 ineligible records retrieved, 0 retrieval-layer bypass across the red-team set, and 0 fabricated provenance, ownership or authenticity outputs | Phase 7 | No provider, index, or model call exists, so the ordering guarantee is entirely unproven |
+| SV-20 | Safe errors and security headers (§6.1, §6.8; HSTS §6.2 held) | `local-container` | `tests/e2e/security/headers.spec.ts` plus a 4xx-body assertion | every 4xx response carries 0 stack frames and 0 secrets, the CSP and header set is present on public and Control Center responses, and HSTS is asserted 0 times until HTTPS exists | Phase 5 | No deployed response exists to capture headers from, so both halves are unmeasured |
+
+### 16.3 The exit-coded measurements already held, and what each may be cited for
+
+Two cases carry a repository transcript with an exit code. **SV-01** ran to completion with exit 0 inside a
+throwaway container and volume the run itself removed; it is `disposable-harness` evidence for ADR-019's grant
+design and nothing more, and it is barred from standing for application authorization, migration, restore, or any
+production claim. **SV-12** ran against the lockfile with exit 1 — the scanner did not fail; it found 15
+vulnerabilities, 3 critical and 3 high — so the dependency half of §6.10 is executed **and red**. Two further
+cases carry exit codes from unit and lint runs reproduced while this section was written: **SV-08** (the rights
+decision, 9 of 9 assertions, exit 0) and **SV-10** (the client-boundary guard, exit 1 on a server-only probe,
+exit 0 on the exempt `page.tsx` probe). All four sit at the two lowest rungs of the ladder, and none is
+closeable to a higher rung by re-reading the same fixture. SV-11 has no run because the control does not exist.
+
+**A fifth reading, taken in the 2 November closure window, and the defect it found.** SV-10's probe method was
+extended to dynamic evaluation, because `eslint.config.mjs` asserted in its own comment that the project's
+`no-restricted-syntax` selectors prohibited it. They did not: a source file containing a direct call to `eval`
+passed `pnpm lint` at **exit 0**, in both `src/` and `scripts/`, and `eslint --print-config` reported **no
+`no-eval` entry at all** for either path — `tseslint.configs.strict` turns the base rule off, and a selector that
+matches a *string literal containing the word* eval cannot see a call. After the rule was re-enabled alongside
+`no-implied-eval` and `no-new-func`, the same probes return **exit 1** with **8** named errors, and the clean tree
+returns **exit 0**. `--print-config` now reports `no-eval` at severity **2** for both a `src/` file and a
+`scripts/` file. What this may be cited for: a lint-time prohibition of dynamic evaluation, at `host` class, proved
+falsifiable. What it may not: it is a static guard over a 32-file shell with no dynamic code path in it, and SV-07's
+promise that the *CMS boundary* refuses executable input is still unrun, because there is no CMS write path yet.
+
+**A socket-level finding, recorded rather than silently fixed.** Serving the production build locally on 2 November
+exposed the address the app actually binds. `netstat` returned `TCP 0.0.0.0:3122 0.0.0.0:0 LISTENING`, and the same
+page answered over the machine's LAN address `http://192.168.192.1:3122/en` with **200** — because the `start`
+script is `next start` with no `-H` option. The loopback guarantee this document and `docs/ARCHITECTURE.md` had
+been crediting to the local serve belongs only to the PostgreSQL publish in `docker-compose.yml`
+(`127.0.0.1:5432`), which the compose contract gate does check. Two things follow, and neither is decided here: the
+local serve is reachable from other hosts on the network while it runs, which matters more once `src/` holds a
+Control Center; and hardening it means editing the `start` script, which is a configuration decision the Owner has
+not been asked for. It is therefore registered as an open observation for the Owner, alongside the fact that the
+served shell currently exposes no secret, no user data and no admin surface to reach.
+
+### 16.4 ASVS 5.0.0 Level 2 — mapping status, not compliance
+
+§7 already maps the ASVS control **areas** to project controls and to the evidence that must exist first. SV-17
+is the case that closes that mapping: every §7 row must carry a requirement ID pinned against the published ASVS
+5.0.0 edition and a resolvable evidence path before any statement about a control area is admissible. Today the
+published requirement numbering is not transcribed in this repository and no assessor is engaged, so the honest
+status is `Contract — unimplemented` for all 15 areas, and §7's own governing sentence — this is a target, not a
+compliance claim — is the ceiling on anything SV-17 can ever produce without CAP-7's independent assessment.
+
+### 16.5 OWASP Top 10 2025 — mapping status, not compliance
+
+SV-18 requires each of the ten 2025 categories to map to at least one §6 control and one case above, and to be
+pinned against the published edition before the numbering is written down. The threat framing in §1 already
+names the risk areas the categories cover — access control, injection, security misconfiguration, vulnerable and
+outdated components, identification and authentication failures, logging and monitoring failures, and server-side
+request forgery — and each has a home in the register above (SV-03, SV-05, SV-06, SV-07, SV-19, SV-20, and SV-15
+for abuse, with SV-12 for components). What is **not** done, and what SV-18 must not fabricate, is the official
+2025 category numbering: it is not transcribed here and is deliberately not asserted, exactly as §7 defers the
+ASVS IDs.
+
+### 16.6 Non-claim statement
+
+**No control in this document is verified as running in production, and nothing here is evidence of a running
+system.** No case above is Passed, no case has a recorded approver, and no case has produced a `production`-class
+or even `second-environment`-class artifact. The four exit-coded measurements at §16.3 are capped at their own
+class — SV-01 at `disposable-harness`, SV-08, SV-10 and SV-12 at `host` — by the ladder rule at §16.1 that a
+claim may not reach above the class of the evidence behind it, so none of them may be read as application
+behavior, as authorization enforcement, as a migration test, as a restore, or as a compliance claim. **SV-12 is
+red**, with unresolved critical and high advisories; **SV-11 does not exist**; several cases (SV-09, SV-13,
+SV-16, SV-19) cannot close without Owner-supplied facts that are absent and not inferable — 0 of 82 asset rights
+are cleared, no provider, storage, hosting, backup vendor, or identity provider is selected, and no institutional
+or legal fact is supplied. Every case is therefore scheduled **pending**, owned by the phase named in its row, and
+governed by §20.6's evidence-and-approver rule. This section proves that each control has a defined way to be
+proved; it proves none of the controls themselves.

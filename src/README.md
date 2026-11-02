@@ -1,55 +1,68 @@
 # `src/` — application source
 
-**State: intentionally empty at the end of Phase 1.**
+**State: initialized and executing (2 November 2026).** Directive §14 line 250, "Initialize application
+in `src/`", is no longer an open Phase 1 item. `pnpm build` exits **0** over 16 routes, `pnpm start`
+serves them, and `pnpm test` exits **0** on 34 assertions. The measurements are in
+[`docs/IMPLEMENTATION_PLAN.md`](../docs/IMPLEMENTATION_PLAN.md) Level B and the transcripts in
+[`docs/ROUTE_RUNTIME_EVIDENCE.txt`](../docs/ROUTE_RUNTIME_EVIDENCE.txt).
 
-Directive §3 assigns this directory to the application, with framework-required
-root configuration living at `no/` root. The configuration at `no/` root
-(`package.json`, `tsconfig.json`, `eslint.config.mjs`, `vitest.config.ts`,
-`playwright.config.ts`, `.env.example`, `docker-compose.yml`) is authored and
-reviewable, but no dependency installation has been run.
+32 files, 1,752 lines of TypeScript/TSX/CSS: 18 `.tsx`, 8 `.ts` (4 of them test files), 5 `.css`,
+plus this README.
 
-This directory must not be treated as evidence of a working product. Per
-Directive §15, a config file, a route, or a component is not proof of a
-completed feature.
+**What is here is a shell, not a product.** Every page renders the title and purpose the baseline
+itself supplies, and a notice saying the route holds no published records. No catalogue record, image,
+editorial sentence, institutional claim or contact detail is rendered anywhere, because none has been
+supplied — §6.1's rule that space must never be filled with fabricated content is enforced by the
+shape of `ui/page-shell.tsx`: a route can only render what the registry gives it. The whole tree is
+marked `noindex, nofollow` until approved content replaces it.
 
-## What unblocks filling this directory
-
-1. **B-01** — Node.js on the host is v24.19.0; Payload 3.92.1 requires
-   `>=24.22.1`. Install Node 24.22.2 (see `docs/ARCHITECTURE_DECISIONS.md` §2
-   and ADR-003). Nothing here installs itself.
-2. `cp .env.example .env` and populate it.
-3. `pnpm install` → `pnpm db:up` → Payload scaffold/migrations.
-4. Then Phase 2 begins: domain model and migrations.
-
-## Planned layout
+## Layout as it actually stands
 
 ```
 src/
 ├── app/
-│   ├── [locale]/            # en | ar — locale-prefixed routes are mandatory (Master Spec §4.2)
-│   │   ├── the-museum/
-│   │   ├── worlds/[countrySlug]/
-│   │   ├── collections/[collectionSlug]/
-│   │   ├── artifacts/[artifactSlug]/
-│   │   ├── stories/[storySlug]/
-│   │   ├── curator/         # AI Curator
-│   │   ├── search/
-│   │   ├── about/  contact/  privacy/  terms/
-│   │   └── layout.tsx       # sets dir="rtl" for ar; CSS logical properties only
-│   └── control-center/      # private root; server-side authorization on every operation
-├── payload/                 # Payload config, collections, globals, hooks, access
-├── domain/                  # museum domain services: claims, evidence, provenance,
-│                            # rights, state machines (eight separate dimensions — ADR-009)
-├── lib/server/              # authorization, storage adapter, AI retrieval gateway
-├── ui/                      # design tokens, primitives, editorial card surfaces
-└── generated/               # payload-types.ts (derived, git-ignored)
+│   └── [locale]/                     # en | ar — locale prefix mandatory (§4.2, line 408)
+│       ├── layout.tsx                # <html lang dir> from the segment; §4.1 navigation; utility band
+│       ├── page.tsx                  # Home — §6.1's eight sections in baseline order
+│       ├── the-museum/  worlds/  collections/  stories/  curator/  search/
+│       ├── about/  contact/  privacy/  terms/
+│       ├── worlds/[country-slug]/
+│       ├── collections/[collection-slug]/
+│       ├── artifacts/[artifact-slug]/
+│       └── stories/[story-slug]/     # 4 detail routes; invalid slug → notFound(), never a render
+├── domain/                           # pure: no Next imports, no I/O, no database
+│   ├── locale.ts                     # the two identifiers, direction, resolution
+│   ├── routes.ts                     # §4.2 route registry, §4.1 navigation, slug validation, switcher
+│   ├── rights.ts                     # STT-002 public-serving gate, fail-closed
+│   └── *.test.ts                     # 34 assertions over the three modules above + next.config
+├── types/environment.d.ts            # supplies Next's ambient types; `next-env.d.ts` is git-ignored
+└── ui/
+    ├── styles/global.css             # custom-property layer: §12.2 palette (proposed), §12.5 type
+    │                                 # roles, §12.13 durations, reduced-motion override
+    ├── page-shell.tsx + .module.css  # the shared unpopulated shell
+    ├── detail-page.tsx + .module.css # slug validation + honest empty state
+    └── layout.module.css             # header/nav/footer, logical properties only
 ```
 
-Two rules that shape every file added here:
+Absent on purpose, each owned by a later phase: `src/app/control-center/` (Phase 6), `src/payload/`
+with collections, hooks and access (Phase 2), `src/lib/server/` (Phases 2, 6, 7), `src/generated/`
+(derived, git-ignored), and any image pipeline (nothing may be served until B-06 clears rights).
 
-- `reference/` and `Noujoude.photo/` are read-only. Application code may read
-  asset data only through the media/rights layer, never by reaching into the
-  original library at runtime.
-- No commerce surface of any kind, including hidden, unlinked, API-only, or
-  admin-configurable variants, and no price or product schema installed at all
-  (Master Spec Appendix G.3, line 3702).
+## Two rules that shape every file added here
+
+- `reference/` and `Noujoude.photo/` are read-only. Application code may read asset data only through
+  the media/rights layer, never by reaching into the original library at runtime. Today there is no
+  data access at all: `tests/setup/env.ts` mocks `@/lib/db` and integration tests are gated behind
+  `NDM_ALLOW_INTEGRATION`.
+- No commerce surface of any kind — including hidden, unlinked, API-only or admin-configurable
+  variants — and no price or product schema installed at all (Master Spec Appendix G.3, line 3702).
+
+## Reading the green
+
+Per Directive §15, a route or a component is not proof of a completed feature. The claims this
+directory can support are narrow: the canonical route set exists and is locale-prefixed; the writing
+direction follows the locale; an untrusted slug is refused; the rights gate returns a denial for every
+asset in the library's recorded state (0 of 82 cleared, none approved) and refuses an unrecognised
+state rather than allowing it; the shell renders no content it was not given. The claims it cannot support: that the museum has content, that the design system is approved
+(BA-001…BA-007, OD-16), that any page is release-ready, or that anything here has run in CI (B-08,
+zero runs — there is no remote).
