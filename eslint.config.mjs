@@ -68,6 +68,15 @@ export default tseslint.config(
       'Noujoude.photo/**',
       'docs/**',
       'brand/**',
+      // Disposable scratch tooling. Git-ignored at `.gitignore` line 20, so nothing in it is ever
+      // committed and nothing in it is part of the product. Measured 2 Nov 2026: a throwaway RAR
+      // reconciliation script left there during the archive investigation made `pnpm lint` exit 2
+      // with `You have used a rule which requires type information` — the type-aware rules are
+      // enabled globally and `.tmp/*.mjs` is outside the `src/**` block that supplies parserOptions.
+      // Ignoring the directory rather than deleting the one file is the durable fix: the next scratch
+      // tool would otherwise reopen the same hole, and a gate that goes red because of a file that is
+      // not in the repository is not a gate.
+      '.tmp/**',
     ],
   },
   js.configs.recommended,

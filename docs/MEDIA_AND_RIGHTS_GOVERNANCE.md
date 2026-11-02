@@ -311,7 +311,7 @@ while preparing this document.
 | Original 72, physical result | 71 `PRESENT`, **1 `WRONG_FORMAT`**, 0 missing |
 | Additional 10, physical result | 10 `PRESENT`, all inside `_pending_review_AI_generated/` |
 | `perCategoryExpected` vs `perCategoryParsed` | identical across all eight categories; `catalogParseDrift: []` |
-| Physical files in `Noujoude.photo/` | **85** (= 82 catalogued + 3 uncatalogued), **6,467,873 bytes** total |
+| Physical files in `Noujoude.photo/` | **85** (= 82 catalogued + 3 uncatalogued), **6,467,873 bytes** total — the 1 November measurement, still true of the 82 catalogued rows. Re-measured 2 November: **97 files / 14,300,868 bytes**, the difference being one 6,143,950-byte archive and eleven duplicated files, both events recorded in `docs/CHANGELOG.md` §R |
 | Dimension decode failures | `dimensionDecodeFailures: []` — all 82 dimensions were decoded from file content, none inferred |
 | Name/pixel mismatches | **18** |
 | Source verification vs the supplied reference set | `verifiedAgainstSource: 82 of 82`, `mismatched: []`, `unavailable: []` |
@@ -387,7 +387,11 @@ Why it is nonetheless a blocking engineering fact:
 
 All ten live **only** under `Noujoude.photo/_pending_review_AI_generated/` (CSV `Notes`: "ONLY INSIDE
 `_pending_review_AI_generated` — not in the primary library folder") and are recorded as **NDM-AST-073 …
-NDM-AST-082**. Six are A.8.1 country-world heroes (Morocco, Egypt, Syria, Mauritania, Libya, Sudan — 1792×1008
+NDM-AST-082**. *Location caveat, 2 November 2026:* at 14:01 the ten were relocated to the **primary library root**
+by the Owner, byte-for-byte intact (every SHA-256 matched its row), which is exactly the state the sentence above
+forbids; preflight caught it as a FAIL — "10 catalogued original(s) no longer in the directory" — and the
+quarantine was restored from `HEAD` on the Owner's decision. The relocated copies were **left in place**, so the
+ten now exist twice on disk while their catalogued path is satisfied. See `docs/CHANGELOG.md` §R. Six are A.8.1 country-world heroes (Morocco, Egypt, Syria, Mauritania, Libya, Sudan — 1792×1008
 each, `ratio: 1.7778`); four are A.8.2 collection-category visuals (First Day Covers, Coins, Artifacts,
 Souvenirs — 1024×768, `ratio: 1.3333`). From `_manifest.json`, uniformly for all ten: `ai_generated: true`,
 `embedded_provenance: "EXIF ImageDescription"`, `format: WEBP`, `chunks: [VP8X, VP8, EXIF]`, `revision: v1` or
@@ -418,7 +422,7 @@ an explicit note, or `Rejected`/`Archived` per A.11 line 3469), not a silent tec
 Status: **Blocked by Owner Input**; Standard §13 lines 300–302 make real artifact facts and image rights
 non-fabricable.
 
-### 6.5 The 3 uncatalogued files
+### 6.5 The uncatalogued files — 3 measured 1 November, 5 on disk since 2 November
 
 `uncataloguedFiles` — present on disk, absent from Appendix A, therefore outside the governance chain:
 
@@ -427,10 +431,25 @@ non-fabricable.
 | `logo_presentation_scene_16x9_v3.webp` | 7,572 | `771a118b2135b699e0f9ebff1102075e90c5a58b936b7e92bf4fca628fd25e47` | `image/webp` |
 | `_pending_review_AI_generated/GENERATED_ASSETS_MANIFEST_AR.md` | 9,241 | `3b35fc1bec7d4a571cf14b24e95a078525c6cf39f1282dc6bf07d2b285df28d3` | — (markdown) |
 | `_pending_review_AI_generated/_manifest.json` | 7,075 | `7343e7c76cdc4020049dbc0e348f05f018d92c62e5dadb69129aa6a9b258e7a2` | — (JSON) |
+| **`Noujoude.photo.rar`** *(new, 2 November)* | 6,143,950 | `c92597cf0db9dc4e2cda53b76c5e02fb0755c37246164f52dca68cd1524296b5` | — (RAR5 container, magic `526172211a0700cf`) |
+| **`GENERATED_ASSETS_MANIFEST_AR.md`** *(new location, 2 November)* | 9,241 | `3b35fc1bec7d4a571cf14b24e95a078525c6cf39f1282dc6bf07d2b285df28d3` | — (markdown; byte-identical to the quarantined copy) |
+
+Two of these five are new to 2 November and neither is an asset: the archive is a **copy of 78 files that already
+exist in this directory, CRC-verified identical, containing zero bytes the library did not already hold**, and it
+supplies none of the ten missing `source_png` originals (§6.4). The Owner's decision was keep, do not extract, do
+not catalogue — so it stays a name with no row, no rights statement and no approval, and it is **invisible to git**
+because a machine-global ignore rule (`~/.gitignore_global` line 24, `*.rar`) hides it despite this repository's
+own rule that no ignore rule may hide a change to a protected path. `docs/CHANGELOG.md` §R carries the measurement.
+
+A blind spot this exposes, recorded rather than fixed: `scripts/audit-assets.mjs` decides "uncatalogued" by
+**basename** (lines 304-307), so a duplicate of a catalogued filename placed anywhere under `Noujoude.photo/` never
+registers as uncatalogued. The eleven relocated copies restored alongside their originals therefore appear only in
+the raw file count (97 against 85), not in any finding — the same family of gap as H-7, where the check iterates
+rows instead of enumerating the directory.
 
 Rules this imposes (Contract — unimplemented): an uncatalogued file is **`Reference Only`** at best (A.11 line
 3469) and must never be auto-adopted into the library, because §13.3 line 1891 makes a manifest or a folder
-listing insufficient evidence of usability. Two of the three are documentation about the other ten assets
+listing insufficient evidence of usability. Two of the three (the 1 November set) are documentation about the other ten assets
 (`_manifest.json` is the sole surviving provenance record for §6.4, so it is *governance evidence* and must be
 preserved and hashed, not treated as an asset). The third, `logo_presentation_scene_16x9_v3.webp`, is a brand
 asset with **no catalogue entry, no rights statement, no approval record, no Asset ID** — the `_v3` suffix
@@ -466,7 +485,7 @@ Blocker identifiers in this section are **RB-nn** (media/rights). They are disti
 | RB-05 | **Lineage broken for 10 assets** (source PNGs absent). | §6.4 | Standard §6 line 193; §8.14 line 1318; §13.4 line 1895 | Blocked by Owner Input + Not Implemented |
 | RB-06 | **Format integrity defect on 1 asset** (`.jpg` holding WebP). | §6.2 | Standard §6 line 187; M-04/M-06 in `SECURITY_AND_PERMISSIONS.md` §10 | Not Implemented |
 | RB-07 | **Dimension claims false on 18 assets**, incl. two brand marks. | §6.3 | VIS-001 (3087); §19.7 line 2948; CLS gate | Not Implemented |
-| RB-08 | **3 uncatalogued files** outside governance. | §6.5 | A.11 (no stage); §13.3 line 1891 | Blocked by Owner Input |
+| RB-08 | **Uncatalogued files outside governance: 3 on 1 November, 5 paths on disk since 2 November** (the archive, its relocated manifest, and eleven quarantined-file duplicates the basename rule cannot see). | §6.5 | A.11 (no stage); §13.3 line 1891 | Blocked by Owner Input |
 | RB-09 | **No derivatives, no optimization, no usage mapping exist.** | 72 `Original (no derivatives produced)`; `Actual Usage` "None — no application code exists yet (src/ is empty)" | A.11 `Optimized`/`Integrated`/`Verified in Context` | Not Implemented; also gated by RB-01 |
 | RB-10 | **Rights-approval authority is not yet modelled** — the competent approver is an implied role: §17.2 H line 2724 requires "a qualified rights reviewer/Owner must approve relevant permission claims", yet §17.2 defines no such role. | `SECURITY_AND_PERMISSIONS.md` §2.4 finding 1 | §17.4 line 2780; IAM-002 (3102) | **Decision taken — ADR-020** (a scoped `Approve` grant with recorded delegation, not a twelfth role); the grant record and its screen are still Not Implemented, and the identity of any delegated approver is an Owner input |
 

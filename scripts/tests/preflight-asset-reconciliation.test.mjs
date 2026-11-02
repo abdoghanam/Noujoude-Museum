@@ -319,15 +319,23 @@ check('a register that honestly records an absent asset is not flagged',
   const i = lines.findIndex((l) => l.includes('Noujoude.photo/ reconciliation'));
   const detail = i >= 0 ? (lines[i + 1] || '') : '';
   const level = i >= 0 ? lines[i].trim().split(' ')[0] : 'ABSENT';
+// The counts below are a *measurement of the workspace on 2 November 2026*, not constants of the
+// design: `4 non-image`, `physical files 97` and the eleven duplicates behind them are the residue
+// `docs/CHANGELOG.md` §R records (an archive that duplicates 78 existing files, and an Owner
+// relocation of ten quarantined files that preflight caught as a FAIL and a restore repaired). They
+// are asserted rather than tolerated because this test exists to make every registered finding
+// visible on every run — so when the Owner removes the duplicates or the archive leaves the
+// directory, this line goes red on purpose and the register in
+// `docs/MEDIA_AND_RIGHTS_GOVERNANCE.md` §6.5 has to be re-measured, not edited to match.
   const ok = level === 'WARN'
     && /18 NAME\/PIXEL/.test(detail)
     && /1 WRONG_FORMAT/.test(detail)
     && /1 image file\(s\) in the directory with NO catalog row: logo_presentation_scene_16x9_v3\.webp/.test(detail)
-    && /2 non-image file\(s\) not catalogued/.test(detail)
-    && /catalog rows 82, physical files 85/.test(detail);
+    && /4 non-image file\(s\) not catalogued/.test(detail)
+    && /catalog rows 82, physical files 97/.test(detail);
   if (ok) {
     passCount++;
-    console.log('PASS  the real library reconciles: 82 rows / 85 files, 1 uncatalogued image, 2 uncatalogued metadata files, 1 wrong format, 18 name/pixel — the findings the audit registers, now visible on every preflight');
+    console.log('PASS  the real library reconciles: 82 rows / 97 files, 1 uncatalogued image, 4 uncatalogued non-image files, 1 wrong format, 18 name/pixel — the findings the audit registers, now visible on every preflight');
   } else {
     failCount++;
     console.log(`FAIL  real-workspace reconciliation is [${level}]: ${detail.slice(0, 500)}`);

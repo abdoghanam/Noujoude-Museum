@@ -166,12 +166,12 @@ Prints a JSON summary and rewrites `docs/ASSET_INVENTORY_AUDIT.csv` (82 rows × 
 |---|---|
 | Catalog rows parsed | **82** (72 original + 10 additional, counted independently as required by Asset Requirements line 220) |
 | Per-category parse drift | **none** — expected vs parsed identical for A.2 = 12, A.3 = 18, A.4 = 3, A.5 = 11, A.6 = 10, A.7 = 18, A.8.1 = 6, A.8.2 = 4 |
-| Physical files found / bytes | 85 files, 6,467,873 bytes |
+| Physical files found / bytes | 85 files, 6,467,873 bytes *(1 November reading. Re-measured 2 November: **97 files / 14,300,868 bytes** — one 6,143,950-byte archive that duplicates 78 existing files, plus eleven duplicated quarantined files; `docs/CHANGELOG.md` §R)* |
 | Non-`PRESENT` rows | **1** — `NDM-AST-041 vintage_collector_desk_16x9.jpg → WRONG_FORMAT` |
 | Name/pixel mismatches | **18** (see §1.6) |
 | Dimension decode failures | 0 |
-| Uncatalogued files | **3** — `logo_presentation_scene_16x9_v3.webp` (7,572 B), `_pending_review_AI_generated/GENERATED_ASSETS_MANIFEST_AR.md` (9,241 B), `_pending_review_AI_generated/_manifest.json` (7,075 B) |
-| All 10 additional assets | present, located inside `_pending_review_AI_generated/`, and **pending approval** |
+| Uncatalogued files | **3** — `logo_presentation_scene_16x9_v3.webp` (7,572 B), `_pending_review_AI_generated/GENERATED_ASSETS_MANIFEST_AR.md` (9,241 B), `_pending_review_AI_generated/_manifest.json` (7,075 B) *(5 paths by 2 November — the archive and the relocated manifest join the list, and eleven duplicates of catalogued filenames pass unflagged because "uncatalogued" is decided by basename: `docs/MEDIA_AND_RIGHTS_GOVERNANCE.md` §6.5)* |
+| All 10 additional assets | present, located inside `_pending_review_AI_generated/`, and **pending approval** *(their presence at that path lapsed for twelve minutes on 2 November when the Owner relocated them to the library root; preflight FAILed, they were restored from `HEAD`, and 82 of 82 rows re-verify by SHA-256 — §R)* |
 | Catalog-name verification | 82 of 82 filenames confirmed verbatim against `reference/Noujoude_Line_by_Line_Traceability_EN.csv` (8,174 data rows) — no entry accepted on the strength of its Appendix A line number (S-11) |
 
 The tool reports presence and pixels; it explicitly does **not** report licensing. `Rights Status` is `UNKNOWN — no rights statement supplied in reference/` for all 72 originals and `Awaiting Rights Review` for all 10 additional assets; `Brand/Curatorial Approval` is `Not Approved — no approval record supplied` for **82 of 82**. That is a finding, not a gap in the tool.

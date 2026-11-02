@@ -1458,3 +1458,79 @@ and B-12 all remain open with their Owner-approvers named. Production deployment
 and nothing was deployed. Four scratch files this window created were deleted before staging; the stale wording in
 the asset register, which now says no application code exists while `src/` holds 32 files, is tracked as
 REQ-TRUTH-006 rather than re-stamped inside a closure batch.
+
+### R. A 6 MB archive arrives inside the protected library, is proven to contain nothing new, and the thing it brought with it is a broken quarantine (2 November 2026)
+
+**What arrived was a path, not an instruction.** The Owner sent `Noujoude.photo/Noujoude.photo.rar` with no verb
+attached to it. An unknown file inside `Noujoude.photo/` is governed by a standing rule — "originals are never
+overwritten", and "preserving unknown files is a standing instruction" — so the first job was to characterise it
+without touching anything. It was characterised by reading the container's own CRC-32 table against CRCs computed
+from the files on disk, which reconciles 78 entries without extracting one. The container is RAR5
+(magic `5261 7221 1a07 00`), 6,143,950 bytes, 78 files, **zero subdirectories**, zero encrypted entries,
+`7z t` → "Everything is Ok", unpacked total 6,322,441 bytes.
+
+**The archive adds no content to the library.** All 78 entries are byte-identical to files already in
+`Noujoude.photo/`: 78 CRC matches, 0 mismatches, 0 size disagreements, **0 entries that exist only inside the
+archive**. The library holds 7 files the archive does not (145,432 bytes — four logo originals,
+`logo_presentation_scene_16x9_v3.webp`, `GENERATED_ASSETS_MANIFEST_AR.md`, `_manifest.json`), and the arithmetic
+closes exactly: 6,467,873 − 145,432 = 6,322,441, the archive's own unpacked sum. So the archive is a copy of the
+library minus those seven, not an addition to it. Extraction would have been a no-op with write risk attached,
+which is the worst possible trade inside a protected path, and the Owner chose to keep it, not extract it, and not
+give it a catalogue row.
+
+**Two things it does not do, stated because they will be asked.** The archive holds **0 PNGs** (64 webp, 14 jpg),
+so it does not supply the ten `source_png` originals OID-17 is waiting on — `world_morocco_hero_16x9_1793387944337_307329d3.png`
+and its nine siblings are still absent from the filesystem, and the lineage break in §6.4 is unchanged. It also
+duplicates `vintage_collector_desk_16x9.jpg` with the **same wrong bytes** (first four bytes `RIFF`, i.e. a WebP
+container in a `.jpg` name), so RB-06 does not move either. Possession of a file is not a rights statement; OID-15,
+OID-16, OID-17 and OID-18 stay `Outstanding` and no register row changed state because of this archive.
+
+**The measurement was wrong before it was right.** The first reconciliation reported 77 entries as "same name,
+different bytes" — because `7z -slt` prints CRCs in lowercase and `zlib.crc32().toString(16).toUpperCase()` prints
+them in uppercase, so the comparison was a case test wearing a hashing costume. The tell was the count: 77 differ,
+1 identical, and the one that "matched" had a CRC made only of digits. Fixing the normalisation inverted it to 78
+identical, 0 differing. The finding survived only because the collision risk was checked separately — 86 files
+walked recursively, **0 basename collisions**, so keying the comparison by filename was sound.
+
+**What the archive did bring with it was a broken quarantine, 12 minutes earlier.** `Noujoude.photo/` has mtime
+14:13 because of the archive; `_pending_review_AI_generated/` has mtime **14:01**. Git showed the event exactly: 11
+tracked files deleted from the worktree and 11 untracked files at the library root — the ten NDM-AST-073 … 082 webp
+assets plus `GENERATED_ASSETS_MANIFEST_AR.md`, moved out of the quarantine folder into the primary library. The
+bytes were never damaged: each file's SHA-256 matches its catalogue row and its `HEAD` blob. The *rule* is what
+broke, and `docs/OWNER_INPUT_REGISTER.md` states it in terms — the ten "stay quarantined in
+`_pending_review_AI_generated/` and out of every public render", which is the disk enforcement of
+`ai_generated: true` + `approval_state: Pending Human Approval` + `rights_state: Awaiting Rights Review`. Preflight
+caught it on its own: **1 FAIL / 1 WARN / 8 PASS**, the FAIL reading "10 catalogued original(s) no longer in the
+directory". This is the §L pattern again — the instrument earned its keep by failing on a real change, not by
+being green.
+
+**Restored on the Owner's decision, and verified rather than assumed.** `git restore --source=HEAD --worktree --`
+against the 11 deleted paths put the quarantine back; the tracked deletions are gone (0 ` D` remaining) and **82 of
+82 catalogue rows re-verify by SHA-256 on disk**, which matters because the repository has content filters
+configured and a restore is only trustworthy if the bytes are re-hashed rather than re-believed. Preflight returns
+to **0 FAIL / 1 WARN / 9 PASS**.
+
+**The residue is named, not hidden.** The eleven files the Owner moved to the library root were left in place,
+because deleting a file under `Noujoude.photo/` is not this batch's authority to take. They are byte-identical to
+the restored copies, so the current disk state holds **11 duplicated byte-strings and 1,689,045 redundant bytes**:
+97 physical files, 14,300,868 bytes, against the **85 files / 6,467,873 bytes** recorded in
+`docs/MEDIA_AND_RIGHTS_GOVERNANCE.md` §6.1 and `docs/ARCHITECTURE.md`. Those figures are corrected in place, dated,
+with both readings kept — the number that was measured and the number that is true now. Removing the duplicates is
+provably lossless (the same bytes sit in `HEAD`, in the quarantine folder and inside the archive) and is queued as
+an Owner yes, not performed.
+
+**A machine-level ignore rule hides a protected-path file from git.** The archive does not appear in
+`git status` at all — not as tracked, not as untracked — because `C:\Users\NaDa\.gitignore_global` line 24 carries
+`*.rar` (alongside `*.zip` and `*.7z`). The repository's own `.gitignore` states "No ignore rule may ever hide a
+change to those paths", and nothing in the repo can enforce that against a user-global file outside its tree. The
+practical consequence is a false sense of backup: **this archive is not under version control and exists on one
+disk**, while `preflight` — which enumerates the filesystem rather than the index — sees it plainly. That
+asymmetry is the same shape as hole H-7 (preflight iterates catalogue rows and does not enumerate the directory);
+here the enumeration works and the VCS is what blinks. Recorded as a finding, not fixed, because the fix is either
+a negation rule in the repo's `.gitignore` or an edit to a machine-global file, and neither is authorized by
+anything in this conversation.
+
+**What this batch did not do.** No file was extracted, moved, renamed or deleted. No catalogue row was created for
+the archive. No OID moved state. No rights position changed, no asset was approved, and Gate 1 does not move. The
+corrections below are to counts and locations invalidated by the Owner's own reorganisation and by the arrival of
+this file.
