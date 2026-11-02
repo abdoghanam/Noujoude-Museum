@@ -224,3 +224,53 @@ ANSWER
   The earlier real-workspace failure is resolved by the concurrent batch and is
   verified above rather than assumed.
 ================================================================================
+
+================================================================================
+9. SECOND ADDENDUM — THE TREE CANNOT BE VERIFIED AS A STATE (15:41)
+================================================================================
+  Two complete batteries were run after §8, each fingerprinted at start and end
+  over git status plus every file under src, scripts, tests, docs and reference.
+  Both drifted, so both results are invalid as a state claim under the Owner's
+  immutable-verification rule:
+
+    run at 15:21  fingerprint db67e2378ca4 -> a1fc107b5c41
+    run at 15:38  fingerprint 9820a8f80796 -> 47ea42c15246
+
+  What the concurrent batch did during this window, measured rather than
+  inferred:
+  * 15:10:34  eslint.config.mjs gained '.tmp/**' in its global ignores. That is
+              the remedy OD-17 describes, applied by another batch before the
+              Owner decided it. It is narrow and its cause is documented in the
+              comment, and it is not a broad ignore: with it in place,
+              `pnpm exec eslint --stdin --stdin-filename src/probe.ts` over a
+              deliberate `debugger` still exits 1, and eslint over src, scripts
+              and tests exits 0 — the gate still fires on project code.
+  * 15:34:46  src/ui/media-slot.tsx and src/ui/media-slot.module.css appeared.
+  * 15:35     `pnpm build` exited 1 on src/lib/server/media/slots.ts (TS2305
+              no exported member ResolvedSlot, TS2304 Cannot find name
+              WithheldReason); the same batch repaired those exports at 15:36:35
+              and the build returned exit 0 at 15:37.
+  * 15:41     `pnpm typecheck` exited 2, `pnpm lint` exited 1 and `pnpm build`
+              exited 1 together, on two files that batch is mid-edit of:
+                src/app/[locale]/page.tsx(33,19): error TS2304: Cannot find name 'RouteKey'.
+                src/ui/detail-page.tsx(32,23): error TS2304: Cannot find name 'ReactNode'.
+                3:10 error 'HOME_SECTIONS' is defined but never used
+                61:56 error Unsafe argument of type error typed assigned to a
+                     parameter of type RouteKey | "global"
+              src/ has grown from 41 to 44 files during this record.
+
+  Therefore, as of 15:41 on 2 November 2026:
+  - Phase 0/1 is NOT re-certifiable. Not because a criterion this project owns
+    failed on its own merits, but because no stable state exists to certify. The
+    documentation gates (citations 546 fragments, 1,525 bare references, 0
+    defects; 244 tables in 15 files), preflight (0 FAIL, 1 WARN, 9 PASS),
+    `pnpm test` and `pnpm test:gates` held exit 0 in every one of these runs.
+  - The lint condition of §3 and §4 is superseded by the ignore above and is
+    awaiting the Owner's ratification or revert of OD-17; OD-18 stays open.
+  - The SHA-256 manifest is deliberately NOT regenerated here: a working-tree
+    digest taken while another process writes source files would describe
+    nothing, and the committed 191-entry list in HEAD is knowingly one line stale
+    for this file until a stable tree exists.
+  - Nothing here was staged, committed, reverted or deleted by this batch in the
+    other batch's files. HEAD remains 3d9a697069f377bb87cfa4cddb6ae6a9d3ba9ef6.
+================================================================================
