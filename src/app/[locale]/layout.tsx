@@ -9,6 +9,7 @@ import {
   isLocale,
 } from "@/domain/locale";
 import { buildPath, primaryNavigation } from "@/domain/routes";
+import { SITE_NAME } from "@/domain/site";
 import {
   publicServingSummary,
   servingFooterSentence,
@@ -29,8 +30,6 @@ interface LocaleLayoutProps {
   readonly children: ReactNode;
   readonly params: Promise<{ locale?: string }>;
 }
-
-const SITE_NAME = "Noujoude";
 
 export const metadata: Metadata = {
   title: {

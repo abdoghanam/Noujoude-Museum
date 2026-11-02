@@ -21,8 +21,10 @@ marked `noindex, nofollow` until approved content replaces it.
 ```
 src/
 ├── app/
+│   ├── global-error.tsx              # last boundary: builds its own <html>, titles it, leaks nothing
 │   └── [locale]/                     # en | ar — locale prefix mandatory (§4.2, line 408)
 │       ├── layout.tsx                # <html lang dir> from the segment; §4.1 navigation; utility band
+│       ├── error.tsx                 # boundary for a failed page, rendered inside the locale shell
 │       ├── page.tsx                  # Home — §6.1's eight sections in baseline order
 │       ├── the-museum/  worlds/  collections/  stories/  curator/  search/
 │       ├── about/  contact/  privacy/  terms/
@@ -34,13 +36,16 @@ src/
 │   ├── locale.ts                     # the two identifiers, direction, resolution
 │   ├── routes.ts                     # §4.2 route registry, §4.1 navigation, slug validation, switcher
 │   ├── rights.ts                     # STT-002 public-serving gate, fail-closed
-│   └── *.test.ts                     # 34 assertions over the three modules above + next.config
+│   ├── site.ts                       # SITE_NAME, the one string used for this shell's own name
+│   └── *.test.ts                     # assertions over the four modules above + next.config
 ├── types/environment.d.ts            # supplies Next's ambient types; `next-env.d.ts` is git-ignored
 └── ui/
     ├── styles/global.css             # custom-property layer: §12.2 palette (proposed), §12.5 type
     │                                 # roles, §12.13 durations, reduced-motion override
     ├── page-shell.tsx + .module.css  # the shared unpopulated shell
     ├── detail-page.tsx + .module.css # slug validation + honest empty state
+    ├── media-slot.tsx + .module.css  # the one image element, and the refusal it cannot skip
+    ├── render-failure.tsx + .css     # the failure sentence, the correlation ID, the retry
     └── layout.module.css             # header/nav/footer, logical properties only
 ```
 

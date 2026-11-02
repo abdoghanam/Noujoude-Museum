@@ -1,0 +1,49 @@
+/* The render-failure band. It is deliberately *not* the dashed treatment `media-slot.module.css` uses
+   for a withheld asset: a dashed box in this application already means "this asset is refused by the
+   rights gate", and a page-level failure must not borrow that meaning. Solid rule, quiet type, one
+   control. */
+
+.failure {
+  border-block-start: 2px solid var(--ndm-color-rose);
+  display: grid;
+  gap: var(--ndm-space-2);
+  padding-block-start: var(--ndm-space-3);
+}
+
+.sentence {
+  color: var(--ndm-text-primary);
+  font-size: 1rem;
+  margin: 0;
+  max-inline-size: var(--ndm-measure-reading);
+}
+
+/* The correlation ID is a machine string, so it is monospaced and allowed to break rather than
+   overflow the measure. */
+.reference {
+  color: var(--ndm-text-secondary);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.8125rem;
+  gap: var(--ndm-space-2);
+  margin: 0;
+}
+
+.reference code {
+  font-family: var(--ndm-font-body);
+  overflow-wrap: anywhere;
+}
+
+.retry {
+  background: none;
+  border: 1px solid var(--ndm-accent-primary);
+  color: var(--ndm-text-primary);
+  cursor: pointer;
+  font-size: 0.875rem;
+  inline-size: fit-content;
+  padding: var(--ndm-space-2) var(--ndm-space-3);
+}
+
+.retry:focus-visible {
+  outline: 2px solid var(--ndm-accent-primary);
+  outline-offset: 2px;
+}
