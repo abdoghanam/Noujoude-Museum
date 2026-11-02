@@ -10,6 +10,8 @@
 
 **Counts re-measured 2 November 2026: 25 Owner inputs — 21 `Outstanding`, 2 decided on 1 November (OID-20, OID-22), 2 partially supplied on 2 November (OID-01 and OID-02, on their Arabic-name element only).** The three new rows, OID-23, OID-24 and OID-25, were opened by the 1–2 November closure window and are left `Outstanding` here because none of the three is answerable by the build: each requires an Owner decision the standing mandate explicitly withholds. Nothing else moved — no factual row gained a value, because the workspace still holds no authoritative source for any of them (§6A, §6B). Two counts in other files are now stale readings of this one and are named rather than quietly followed: `docs/IMPLEMENTATION_PLAN.md` §0's owner-input row still prints **22 rows**, and `docs/IMPLEMENTATION_PLAN.md` §10.4's preamble still prints **20 `Outstanding`**. This file is the authority for its own rows; those documents' owners must re-measure, not inherit.
 
+**Re-verification at 14:45 on 2 November 2026 changed no OID row, and it is recorded because it changed the closure answer.** The mandatory Phase 0/1 exit criteria were re-run against the tree as it stood at that minute, and the lint gate failed: `pnpm lint` exits 2 on a file no project batch wrote, while typecheck, the unit tests, the build over 16 routes, preflight and both documentation gates exited 0 on the same tree. At the same minute the gate suite's real-workspace asset assertion also failed, because between 14:13 and 14:43 an archive and eleven duplicate copies entered the asset library; a concurrent batch registered that residue and re-pinned the assertion, and this batch re-measured the library at 97 physical files before the suite passed at 14:54. The lint gate was not repaired here, because it is not this batch's file to delete and not this batch's lint scope to widen. No OID row moved, because none of this is a fact the Owner has been asked to supply — it is two decisions, opened as OD-17 and OD-18 in `docs/PHASE1_DISCOVERY_AND_READINESS.md`, and neither was resolved on this side by deleting, moving, re-pinning or reconfiguring anything. The verbatim readings are in `docs/PHASE01_CLOSURE_REVERIFY_2026-11-02_1445.txt`.
+
 **Quotation convention:** every string in this file presented inside quotation marks is reproduced from the cited line of the cited reference file, with one typographic exception — the sources use curly quotes (“ ”) which this file renders as straight quotes. Line numbers were verified with `node scripts/show-lines.mjs <range>` and re-checked by `node scripts/verify-citations.mjs`; where a measurement comes from this project's own documents (`docs/ASSET_INVENTORY_AUDIT.csv`, `.env.example`, `_manifest.json`) the text says so, because those are findings, not reference quotations.
 
 ---
@@ -347,6 +349,40 @@ later reads the spec's stale state as a missing decision.
 **OD-16 is still open and says so.** `docs/QUALITY_ACCEPTANCE_FRAMEWORK.md` §15 records that the framework's adoption closed OD-8 through OD-15 and left **OD-16** (supply or waive BA-001 … BA-007: brand files, palette approval, font licence, component tokens) undecided. That is the same Owner burden OID-18 carries, and OID-18's status in §3 is unchanged by anything in this window.
 
 ---
+
+## 6D. A file arrives inside the protected library: what it proved, and what it did not (2 November 2026)
+
+The Owner sent `Noujoude.photo/Noujoude.photo.rar` as an attachment reference with no instruction attached. It was
+characterised read-only, by CRC-32, without extracting anything. The measured facts and their register consequences:
+
+- **It is a copy, not an addition.** 78 entries, all byte-identical to files already in `Noujoude.photo/`; 0 entries
+  the library did not already hold; 0 PNGs. It therefore does **not** close any part of **OID-17**: the ten
+  `source_png` originals its `Outstanding` status turns on are still absent from the filesystem, and the lineage
+  break in `docs/MEDIA_AND_RIGHTS_GOVERNANCE.md` §6.4 is unchanged. **OID-17 stays `Outstanding`.**
+- **It is not a rights statement.** The archive carries no licence, no sidecar, no provenance document and no
+  approval. **OID-15, OID-16, OID-17 and OID-18 are unmoved**, and no row of this register changed status because a
+  file appeared on disk. Publishing an answer never authorizes a different answer (§7.5); possessing a file never
+  supplies an answer either.
+- **Owner decisions taken in this window, recorded because they are Owner acts, not build acts.** (1) Keep the
+  archive, do not extract it, do not give it a catalogue row — so it remains an uncatalogued file. (2) Restore the
+  `_pending_review_AI_generated/` quarantine that had been broken at 14:01 the same day, when the ten NDM-AST-073 …
+  082 files and `GENERATED_ASSETS_MANIFEST_AR.md` were relocated to the library root; the eleven relocated copies
+  were **left in place**, so the duplicates are a standing condition awaiting a separate Owner yes, not a resolved
+  finding.
+- **The quarantine rule is enforceable and was enforced by the build's own instrument, not by review.** Preflight
+  went to **1 FAIL** on this event ("10 catalogued original(s) no longer in the directory") and returned to
+  **0 FAIL / 1 WARN / 9 PASS** after the restore, with 82 of 82 catalogue rows re-verified by SHA-256. The rule
+  that the ten "stay quarantined in `_pending_review_AI_generated/` and out of every public render" is therefore a
+  testable property of the directory, and any future relocation of an unapproved AI asset will fail a gate rather
+  than pass a review.
+- **A machine-global ignore rule hides this file from version control.** `~/.gitignore_global` line 24 (`*.rar`)
+  means the archive appears in no `git status` output, in tension with this repository's own declared rule that no
+  ignore rule may hide a change to a protected path. The practical consequence for this register: the archive is
+  **not** a backed-up copy of the library — it exists on one disk and outside the index — so it cannot be cited
+  later as the evidence that any asset was preserved.
+
+Full measurement, including the reconciliation arithmetic and the basename blind spot in
+`scripts/audit-assets.mjs`, is in `docs/CHANGELOG.md` §R.
 
 ## 7. Update protocol
 

@@ -1,0 +1,226 @@
+================================================================================
+PHASE 0/1 CLOSURE — RE-VERIFICATION AGAINST THE CURRENT TREE
+2 November 2026, 14:45 local, host as recorded below. Run by the agent, exit
+codes read from the shell and never from a pipe.
+================================================================================
+
+PURPOSE
+  The Owner ordered Phase 0 and Phase 1 closed only by verifying the mandatory
+  exit criteria that belong to those phases, against the workspace as it stands.
+  This file is that verification. It is not a report and it adds no decisions.
+
+HEADLINE
+  PHASE 0/1: NOT RE-CERTIFIABLE. One mandatory criterion fails on the current
+  tree at 14:54 — the lint gate — and a second one, the real-workspace asset
+  assertion, failed at 14:45 and passed at 14:54 after a concurrent batch
+  reconciled the asset library and re-pinned that assertion to measured numbers.
+  Neither condition was produced by a project batch; both were produced by files
+  that entered the workspace between 14:13 and 14:43 today. The closure record at
+  docs/PHASE01_CLOSURE.json stands as the measurement of commit
+  28aa2145182350c19442c5a1d2ac831508870b8a and is not restated here as the state
+  of the workspace now.
+
+--------------------------------------------------------------------------------
+1. ENVIRONMENT
+--------------------------------------------------------------------------------
+  node --version            v24.22.1                                   exit 0
+  pnpm --version            11.21.0                                    exit 0
+  git log --oneline -1      8583332 repair: land the 190-entry digest
+                            manifest the motion commit claimed but did not
+                            stage
+  git status --short        33 lines, of which 31 are files this project
+                            did not write and did not stage
+  git remote -v             empty                                       exit 0
+  reference/ integrity      PASS — 7 files match baseline checksums
+
+--------------------------------------------------------------------------------
+2. THE MANDATORY CRITERIA, RE-RUN AT 14:45
+--------------------------------------------------------------------------------
+  pnpm typecheck                 0   PASS
+  pnpm test                      0   PASS  4 files, 34 assertions
+  pnpm build                     0   PASS  16 routes (15 canonical + not-found)
+  node scripts/preflight.mjs     0   PASS  10 checks: 0 FAIL, 1 WARN, 9 PASS
+  pnpm audit:citations           0   PASS  15 files, 542 quoted fragments,
+                                                 1,521 bare references, 0 defects
+                                          (after this record's own register
+                                          edits the same gate reports 546 and
+                                          1,525, still 0 defects)
+  pnpm audit:tables              0   PASS  244 tables in 15 markdown files
+  pnpm lint                      2   FAIL  <-- mandatory Phase 1 criterion, still
+                                             red at the 14:54 re-run below
+  pnpm test:gates                1   FAIL  <-- mandatory Phase 1 criterion at this
+                                             minute (21 passed, 1 failed); the
+                                             14:54 re-run returns 0
+  pnpm format:check              1   RED, unchanged and already disclosed
+  pnpm audit --audit-level=high  1   RED, unchanged — blocker B-11
+
+  At the earlier run in this same window, about fifteen minutes before, the
+  preflight exited 1 as well: its asset check found ten catalogued originals
+  absent from the directory they are catalogued in. That check returned to PASS
+  with a WARN once the file operation finished. The readings below are the later
+  ones, and the earlier FAIL is kept here rather than edited out, because a
+  workspace that changes while it is being verified is itself the finding.
+
+--------------------------------------------------------------------------------
+3. FAILURE ONE — THE LINT GATE, VERBATIM
+--------------------------------------------------------------------------------
+  $ eslint .
+  ESLint: 9.39.5
+  Error: Error while loading rule '@typescript-eslint/no-unsafe-assignment':
+  You have used a rule which requires type information, but don't have
+  parserOptions set to generate type information for this file.
+  Parser: typescript-eslint/parser
+  Occurred while linting E:\no\.tmp\rar-audit.mjs
+  [ELIFECYCLE] Command failed with exit code 2.
+
+  Cause: a 6,733-byte script written at 14:24:33 into .tmp/, a directory the
+  project already gitignores at .gitignore line 20. ESLint does not read
+  .gitignore, so the script entered the lint scope and the typed rules cannot
+  run against a file outside the TypeScript project. Project code is unaffected:
+  typecheck, the build, the unit tests and every other gate pass over the same
+  tree at the same minute.
+  Not done: .tmp/ was not deleted, the file was not edited, and eslint.config.mjs
+  was not widened to hide the symptom. Both remedies are Owner calls and are
+  opened as OD-17 in docs/PHASE1_DISCOVERY_AND_READINESS.md.
+
+--------------------------------------------------------------------------------
+4. FAILURE TWO — THE REAL-WORKSPACE ASSET ASSERTION, VERBATIM
+--------------------------------------------------------------------------------
+  FAIL  real-workspace reconciliation is [WARN]:
+        1 image file(s) in the directory with NO catalog row:
+            logo_presentation_scene_16x9_v3.webp
+        4 non-image file(s) not catalogued (manifests/notes):
+            GENERATED_ASSETS_MANIFEST_AR.md, Noujoude.photo.rar,
+            _pending_review_AI_generated/GENERATED_ASSETS_MANIFEST_AR.md,
+            _pending_review_AI_generated/_manifest.json
+        1 WRONG_FORMAT (extension vs container): vintage_collector_desk_16x9.jpg
+        18 NAME/PIXEL mismatch(es)
+        (catalog rows 82, physical files 86)
+  21 passed, 1 failed
+
+  Cause: this suite asserts the reconciliation result of the real asset library,
+  and the library gained an uncatalogued archive at 14:13:43 —
+  Noujoude.photo/Noujoude.photo.rar — which a machine-wide gitignore rule
+  (*.rar, at C:\Users\NaDa\.gitignore_global line 24) keeps out of the index
+  entirely, so no digest list and no commit can ever describe it. The count of
+  uncatalogued non-image files moved from the three the suite expects to four.
+  Preflight reports the same condition as a WARN and still exits 0; the suite
+  pins the exact wording and therefore fails.
+  Not done: the assertion was not re-pinned to the new number, the archive was
+  not deleted, no asset was catalogued under an invented rights status, and
+  nothing was moved back. The disposition of the library is the Owner's, and is
+  opened as OD-18 in docs/PHASE1_DISCOVERY_AND_READINESS.md.
+
+--------------------------------------------------------------------------------
+5. WHAT HAPPENED TO THE ASSET FILES, MEASURED
+--------------------------------------------------------------------------------
+  Between 14:19 and 14:43 the eleven files catalogued under
+  Noujoude.photo/_pending_review_AI_generated/ appeared at the library root as
+  well. They were not lost and they were not altered. Each root copy was
+  compared with the blob git holds for the tracked original:
+
+    SAME  collection_artifacts_4x3.webp            7b3fd190ac66
+    SAME  collection_coins_4x3.webp                ba93b2614349
+    SAME  collection_first_day_covers_4x3.webp     3e385505931f
+    SAME  collection_souvenirs_4x3.webp            4e1f4acb6dfa
+    SAME  world_egypt_hero_16x9.webp               a1352013ee26
+    SAME  world_libya_hero_16x9.webp               20046f82b71e
+    SAME  world_mauritania_hero_16x9.webp          d8ef858d3009
+    SAME  world_morocco_hero_16x9.webp             9f4d9f6b4972
+    SAME  world_sudan_hero_16x9.webp               9567d5519e93
+    SAME  world_syria_hero_16x9.webp               162d4cd21d10
+    SAME  GENERATED_ASSETS_MANIFEST_AR.md          5c52ce987559
+
+  At 14:45 the tracked originals are all present at their catalogued paths, so
+  git status reports no deletion, and the library holds eleven duplicate
+  untracked copies plus one uncatalogued image, one uncatalogued archive, two
+  uncatalogued manifest documents and eighty-five tracked files. Duplicates are
+  the Owner's to keep or remove; the Phase 0 audit is a path-and-checksum
+  statement about one directory, so it cannot be re-pointed to another one from
+  this side.
+
+--------------------------------------------------------------------------------
+6. THE STATE OF THE CLOSURE ARTEFACTS
+--------------------------------------------------------------------------------
+  docs/PHASE01_CLOSURE.json            unchanged, still describes commit 28aa214
+  docs/PHASE01_CLOSURE_TRANSCRIPT.txt  unchanged
+  docs/PHASE01_CLOSURE_SHA256.txt      regenerated over this tree; it hashes the
+                                       tracked file set only, so the archive
+                                       excluded by the machine-wide gitignore and
+                                       the eleven duplicate copies are outside its
+                                       reach by construction. That is a property of
+                                       the manifest, not an oversight, and it is
+                                       why a digest list cannot certify this
+                                       library on its own.
+  Gate 0                               adopted 1 Nov 2026 — unaffected
+  Blockers B-05, B-06, B-07, B-08, B-11, B-12   all still open, all downstream,
+                                       none closed or reopened by this reading
+  Level B                              3 of 12 — unchanged
+  Quality score of record              5.45 of 100 at L3 — no row moved
+
+--------------------------------------------------------------------------------
+7. WHAT WAS RECONCILED IN THE REGISTERS BY THIS READING
+--------------------------------------------------------------------------------
+  docs/IMPLEMENTATION_PLAN.md  the Phase 1 acceptance row and its closing
+    paragraph now state that the closure is a measurement of commit 28aa214 and
+    is not a certification of the current tree.
+  docs/IMPLEMENTATION_PLAN.md  §0 and §10.4 no longer print the stale 22-row and
+    20-Outstanding tallies that docs/OWNER_INPUT_REGISTER.md had already named as
+    stale; both now carry the 25 rows and 21 Outstanding measured in that file,
+    including OID-23, OID-24 and OID-25.
+  docs/OWNER_INPUT_REGISTER.md  a dated paragraph records the re-verification and
+    states plainly that no OID row moved, because these are two decisions and not
+    two missing facts.
+  docs/PHASE1_DISCOVERY_AND_READINESS.md  OD-17 and OD-18 added to the decision
+    table with their reasons and their deferral consequences.
+
+================================================================================
+8. ADDENDUM — THE TREE MOVED WHILE THIS RECORD WAS BEING WRITTEN (14:54)
+================================================================================
+  A second batch was working in this workspace during this verification. It
+  modified five tracked files between 14:45 and 14:49 — docs/CHANGELOG.md,
+  docs/ARCHITECTURE.md, docs/MEDIA_AND_RIGHTS_GOVERNANCE.md,
+  docs/TEST_AND_RELEASE_REPORT.md and
+  scripts/tests/preflight-asset-reconciliation.test.mjs — and it registered the
+  asset residue itself rather than hiding it: the archive duplicates 78 existing
+  files, the Owner's relocation of ten quarantined files is recorded, and the
+  findings live in docs/MEDIA_AND_RIGHTS_GOVERNANCE.md §6.5. That batch is not
+  this one, and this record neither owns nor endorses its edits; it reports what
+  they changed about the answer.
+
+  One of the two failures above is gone as a result. The real-workspace asset
+  assertion was re-pinned at 14:49 to the library as measured, and the numbers
+  were checked against the directory rather than guessed — this batch counted the
+  physical files itself at 14:54 and got 97, which is what the re-pinned
+  assertion now demands. Re-run at 14:54:
+
+    pnpm test:gates              0   PASS  22 passed, 0 failed in that suite
+    node scripts/preflight.mjs   0   PASS  10 checks: 0 FAIL, 1 WARN, 9 PASS
+    pnpm lint                    2   FAIL  still .tmp/rar-audit.mjs
+    pnpm audit:citations         0   PASS  546 fragments, 1,525 bare references, 0 defects
+    pnpm audit:tables            0   PASS  244 tables in 15 markdown files
+
+  Consequence for the digest manifest in this commit: the manifest hashes the
+  working tree, and at the moment of this commit four tracked paths still carry
+  that other batch's uncommitted bytes. Their digests therefore describe the tree
+  as it stands and not the committed tree, and the manifest must be regenerated
+  again once that batch lands. This is recorded instead of quietly producing a
+  digest list that looks authoritative.
+
+================================================================================
+ANSWER
+================================================================================
+  PHASE 0/1: PARTIAL — NOT CLOSED on the current tree.
+  Failed criterion: the lint gate. `pnpm lint` runs `eslint .` over the whole
+  workspace and exits 2 because a gitignored scratch script written by another
+  actor at 14:24, E:\no\.tmp\rar-audit.mjs, is inside lint scope and cannot be
+  typed. Project code is clean: typecheck, the unit tests, the gate suites,
+  preflight, the build over 16 routes and both documentation gates all exit 0 at
+  the same minute on the same tree.
+  The remedy is OD-17 and it is the Owner's, not this batch's: either lint scope
+  formally ignores gitignored scratch directories, or the file is removed by
+  whoever wrote it. Nothing was deleted, moved, re-pinned or reconfigured here to
+  turn that red into a green.
+  The earlier real-workspace failure is resolved by the concurrent batch and is
+  verified above rather than assumed.
+================================================================================
