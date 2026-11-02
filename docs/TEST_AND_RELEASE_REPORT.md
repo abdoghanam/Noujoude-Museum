@@ -446,6 +446,16 @@ counts are drizzle 0 and knex 0 in `package.json` with 13 and 4 lines in the loc
 and typesense 0 in both — and one row of this document's §4 table was rejoined to a single physical line. `pnpm test:gates`
 exits **0** with all seven suites green, including the real-`docs/` case of each of the three documentation suites.
 
+**Sixth pair — the motion batch, same day, after closure.** `node scripts/verify-citations.mjs` exits **0**: **15**
+markdown files, **542** quoted fragments with every class figure identical to the closure run, and bare references
+**1,521** checked with 0 defects — the +18 are the section-and-line citations of `docs/MOTION_SYSTEM.md`, which
+cites by reference rather than by quotation and therefore added no fragment to the quoted population.
+`node scripts/verify-tables.mjs` exits **0** at **244** tables in **15** files; the +6 are exactly the six tables of
+the new document, counted with the same delimiter pattern used for every earlier attribution in this section. The
+chain now reads 506 → … → 542 fragments, 192 → … → 238 → **244** tables, 1,225 → … → 1,503 → **1,521** bare
+references, and the rule quoted above it is the one that keeps the chain honest: read the number the command prints
+today.
+
 ```
 $ node scripts/verify-citations.mjs
 scanned 12 docs/ markdown files, 506 quoted fragments carrying a line reference (skipped 18 quoted strings shorter than 3 tokens)
