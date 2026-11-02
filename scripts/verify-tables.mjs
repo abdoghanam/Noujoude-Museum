@@ -33,17 +33,17 @@
  * Usage: node scripts/verify-tables.mjs [dir ...]     (default: docs)
  * Exit:  0 = every table well-formed, 1 = at least one defect, 2 = bad invocation.
  */
-import fs from 'node:fs';
-import path from 'node:path';
+import fs from "node:fs";
+import path from "node:path";
 
-const TARGETS = process.argv.slice(2).length ? process.argv.slice(2) : ['docs'];
+const TARGETS = process.argv.slice(2).length ? process.argv.slice(2) : ["docs"];
 const BACKSLASH = String.fromCharCode(92);
 
 /** Pipes that are cell separators, i.e. not preceded by a backslash. */
 function countSeparators(line) {
   let n = 0;
   for (let k = 0; k < line.length; k++) {
-    if (line[k] !== '|') continue;
+    if (line[k] !== "|") continue;
     if (k > 0 && line[k - 1] === BACKSLASH) continue;
     n++;
   }
@@ -57,11 +57,11 @@ function countSeparators(line) {
 function cells(line) {
   const sep = countSeparators(line);
   const parts = [];
-  let cur = '';
+  let cur = "";
   for (let k = 0; k < line.length; k++) {
-    if (line[k] === '|' && !(k > 0 && line[k - 1] === BACKSLASH)) {
+    if (line[k] === "|" && !(k > 0 && line[k - 1] === BACKSLASH)) {
       parts.push(cur);
-      cur = '';
+      cur = "";
     } else cur += line[k];
   }
   parts.push(cur);
@@ -70,12 +70,17 @@ function cells(line) {
     // and an unknown count must not be reported as a violation of the table's shape.
     return { cells: null, separators: sep, inconsistent: true };
   }
-  if (parts.length && parts[0].trim() === '') parts.shift();
+  if (parts.length && parts[0].trim() === "") parts.shift();
   const trimmed = line.trimEnd();
   const lastIsUnescapedPipe =
-    trimmed.endsWith('|') &&
+    trimmed.endsWith("|") &&
     !(trimmed.length >= 2 && trimmed[trimmed.length - 2] === BACKSLASH);
-  if (lastIsUnescapedPipe && parts.length && parts[parts.length - 1].trim() === '') parts.pop();
+  if (
+    lastIsUnescapedPipe &&
+    parts.length &&
+    parts[parts.length - 1].trim() === ""
+  )
+    parts.pop();
   return { cells: parts, separators: sep, inconsistent: false };
 }
 
@@ -114,7 +119,7 @@ for (const dir of TARGETS) {
   }
   for (const file of markdownFiles(dir)) {
     files++;
-    const lines = fs.readFileSync(file, 'utf8').split('\n');
+    const lines = fs.readFileSync(file, "utf8").split("\n");
     let inFence = false;
     let i = 0;
     while (i < lines.length) {
@@ -131,7 +136,11 @@ for (const dir of TARGETS) {
       // Collect the contiguous run of pipe-led lines: one candidate table.
       const start = i;
       const rows = [];
-      while (i < lines.length && !/^\s*(```|~~~)/.test(lines[i]) && /^\s*\|/.test(lines[i])) {
+      while (
+        i < lines.length &&
+        !/^\s*(```|~~~)/.test(lines[i]) &&
+        /^\s*\|/.test(lines[i])
+      ) {
         rows.push({ line: i + 1, text: lines[i] });
         i++;
       }
@@ -140,24 +149,43 @@ for (const dir of TARGETS) {
 
       // T5 — one row can never be a table.
       if (rows.length < 2) {
-        found.push({ code: 'T5', msg: `single-row pipe block (line ${rows[0].line}) cannot be a table: no header and no delimiter row` });
+        found.push({
+          code: "T5",
+          msg: `single-row pipe block (line ${rows[0].line}) cannot be a table: no header and no delimiter row`,
+        });
       } else {
         // T1 — row 1 is a header, not a delimiter and not empty.
         const header = cells(rows[0].text);
         if (header.inconsistent) {
-          found.push({ code: 'T4', msg: `line ${rows[0].line}: cell count could not be determined (internal walk disagreement)` });
+          found.push({
+            code: "T4",
+            msg: `line ${rows[0].line}: cell count could not be determined (internal walk disagreement)`,
+          });
         } else if (isDelimiterRow(rows[0].text)) {
-          found.push({ code: 'T1', msg: `table at line ${start + 1} starts with a delimiter row: it has no header` });
+          found.push({
+            code: "T1",
+            msg: `table at line ${start + 1} starts with a delimiter row: it has no header`,
+          });
         } else if (header.cells.length === 0) {
-          found.push({ code: 'T1', msg: `table at line ${start + 1} has an empty header row` });
+          found.push({
+            code: "T1",
+            msg: `table at line ${start + 1} has an empty header row`,
+          });
         }
 
         // T2 — row 2 must be the delimiter row.
         if (!isDelimiterRow(rows[1].text)) {
-          found.push({ code: 'T2', msg: `table at line ${start + 1} has no GFM delimiter row at line ${rows[1].line} ` +
-            `(row reads "${rows[1].text.trim().slice(0, 60)}"); the block will not render as a table` });
+          found.push({
+            code: "T2",
+            msg:
+              `table at line ${start + 1} has no GFM delimiter row at line ${rows[1].line} ` +
+              `(row reads "${rows[1].text.trim().slice(0, 60)}"); the block will not render as a table`,
+          });
         } else if (rows.length === 2) {
-          found.push({ code: 'T5', msg: `table at line ${start + 1} has a header and a delimiter row but no data rows` });
+          found.push({
+            code: "T5",
+            msg: `table at line ${start + 1} has a header and a delimiter row but no data rows`,
+          });
         }
 
         // T3 + T4 — widths, only meaningful once the header is known.
@@ -167,25 +195,42 @@ for (const dir of TARGETS) {
           if (isDelimiterRow(delim.text)) {
             const d = cells(delim.text);
             if (!d.inconsistent && d.cells.length !== want) {
-              found.push({ code: 'T3', msg: `table at line ${start + 1}: header declares ${want} column(s) but the ` +
-                `delimiter row at line ${delim.line} declares ${d.cells.length}` });
+              found.push({
+                code: "T3",
+                msg:
+                  `table at line ${start + 1}: header declares ${want} column(s) but the ` +
+                  `delimiter row at line ${delim.line} declares ${d.cells.length}`,
+              });
             }
           }
           const off = [];
           for (const r of rows.slice(2)) {
             const c = cells(r.text);
             if (c.inconsistent) {
-              found.push({ code: 'T4', msg: `line ${r.line}: cell count could not be determined` });
+              found.push({
+                code: "T4",
+                msg: `line ${r.line}: cell count could not be determined`,
+              });
               continue;
             }
-            if (c.cells.length !== want) off.push({ line: r.line, n: c.cells.length });
+            if (c.cells.length !== want)
+              off.push({ line: r.line, n: c.cells.length });
           }
           if (off.length) {
-            found.push({ code: 'T4', msg: `table at line ${start + 1} has ${want} column(s); ${off.length} uneven row(s): ` +
-              off.slice(0, 8).map((o) => `line ${o.line} -> ${o.n}`).join(', ') +
-              (off.length > 8 ? `, ... (${off.length - 8} more)` : '') });
+            found.push({
+              code: "T4",
+              msg:
+                `table at line ${start + 1} has ${want} column(s); ${off.length} uneven row(s): ` +
+                off
+                  .slice(0, 8)
+                  .map((o) => `line ${o.line} -> ${o.n}`)
+                  .join(", ") +
+                (off.length > 8 ? `, ... (${off.length - 8} more)` : ""),
+            });
             for (const o of off.slice(0, 8)) {
-              console.log(`    line ${o.line}: ${lines[o.line - 1].slice(0, 160)}`);
+              console.log(
+                `    line ${o.line}: ${lines[o.line - 1].slice(0, 160)}`,
+              );
             }
           }
         }
@@ -200,7 +245,11 @@ for (const dir of TARGETS) {
 }
 
 if (defects) {
-  console.log(`MALFORMED TABLES: ${defects} of ${tables} tables in ${files} files (exit 1)`);
+  console.log(
+    `MALFORMED TABLES: ${defects} of ${tables} tables in ${files} files (exit 1)`,
+  );
   process.exit(1);
 }
-console.log(`OK: ${tables} tables in ${files} markdown files, each with a header, a delimiter row and a uniform column count`);
+console.log(
+  `OK: ${tables} tables in ${files} markdown files, each with a header, a delimiter row and a uniform column count`,
+);

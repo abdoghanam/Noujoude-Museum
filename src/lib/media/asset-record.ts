@@ -19,7 +19,11 @@
  *    mirrors `decidePublicServing`, where an unrecognised state denies rather than allows.
  */
 
-import type { CuratorialApproval, MediaRecord, RightsState } from "@/domain/rights";
+import type {
+  CuratorialApproval,
+  MediaRecord,
+  RightsState,
+} from "@/domain/rights";
 
 /** The allowed `Physical Status` values, verbatim from the asset requirements' audit deliverable. */
 export const PHYSICAL_STATUSES = [
@@ -166,7 +170,9 @@ export function approvalFrom(
   policy: RightsVocabulary = PRODUCTION_RIGHTS_VOCABULARY,
 ): CuratorialApproval {
   const value = statement.trim();
-  if (policy.grantedApprovalMarkers.some((marker) => value.startsWith(marker))) {
+  if (
+    policy.grantedApprovalMarkers.some((marker) => value.startsWith(marker))
+  ) {
     return "approved";
   }
   if (value.startsWith("Not Approved")) return "not_approved";

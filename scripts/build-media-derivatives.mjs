@@ -44,13 +44,13 @@
  *   4  an original changed during the run — outputs are left in place, the manifest is withheld
  */
 
-import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import path from 'node:path';
-import sharp from 'sharp';
+import { createHash } from "node:crypto";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import sharp from "sharp";
 
-import { parseCsv } from './lib/csv.mjs';
-import { sniffFormat } from './lib/image-signature.mjs';
+import { parseCsv } from "./lib/csv.mjs";
+import { sniffFormat } from "./lib/image-signature.mjs";
 
 // ------------------------------------------------------------------ inputs
 
@@ -61,34 +61,38 @@ function flag(name) {
   return at >= 0 ? ARGS[at + 1] : undefined;
 }
 
-const DRY_RUN = ARGS.includes('--dry-run');
-const PROFILE_ID = flag('profile');
-const PROFILES_FILE = flag('profiles');
-const LEDGER_FILE = flag('ledger');
-const REGISTER_FILE = flag('register') ?? path.join(process.cwd(), 'docs', 'ASSET_INVENTORY_AUDIT.csv');
-const LIBRARY_DIR = flag('library') ?? path.join(process.cwd(), 'Noujoude.photo');
-const STORE_DIR = flag('store') ?? path.join(process.cwd(), 'media-derivatives');
+const DRY_RUN = ARGS.includes("--dry-run");
+const PROFILE_ID = flag("profile");
+const PROFILES_FILE = flag("profiles");
+const LEDGER_FILE = flag("ledger");
+const REGISTER_FILE =
+  flag("register") ??
+  path.join(process.cwd(), "docs", "ASSET_INVENTORY_AUDIT.csv");
+const LIBRARY_DIR =
+  flag("library") ?? path.join(process.cwd(), "Noujoude.photo");
+const STORE_DIR =
+  flag("store") ?? path.join(process.cwd(), "media-derivatives");
 
 /** Column names this script reads by header position, so a re-ordered register is refused, not misread. */
 const REQUIRED_COLUMNS = [
-  'Asset ID',
-  'Physical Status',
-  'Actual Path',
-  'MIME Type',
-  'SHA-256',
-  'Rights Status',
-  'Brand/Curatorial Approval',
+  "Asset ID",
+  "Physical Status",
+  "Actual Path",
+  "MIME Type",
+  "SHA-256",
+  "Rights Status",
+  "Brand/Curatorial Approval",
 ];
 
 const MIME_EXTENSIONS = {
-  'image/webp': 'webp',
-  'image/jpeg': 'jpg',
-  'image/avif': 'avif',
+  "image/webp": "webp",
+  "image/jpeg": "jpg",
+  "image/avif": "avif",
 };
 
-const SHARP_FITS = new Set(['cover', 'contain', 'fill', 'inside', 'outside']);
+const SHARP_FITS = new Set(["cover", "contain", "fill", "inside", "outside"]);
 
-const sha256 = (buf) => createHash('sha256').update(buf).digest('hex');
+const sha256 = (buf) => createHash("sha256").update(buf).digest("hex");
 
 function fail(code, message) {
   process.stdout.write(`${message}\n`);
@@ -105,15 +109,18 @@ function fail(code, message) {
  * format, a bounded quality, at least one width, and a resize rule sharp actually implements.
  */
 function validateProfile(value, where) {
-  if (typeof value !== 'object' || value === null) throw new Error(`${where}: profile is not an object`);
+  if (typeof value !== "object" || value === null)
+    throw new Error(`${where}: profile is not an object`);
   const id = value.id;
-  if (typeof id !== 'string' || !/^[a-z0-9][a-z0-9._-]{0,63}$/.test(id)) {
-    throw new Error(`${where}: "id" must be a lower-case token usable as a file name`);
+  if (typeof id !== "string" || !/^[a-z0-9][a-z0-9._-]{0,63}$/.test(id)) {
+    throw new Error(
+      `${where}: "id" must be a lower-case token usable as a file name`,
+    );
   }
   const mime = value.mime;
-  if (typeof mime !== 'string' || MIME_EXTENSIONS[mime] === undefined) {
+  if (typeof mime !== "string" || MIME_EXTENSIONS[mime] === undefined) {
     throw new Error(
-      `${where}: "mime" is ${JSON.stringify(mime)}; this script emits ${Object.keys(MIME_EXTENSIONS).join(', ')} and nothing else`,
+      `${where}: "mime" is ${JSON.stringify(mime)}; this script emits ${Object.keys(MIME_EXTENSIONS).join(", ")} and nothing else`,
     );
   }
   const quality = value.quality;
@@ -121,15 +128,23 @@ function validateProfile(value, where) {
     throw new Error(`${where}: "quality" must be an integer from 1 to 100`);
   }
   const resize = value.resize;
-  if (typeof resize !== 'object' || resize === null) throw new Error(`${where}: "resize" is required`);
+  if (typeof resize !== "object" || resize === null)
+    throw new Error(`${where}: "resize" is required`);
   if (!Number.isInteger(resize.width) || resize.width <= 0) {
     throw new Error(`${where}: "resize.width" must be a positive integer`);
   }
-  if (resize.height !== undefined && (!Number.isInteger(resize.height) || resize.height <= 0)) {
-    throw new Error(`${where}: "resize.height" must be a positive integer when given`);
+  if (
+    resize.height !== undefined &&
+    (!Number.isInteger(resize.height) || resize.height <= 0)
+  ) {
+    throw new Error(
+      `${where}: "resize.height" must be a positive integer when given`,
+    );
   }
   if (resize.fit !== undefined && !SHARP_FITS.has(resize.fit)) {
-    throw new Error(`${where}: "resize.fit" must be one of ${[...SHARP_FITS].join(', ')}`);
+    throw new Error(
+      `${where}: "resize.fit" must be one of ${[...SHARP_FITS].join(", ")}`,
+    );
   }
   return {
     id,
@@ -143,9 +158,11 @@ function readJson(file, label) {
   if (!existsSync(file)) return undefined;
   let parsed;
   try {
-    parsed = JSON.parse(readFileSync(file, 'utf8'));
+    parsed = JSON.parse(readFileSync(file, "utf8"));
   } catch (error) {
-    throw new Error(`${label} at ${file} is not valid JSON: ${String(error.message)}`);
+    throw new Error(
+      `${label} at ${file} is not valid JSON: ${String(error.message)}`,
+    );
   }
   return parsed;
 }
@@ -158,30 +175,31 @@ function readJson(file, label) {
  * and a third copy would recreate it.
  */
 function readRegister(file) {
-  const rows = parseCsv(readFileSync(file, 'utf8'));
+  const rows = parseCsv(readFileSync(file, "utf8"));
   const header = rows[0] ?? [];
   const index = {};
   for (const name of REQUIRED_COLUMNS) {
     const at = header.indexOf(name);
-    if (at === -1) throw new Error(`the register at ${file} has no "${name}" column`);
+    if (at === -1)
+      throw new Error(`the register at ${file} has no "${name}" column`);
     index[name] = at;
   }
   const byId = new Map();
   for (const row of rows.slice(1)) {
-    if (row.length === 1 && row[0] === '') continue;
+    if (row.length === 1 && row[0] === "") continue;
     if (row.length !== header.length) {
       throw new Error(
         `a register row has ${String(row.length)} cells where the header declares ${String(header.length)}; refusing to read shifted columns`,
       );
     }
-    byId.set(row[index['Asset ID']], {
-      assetId: row[index['Asset ID']],
-      physicalStatus: row[index['Physical Status']],
-      libraryPath: row[index['Actual Path']],
-      mime: row[index['MIME Type']],
-      sha256: row[index['SHA-256']],
-      rightsStatement: row[index['Rights Status']],
-      approvalStatement: row[index['Brand/Curatorial Approval']],
+    byId.set(row[index["Asset ID"]], {
+      assetId: row[index["Asset ID"]],
+      physicalStatus: row[index["Physical Status"]],
+      libraryPath: row[index["Actual Path"]],
+      mime: row[index["MIME Type"]],
+      sha256: row[index["SHA-256"]],
+      rightsStatement: row[index["Rights Status"]],
+      approvalStatement: row[index["Brand/Curatorial Approval"]],
     });
   }
   return byId;
@@ -197,28 +215,32 @@ function readRegister(file) {
  */
 function verify(approval, register, libraryDir) {
   const asset = register.get(approval.assetId);
-  if (asset === undefined) return { ok: false, why: 'not_in_register' };
-  if (asset.rightsStatement !== approval.rightsStatement) return { ok: false, why: 'rights_statement_changed' };
+  if (asset === undefined) return { ok: false, why: "not_in_register" };
+  if (asset.rightsStatement !== approval.rightsStatement)
+    return { ok: false, why: "rights_statement_changed" };
   if (asset.approvalStatement !== approval.approvalStatement) {
-    return { ok: false, why: 'approval_statement_changed' };
+    return { ok: false, why: "approval_statement_changed" };
   }
-  if (asset.physicalStatus !== 'PRESENT') return { ok: false, why: `physical_${asset.physicalStatus}` };
-  const rel = asset.libraryPath.replace(/\\/g, '/');
-  if (rel.startsWith('/') || rel.startsWith('..') || /^[A-Za-z]:/.test(rel)) {
-    return { ok: false, why: 'path_escapes_library' };
+  if (asset.physicalStatus !== "PRESENT")
+    return { ok: false, why: `physical_${asset.physicalStatus}` };
+  const rel = asset.libraryPath.replace(/\\/g, "/");
+  if (rel.startsWith("/") || rel.startsWith("..") || /^[A-Za-z]:/.test(rel)) {
+    return { ok: false, why: "path_escapes_library" };
   }
   const file = path.join(libraryDir, rel);
-  if (!existsSync(file)) return { ok: false, why: 'original_missing' };
+  if (!existsSync(file)) return { ok: false, why: "original_missing" };
   const bytes = readFileSync(file);
   const digest = sha256(bytes);
-  if (digest !== asset.sha256) return { ok: false, why: 'checksum_mismatch', detail: digest };
+  if (digest !== asset.sha256)
+    return { ok: false, why: "checksum_mismatch", detail: digest };
   // The container is re-sniffed from magic bytes rather than believed from the register's MIME cell or
   // the file name. This is the same rule `scripts/preflight.mjs` applies and the reason NDM-AST-041 is
   // catalogued as `WRONG_FORMAT`: a file whose extension says .jpg and whose header says WebP. A
   // derivative minted from a file the register mis-describes would carry that error into its lineage.
   const container = sniffFormat(bytes);
-  if (container === null) return { ok: false, why: 'container_unrecognised' };
-  if (container !== asset.mime) return { ok: false, why: 'mime_mismatch', detail: container };
+  if (container === null) return { ok: false, why: "container_unrecognised" };
+  if (container !== asset.mime)
+    return { ok: false, why: "mime_mismatch", detail: container };
   return { ok: true, asset, bytes, file };
 }
 
@@ -234,26 +256,28 @@ async function emit(profile, verified, storeDir) {
   const pipeline = sharp(bytes).resize({
     width: profile.resize.width,
     height: profile.resize.height,
-    fit: profile.resize.fit ?? 'cover',
+    fit: profile.resize.fit ?? "cover",
   });
   // `MIME_EXTENSIONS` admits only the three formats a browser-native heritage gallery needs. A PNG
   // derivative of a photographic original is a raster of a raster, and offering it here would invite a
   // profile file that chooses it without anybody having decided to.
-  const kind = profile.mime.split('/')[1];
+  const kind = profile.mime.split("/")[1];
   const encoded =
-    kind === 'jpeg'
+    kind === "jpeg"
       ? pipeline.jpeg({ quality: profile.quality, mozjpeg: true })
       : pipeline[kind]({ quality: profile.quality });
   const out = await encoded.toBuffer({ resolveWithObject: true });
   const name = outputName(profile, asset.assetId, profile.mime);
   const target = path.join(storeDir, name);
   if (!target.startsWith(`${storeDir}${path.sep}`)) {
-    throw new Error(`refusing to write ${target}, which is not inside the derivative store`);
+    throw new Error(
+      `refusing to write ${target}, which is not inside the derivative store`,
+    );
   }
   writeFileSync(target, out.data);
   return {
     assetId: asset.assetId,
-    originalFilename: asset.libraryPath.replace(/\\/g, '/').split('/').pop(),
+    originalFilename: asset.libraryPath.replace(/\\/g, "/").split("/").pop(),
     originalSha256: asset.sha256,
     file: name,
     sha256: sha256(out.data),
@@ -273,24 +297,28 @@ function snapshot(files) {
 }
 
 async function main() {
-  if (PROFILE_ID === undefined || PROFILES_FILE === undefined || LEDGER_FILE === undefined) {
+  if (
+    PROFILE_ID === undefined ||
+    PROFILES_FILE === undefined ||
+    LEDGER_FILE === undefined
+  ) {
     const missing = [
-      PROFILE_ID === undefined ? '--profile <id>' : undefined,
-      PROFILES_FILE === undefined ? '--profiles <file>' : undefined,
-      LEDGER_FILE === undefined ? '--ledger <file>' : undefined,
+      PROFILE_ID === undefined ? "--profile <id>" : undefined,
+      PROFILES_FILE === undefined ? "--profiles <file>" : undefined,
+      LEDGER_FILE === undefined ? "--ledger <file>" : undefined,
     ].filter((entry) => entry !== undefined);
     fail(
       2,
-      `build-media-derivatives: ${missing.join(' and ')} must be supplied. ` +
-        'The output profile is a recorded non-selection in docs/MEDIA_AND_RIGHTS_GOVERNANCE.md §10, and the ' +
-        'clearance ledger is the only thing that can authorise a derivative; this script invents neither.',
+      `build-media-derivatives: ${missing.join(" and ")} must be supplied. ` +
+        "The output profile is a recorded non-selection in docs/MEDIA_AND_RIGHTS_GOVERNANCE.md §10, and the " +
+        "clearance ledger is the only thing that can authorise a derivative; this script invents neither.",
     );
     return;
   }
 
   let profiles;
   try {
-    profiles = readJson(PROFILES_FILE, 'the profile file');
+    profiles = readJson(PROFILES_FILE, "the profile file");
   } catch (error) {
     fail(2, `build-media-derivatives: ${String(error.message)}`);
     return;
@@ -299,8 +327,8 @@ async function main() {
     fail(
       3,
       `build-media-derivatives: no profile set exists at ${PROFILES_FILE}. §10 leaves the format, quality and ` +
-        'width decisions unmade, and this script has no default of its own, so nothing can be produced until a ' +
-        'human writes the choice down.',
+        "width decisions unmade, and this script has no default of its own, so nothing can be produced until a " +
+        "human writes the choice down.",
     );
     return;
   }
@@ -313,7 +341,7 @@ async function main() {
       fail(
         2,
         `build-media-derivatives: "${PROFILE_ID}" is not in ${PROFILES_FILE}. Defined profiles: ${
-          list.map((entry) => entry?.id).join(', ') || '(none)'
+          list.map((entry) => entry?.id).join(", ") || "(none)"
         }.`,
       );
       return;
@@ -326,7 +354,7 @@ async function main() {
 
   let ledger;
   try {
-    ledger = readJson(LEDGER_FILE, 'the clearance ledger');
+    ledger = readJson(LEDGER_FILE, "the clearance ledger");
   } catch (error) {
     fail(2, `build-media-derivatives: ${String(error.message)}`);
     return;
@@ -335,8 +363,8 @@ async function main() {
     fail(
       3,
       `build-media-derivatives: no clearance ledger at ${LEDGER_FILE}, so no asset is authorised for derivation. ` +
-        'Measured today: 0 of 82 catalogued assets are rights-cleared and 0 are approved, and §8 bars producing a ' +
-        'derivative from an asset whose rights state is unknown — the fix cannot precede the clearance.',
+        "Measured today: 0 of 82 catalogued assets are rights-cleared and 0 are approved, and §8 bars producing a " +
+        "derivative from an asset whose rights state is unknown — the fix cannot precede the clearance.",
     );
     return;
   }
@@ -353,26 +381,37 @@ async function main() {
   const refusals = [];
   const buildable = [];
   for (const approval of approvals) {
-    if (typeof approval?.assetId !== 'string') {
-      refusals.push({ assetId: '(malformed)', why: 'ledger_row_has_no_asset_id' });
+    if (typeof approval?.assetId !== "string") {
+      refusals.push({
+        assetId: "(malformed)",
+        why: "ledger_row_has_no_asset_id",
+      });
       continue;
     }
     const result = verify(approval, register, LIBRARY_DIR);
     if (result.ok) buildable.push(result);
-    else refusals.push({ assetId: approval.assetId, why: result.why, detail: result.detail });
+    else
+      refusals.push({
+        assetId: approval.assetId,
+        why: result.why,
+        detail: result.detail,
+      });
   }
 
   if (buildable.length === 0) {
     const detail = refusals
-      .map((refusal) => `  ${refusal.assetId}: ${refusal.why}${refusal.detail === undefined ? '' : ` (${refusal.detail})`}`)
-      .join('\n');
+      .map(
+        (refusal) =>
+          `  ${refusal.assetId}: ${refusal.why}${refusal.detail === undefined ? "" : ` (${refusal.detail})`}`,
+      )
+      .join("\n");
     fail(
       3,
       `build-media-derivatives: ${String(approvals.length)} ledger row(s) supplied, 0 authorised for derivation.` +
-        (detail === '' ? '' : `\n${detail}\n`) +
-        ` Nothing was written${DRY_RUN ? ' (dry run)' : ''}. Measured position: 0 of 82 catalogued assets are ` +
-        'rights-cleared and 0 are approved, and §8 of docs/MEDIA_AND_RIGHTS_GOVERNANCE.md bars producing a ' +
-        'derivative from an asset whose rights state is unknown — the fix cannot precede the clearance.',
+        (detail === "" ? "" : `\n${detail}\n`) +
+        ` Nothing was written${DRY_RUN ? " (dry run)" : ""}. Measured position: 0 of 82 catalogued assets are ` +
+        "rights-cleared and 0 are approved, and §8 of docs/MEDIA_AND_RIGHTS_GOVERNANCE.md bars producing a " +
+        "derivative from an asset whose rights state is unknown — the fix cannot precede the clearance.",
     );
     return;
   }
@@ -394,19 +433,24 @@ async function main() {
     } catch (error) {
       // One unreadable original must not abort the run: the rest of the ledger still gets its lineage,
       // and the failure is recorded where the operator will see it rather than in a stack trace.
-      refusals.push({ assetId: entry.asset.assetId, why: 'encode_failed', detail: String(error.message) });
+      refusals.push({
+        assetId: entry.asset.assetId,
+        why: "encode_failed",
+        detail: String(error.message),
+      });
     }
   }
   const originalsUnchanged = [...before.entries()].every(
-    ([file, digest]) => existsSync(file) && sha256(readFileSync(file)) === digest,
+    ([file, digest]) =>
+      existsSync(file) && sha256(readFileSync(file)) === digest,
   );
 
   if (!originalsUnchanged) {
     // The outputs exist but the input evidence moved. Withholding the manifest means nothing can be
     // served from them: `readDerivativeManifest()` finds no lineage, so `servedSrcFor()` returns null.
     process.stdout.write(
-      'build-media-derivatives: an original is not byte-identical to the hash taken before the run. No lineage ' +
-        'manifest was written, so none of the produced files are servable, and nothing in the library was deleted.\n',
+      "build-media-derivatives: an original is not byte-identical to the hash taken before the run. No lineage " +
+        "manifest was written, so none of the produced files are servable, and nothing in the library was deleted.\n",
     );
     process.exitCode = 4;
     return;
@@ -414,11 +458,14 @@ async function main() {
 
   const manifest = {
     generatedAt: new Date().toISOString(),
-    storeDirectory: path.relative(process.cwd(), STORE_DIR).replace(/\\/g, '/'),
+    storeDirectory: path.relative(process.cwd(), STORE_DIR).replace(/\\/g, "/"),
     originalsUnchanged,
     derivatives,
   };
-  writeFileSync(path.join(STORE_DIR, 'lineage.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+  writeFileSync(
+    path.join(STORE_DIR, "lineage.json"),
+    `${JSON.stringify(manifest, null, 2)}\n`,
+  );
   process.stdout.write(
     `build-media-derivatives: produced ${String(derivatives.length)} derivative(s) with profile ${profile.id} into ` +
       `${STORE_DIR}, refused ${String(refusals.length)} ledger row(s), and confirmed every original byte-identical.\n`,

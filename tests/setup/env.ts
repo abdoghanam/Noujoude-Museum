@@ -2,16 +2,16 @@
 // Purpose: guarantee that no test can accidentally read real credentials or
 // reach a real provider, and that server-only env reads are still allowed in
 // node-environment tests.
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 const INERT_ENV: Record<string, string> = {
-  NODE_ENV: 'test',
-  PAYLOAD_SECRET: 'test-only-secret-not-a-real-key-0000000000',
-  DATABASE_URI: 'postgresql://ndm_runtime@127.0.0.1:5432/noujoude_test',
-  AI_CURATOR_ENABLED: 'false',
-  OTEL_EXPORTER_OTLP_ENDPOINT: '',
-  S3_ACCESS_KEY_ID: '',
-  S3_SECRET_ACCESS_KEY: '',
+  NODE_ENV: "test",
+  PAYLOAD_SECRET: "test-only-secret-not-a-real-key-0000000000",
+  DATABASE_URI: "postgresql://ndm_runtime@127.0.0.1:5432/noujoude_test",
+  AI_CURATOR_ENABLED: "false",
+  OTEL_EXPORTER_OTLP_ENDPOINT: "",
+  S3_ACCESS_KEY_ID: "",
+  S3_SECRET_ACCESS_KEY: "",
 };
 
 for (const [k, v] of Object.entries(INERT_ENV)) process.env[k] = v;
@@ -30,16 +30,16 @@ for (const [k, v] of Object.entries(INERT_ENV)) process.env[k] = v;
 // `@/lib/db` has no file behind it yet — measured: `src/lib/` holds `media` and `server` only. So both
 // branches refuse, and they refuse for different reasons, because a run that opted in and got a fake
 // database would be a run reporting evidence about nothing.
-vi.mock('@/lib/db', () => {
+vi.mock("@/lib/db", () => {
   if (process.env.NDM_ALLOW_INTEGRATION) {
     throw new Error(
-      'NDM_ALLOW_INTEGRATION is set, but @/lib/db has no implementation yet — the database layer is ' +
-        'Phase 2 work (docs/IMPLEMENTATION_PLAN.md line B4). An integration suite cannot be written ' +
-        'against a module that does not exist.',
+      "NDM_ALLOW_INTEGRATION is set, but @/lib/db has no implementation yet — the database layer is " +
+        "Phase 2 work (docs/IMPLEMENTATION_PLAN.md line B4). An integration suite cannot be written " +
+        "against a module that does not exist.",
     );
   }
   throw new Error(
-    'Integration tests require NDM_ALLOW_INTEGRATION=1 and a noujoude_test database. ' +
-      'Refusing to touch the development database (Technology Standard §3.4).',
+    "Integration tests require NDM_ALLOW_INTEGRATION=1 and a noujoude_test database. " +
+      "Refusing to touch the development database (Technology Standard §3.4).",
   );
 });

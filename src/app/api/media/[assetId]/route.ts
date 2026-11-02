@@ -25,7 +25,10 @@
  * register and the real gate, so nothing a handler test does can put a synthetic approval on the wire.
  */
 
-import { type ServingOutcome, serveDerivative } from "@/lib/server/media/serving";
+import {
+  type ServingOutcome,
+  serveDerivative,
+} from "@/lib/server/media/serving";
 
 interface RouteContext {
   readonly params: Promise<{ assetId?: string }>;
@@ -58,7 +61,7 @@ async function answer(
 
   const entityTag = `"${outcome.etag}"`;
   const base = {
-    "ETag": entityTag,
+    ETag: entityTag,
     "X-Content-Type-Options": "nosniff",
     // Revalidate every time. A derivative's permission to exist can be withdrawn the moment its
     // original's rights change, and a year-long `max-age` would keep drawing pixels from browser caches
@@ -84,6 +87,9 @@ export function createMediaRouteHandler(
   return (request, context) => answer(request, context, serve);
 }
 
-export async function GET(request: Request, context: RouteContext): Promise<Response> {
+export async function GET(
+  request: Request,
+  context: RouteContext,
+): Promise<Response> {
   return answer(request, context, serveDerivative);
 }

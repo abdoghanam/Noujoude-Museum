@@ -20,11 +20,7 @@
  * rights state is uncleared renders a refusal through `src/ui/media-slot.tsx`, never a pixel.
  */
 
-import {
-  type RouteKey,
-  buildPath,
-  routeDefinition,
-} from "@/domain/routes";
+import { type RouteKey, buildPath, routeDefinition } from "@/domain/routes";
 
 /** A surface the catalog names, and the canonical route that would carry it. */
 export interface SurfaceBinding {
@@ -52,27 +48,32 @@ export const SURFACE_BINDINGS: readonly SurfaceBinding[] = [
   {
     surface: "Homepage hero",
     route: "home",
-    basis: "§6.1 required-content item 1 is the hero; NDM-AST-013 is catalogued as the main museum atmosphere",
+    basis:
+      "§6.1 required-content item 1 is the hero; NDM-AST-013 is catalogued as the main museum atmosphere",
   },
   {
     surface: "Mobile homepage",
     route: "home",
-    basis: "§6.1 requires a mobile entrance composition; NDM-AST-014 is catalogued as the vertical entrance",
+    basis:
+      "§6.1 requires a mobile entrance composition; NDM-AST-014 is catalogued as the vertical entrance",
   },
   {
     surface: "Homepage and identity",
     route: "home",
-    basis: "§4.2 line: home is the main entrance and discovery hub; NDM-AST-004 is the main wordmark",
+    basis:
+      "§4.2 line: home is the main entrance and discovery hub; NDM-AST-004 is the main wordmark",
   },
   {
     surface: "Museum entrance",
     route: "home",
-    basis: "§4.2 gives home the entrance role, and the shell's only call to action is Enter the Museum",
+    basis:
+      "§4.2 gives home the entrance role, and the shell's only call to action is Enter the Museum",
   },
   {
     surface: "Header",
     route: "global",
-    basis: "§6.1 required-content item 1 asks for an approved monogram or wordmark in the masthead band",
+    basis:
+      "§6.1 required-content item 1 asks for an approved monogram or wordmark in the masthead band",
   },
   {
     surface: "The Museum",
@@ -82,7 +83,8 @@ export const SURFACE_BINDINGS: readonly SurfaceBinding[] = [
   {
     surface: "Museum architecture",
     route: "the-museum",
-    basis: "§4.2 institutional orientation; A.3 is the architecture and environment category",
+    basis:
+      "§4.2 institutional orientation; A.3 is the architecture and environment category",
   },
   {
     surface: "Institutional spatial imagery",
@@ -107,7 +109,8 @@ export const SURFACE_BINDINGS: readonly SurfaceBinding[] = [
   {
     surface: "Archive experience",
     route: "the-museum",
-    basis: "§4.2 institutional orientation; NDM-AST-027 is catalogued as the archive room",
+    basis:
+      "§4.2 institutional orientation; NDM-AST-027 is catalogued as the archive room",
   },
   {
     surface: "Institutional atmosphere",
@@ -122,7 +125,8 @@ export const SURFACE_BINDINGS: readonly SurfaceBinding[] = [
   {
     surface: "Spatial transitions",
     route: "the-museum",
-    basis: "§4.2 institutional orientation; NDM-AST-021 is catalogued as a corridor composition",
+    basis:
+      "§4.2 institutional orientation; NDM-AST-021 is catalogued as a corridor composition",
   },
   {
     surface: "About and Museum",
@@ -139,7 +143,8 @@ export const SURFACE_BINDINGS: readonly SurfaceBinding[] = [
   {
     surface: "Collections UI",
     route: "collections",
-    basis: "§4.2 collections directory; A.6 catalogues it as a collection layout reference",
+    basis:
+      "§4.2 collections directory; A.6 catalogues it as a collection layout reference",
   },
   {
     surface: "Collection and documentation pages",
@@ -149,7 +154,8 @@ export const SURFACE_BINDINGS: readonly SurfaceBinding[] = [
   {
     surface: "Stamps",
     route: "collections",
-    basis: "A.8.2 declares four categories — first-day covers, coins, artifacts, souvenirs — and stamps is not one of them, so the catalog's stamp visual binds to the directory, not to an invented category",
+    basis:
+      "A.8.2 declares four categories — first-day covers, coins, artifacts, souvenirs — and stamps is not one of them, so the catalog's stamp visual binds to the directory, not to an invented category",
   },
   {
     surface: "Stamp exhibition",
@@ -159,7 +165,8 @@ export const SURFACE_BINDINGS: readonly SurfaceBinding[] = [
   {
     surface: "Letters and archives",
     route: "collections",
-    basis: "no A.8.2 category named for it; §4.2 collections directory is the nearest declared surface",
+    basis:
+      "no A.8.2 category named for it; §4.2 collections directory is the nearest declared surface",
   },
   {
     surface: "Letter collections",
@@ -177,7 +184,8 @@ export const SURFACE_BINDINGS: readonly SurfaceBinding[] = [
     surface: "First Day Covers",
     route: "collection-detail",
     slug: "first-day-covers",
-    basis: "A.8.2 collection category; §4.2 collection-detail takes a collection-slug",
+    basis:
+      "A.8.2 collection category; §4.2 collection-detail takes a collection-slug",
   },
   {
     surface: "Coins",
@@ -189,7 +197,8 @@ export const SURFACE_BINDINGS: readonly SurfaceBinding[] = [
     surface: "Artifacts",
     route: "collection-detail",
     slug: "artifacts",
-    basis: "A.8.2 collection category — the curated heritage object display, not an individual artifact record",
+    basis:
+      "A.8.2 collection category — the curated heritage object display, not an individual artifact record",
   },
   {
     surface: "Souvenirs",
@@ -238,7 +247,8 @@ export const SURFACE_BINDINGS: readonly SurfaceBinding[] = [
   {
     surface: "Editorial and country contexts where suitable",
     route: "worlds",
-    basis: "§4.2 worlds directory is country-world discovery; the catalog names no single country",
+    basis:
+      "§4.2 worlds directory is country-world discovery; the catalog names no single country",
   },
 
   // — Stories.
@@ -255,7 +265,8 @@ export const SURFACE_BINDINGS: readonly SurfaceBinding[] = [
   {
     surface: "Collection storytelling",
     route: "stories",
-    basis: "§4.2 stories directory; §6.1 places stories among the required sections",
+    basis:
+      "§4.2 stories directory; §6.1 places stories among the required sections",
   },
   {
     surface: "Institutional storytelling",
@@ -277,7 +288,8 @@ export const SURFACE_BINDINGS: readonly SurfaceBinding[] = [
   {
     surface: "Search",
     route: "search",
-    basis: "§4.2: museum-wide discovery; §4.1 line 404 keeps it in the utility band rather than the primary navigation",
+    basis:
+      "§4.2: museum-wide discovery; §4.1 line 404 keeps it in the utility band rather than the primary navigation",
   },
   {
     surface: "Contact",
@@ -297,7 +309,8 @@ export const SURFACE_BINDINGS: readonly SurfaceBinding[] = [
   {
     surface: "Artifact documentation",
     route: "artifact-detail",
-    basis: "§4.2 artifact-detail; A.2 catalogues the certificate visual as artifact documentation",
+    basis:
+      "§4.2 artifact-detail; A.2 catalogues the certificate visual as artifact documentation",
   },
 
   // Two canonical routes carry no binding, and that is a fact about the register rather than a gap
@@ -317,15 +330,18 @@ export const UNBOUND_SURFACES: readonly UnboundSurface[] = [
   { surface: "identity", reason: NOT_A_CANONICAL_SURFACE },
   {
     surface: "certificates",
-    reason: "the authenticity-certificate surface the monogram is catalogued for is not a §4.2 route, and no certificate record type exists yet",
+    reason:
+      "the authenticity-certificate surface the monogram is catalogued for is not a §4.2 route, and no certificate record type exists yet",
   },
   {
     surface: "Brand applications",
-    reason: "brand collateral, not a served web surface; BA-001 records that no brand file is approved",
+    reason:
+      "brand collateral, not a served web surface; BA-001 records that no brand file is approved",
   },
   {
     surface: "Formal and vertical compositions",
-    reason: "brand composition references for the identity system, not a page surface",
+    reason:
+      "brand composition references for the identity system, not a page surface",
   },
   {
     surface: "Brand presentation",
@@ -333,11 +349,13 @@ export const UNBOUND_SURFACES: readonly UnboundSurface[] = [
   },
   {
     surface: "Approved communication visuals",
-    reason: "outbound communication, gated on an approval that does not exist (RB-02)",
+    reason:
+      "outbound communication, gated on an approval that does not exist (RB-02)",
   },
   {
     surface: "Approved image branding",
-    reason: "the watermark system applies to delivered imagery, so its surface is a derivative, and no derivative exists (RB-09)",
+    reason:
+      "the watermark system applies to delivered imagery, so its surface is a derivative, and no derivative exists (RB-09)",
   },
   {
     surface: "Certificates and archival details",
@@ -357,21 +375,25 @@ export const UNBOUND_SURFACES: readonly UnboundSurface[] = [
   },
   {
     surface: "Optional visitor atmosphere reference",
-    reason: "the catalog calls it optional and §4.2 has no visitor-facility route",
+    reason:
+      "the catalog calls it optional and §4.2 has no visitor-facility route",
   },
   {
     surface: "Reference only unless a museum gift area is approved",
-    reason: "§6.7 and `tests/e2e/assets/no-commerce.spec.ts` treat commerce as out of scope; a gift area is not approved",
+    reason:
+      "§6.7 and `tests/e2e/assets/no-commerce.spec.ts` treat commerce as out of scope; a gift area is not approved",
   },
   {
     surface: "Reference only unless relevant to actual collection material",
-    reason: "conditional on collection material that has not been supplied (RB-04, Owner input outstanding)",
+    reason:
+      "conditional on collection material that has not been supplied (RB-04, Owner input outstanding)",
   },
 
   // Interface references and restricted or unapproved areas.
   {
     surface: "UI design reference",
-    reason: "a design reference is not a rendered surface; using it as page content would be fabricated imagery",
+    reason:
+      "a design reference is not a rendered surface; using it as page content would be fabricated imagery",
   },
   {
     surface: "Mobile presentation",
@@ -379,7 +401,8 @@ export const UNBOUND_SURFACES: readonly UnboundSurface[] = [
   },
   {
     surface: "Administrative environment",
-    reason: "the control centre is an operator surface under Module 08, not a public §4.2 route",
+    reason:
+      "the control centre is an operator surface under Module 08, not a public §4.2 route",
   },
   {
     surface: "Restricted account-related interface if applicable",
@@ -387,38 +410,112 @@ export const UNBOUND_SURFACES: readonly UnboundSurface[] = [
   },
   {
     surface: "Future visitor interaction only if approved",
-    reason: "the catalog's own words make it conditional on an approval that has not been given",
+    reason:
+      "the catalog's own words make it conditional on an approval that has not been given",
   },
   {
     surface: "Location presentation if applicable",
-    reason: "the institution's physical address and jurisdiction are Owner inputs still outstanding",
+    reason:
+      "the institution's physical address and jurisdiction are Owner inputs still outstanding",
   },
 
   // A.7: textures, lighting and motion inputs. They are styling material, and none of §4.2's fifteen
   // route purposes is "a background", "a texture" or "a transition" — so binding one would put an
   // unapproved decorative surface behind copy that has been approved, and the audit would then report
   // the texture as used simply because a page happens to be coloured.
-  { surface: "Selected editorial panels", reason: "A.7 background material; no §4.2 route purpose names an editorial panel treatment" },
-  { surface: "Dark page backgrounds", reason: "A.7 background material; no §4.2 route purpose names a page background" },
-  { surface: "Exhibition backgrounds", reason: "A.7 background material; §4.2 gives exhibition environments to the-museum but no route to a backdrop" },
-  { surface: "Luxury visual details", reason: "A.7 texture material; a decorative accent is not a content surface" },
-  { surface: "Archival environments", reason: "A.7 texture material; the archive surfaces the register does name are A.3's, not a texture" },
-  { surface: "Selected thematic sections", reason: "A.7 background material; §4.2 has no thematic-section route" },
-  { surface: "Detailed archival accents", reason: "A.7 texture material; an accent is applied by styling, which is not an asset usage" },
-  { surface: "Restrained luxury details", reason: "A.7 texture material; an accent is applied by styling, which is not an asset usage" },
-  { surface: "Paper and architectural surfaces", reason: "A.7 texture material; no §4.2 route purpose names a material surface" },
-  { surface: "Soft backgrounds", reason: "A.7 background material; no §4.2 route purpose names a page background" },
-  { surface: "Selected identity sections", reason: "A.7 texture material; the identity surfaces that are bound belong to A.2, not to a marble swatch" },
-  { surface: "Document storytelling", reason: "A.7 texture material; the catalog names a texture, not a story record" },
-  { surface: "Page transitions", reason: "A.7 transition material; motion is an undecided design question, and `docs/MEDIA_AND_RIGHTS_GOVERNANCE.md` §10 records no approved treatment" },
-  { surface: "Museum lighting", reason: "A.7 lighting material; a lighting treatment is applied by styling, not served as an image" },
-  { surface: "Loading states", reason: "A.7 loading-state material; there is no approved loading treatment to attach it to" },
-  { surface: "Selected transitions", reason: "A.7 transition material; motion treatment is undecided" },
-  { surface: "Museum atmosphere", reason: "A.7 illumination material; an atmosphere reference is not a §4.2 surface" },
-  { surface: "Museum displays", reason: "A.7 overlay material; an overlay is applied by styling, not served as an image" },
+  {
+    surface: "Selected editorial panels",
+    reason:
+      "A.7 background material; no §4.2 route purpose names an editorial panel treatment",
+  },
+  {
+    surface: "Dark page backgrounds",
+    reason:
+      "A.7 background material; no §4.2 route purpose names a page background",
+  },
+  {
+    surface: "Exhibition backgrounds",
+    reason:
+      "A.7 background material; §4.2 gives exhibition environments to the-museum but no route to a backdrop",
+  },
+  {
+    surface: "Luxury visual details",
+    reason:
+      "A.7 texture material; a decorative accent is not a content surface",
+  },
+  {
+    surface: "Archival environments",
+    reason:
+      "A.7 texture material; the archive surfaces the register does name are A.3's, not a texture",
+  },
+  {
+    surface: "Selected thematic sections",
+    reason: "A.7 background material; §4.2 has no thematic-section route",
+  },
+  {
+    surface: "Detailed archival accents",
+    reason:
+      "A.7 texture material; an accent is applied by styling, which is not an asset usage",
+  },
+  {
+    surface: "Restrained luxury details",
+    reason:
+      "A.7 texture material; an accent is applied by styling, which is not an asset usage",
+  },
+  {
+    surface: "Paper and architectural surfaces",
+    reason:
+      "A.7 texture material; no §4.2 route purpose names a material surface",
+  },
+  {
+    surface: "Soft backgrounds",
+    reason:
+      "A.7 background material; no §4.2 route purpose names a page background",
+  },
+  {
+    surface: "Selected identity sections",
+    reason:
+      "A.7 texture material; the identity surfaces that are bound belong to A.2, not to a marble swatch",
+  },
+  {
+    surface: "Document storytelling",
+    reason:
+      "A.7 texture material; the catalog names a texture, not a story record",
+  },
+  {
+    surface: "Page transitions",
+    reason:
+      "A.7 transition material; motion is an undecided design question, and `docs/MEDIA_AND_RIGHTS_GOVERNANCE.md` §10 records no approved treatment",
+  },
+  {
+    surface: "Museum lighting",
+    reason:
+      "A.7 lighting material; a lighting treatment is applied by styling, not served as an image",
+  },
+  {
+    surface: "Loading states",
+    reason:
+      "A.7 loading-state material; there is no approved loading treatment to attach it to",
+  },
+  {
+    surface: "Selected transitions",
+    reason: "A.7 transition material; motion treatment is undecided",
+  },
+  {
+    surface: "Museum atmosphere",
+    reason:
+      "A.7 illumination material; an atmosphere reference is not a §4.2 surface",
+  },
+  {
+    surface: "Museum displays",
+    reason:
+      "A.7 overlay material; an overlay is applied by styling, not served as an image",
+  },
 ];
 
-const BY_SURFACE = new Map(SURFACE_BINDINGS.map((binding) => [binding.surface, binding]));
+const BY_SURFACE = new Map(
+  SURFACE_BINDINGS.map((binding) => [binding.surface, binding]),
+);
 
 /**
  * §6.1's eight home-page sections, in the order the baseline lists them, each naming the canonical route
@@ -479,7 +576,9 @@ export function bindingsForRoute(
   });
 }
 
-const UNBOUND_BY_NAME = new Map(UNBOUND_SURFACES.map((entry) => [entry.surface, entry]));
+const UNBOUND_BY_NAME = new Map(
+  UNBOUND_SURFACES.map((entry) => [entry.surface, entry]),
+);
 
 export function unboundReasonFor(surface: string): UnboundSurface | null {
   return UNBOUND_BY_NAME.get(surface.trim()) ?? null;
@@ -502,8 +601,7 @@ function pathOf(binding: SurfaceBinding): string {
     if (built !== null) return built.path;
   }
   const definition = routeDefinition(binding.route);
-  const base =
-    definition.segment === "" ? "/en" : `/en/${definition.segment}`;
+  const base = definition.segment === "" ? "/en" : `/en/${definition.segment}`;
   return definition.param === undefined
     ? base
     : `${base}/{${definition.param}}`;
@@ -521,11 +619,15 @@ function pathOf(binding: SurfaceBinding): string {
  * gives it no route), and unrecognised (the catalog named a surface this map has never seen — a defect
  * in one of the two, and it must read as one rather than silently as "no usage").
  */
-export function describeUsage(
-  surfaces: readonly string[],
-): { readonly state: "bound" | "unbound" | "unrecognised" | "none"; readonly text: string } {
+export function describeUsage(surfaces: readonly string[]): {
+  readonly state: "bound" | "unbound" | "unrecognised" | "none";
+  readonly text: string;
+} {
   if (surfaces.length === 0)
-    return { state: "none", text: "None — the register declares no surface for this asset" };
+    return {
+      state: "none",
+      text: "None — the register declares no surface for this asset",
+    };
   const bound: string[] = [];
   const unbound: string[] = [];
   const unknown: string[] = [];

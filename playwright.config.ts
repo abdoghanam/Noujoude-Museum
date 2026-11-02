@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from "@playwright/test";
 
 // Playwright covers the "critical journeys in English and Arabic" required by
 // Technology & Security Standard §2.2 and §12 item 5, plus the accessibility
@@ -6,41 +6,51 @@ import { defineConfig, devices } from '@playwright/test';
 //
 // Locale is not a cookie preference here: Master Spec §4.2 makes locale-prefixed
 // routes mandatory, so each project navigates the real URL shape it ships.
-const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000';
+const BASE = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000";
 
 export default defineConfig({
-  testDir: './tests/e2e',
+  testDir: "./tests/e2e",
   timeout: 60_000,
   expect: { timeout: 10_000 },
   // Negative-permission tests must not be flaked away (Directive §15).
   retries: process.env.CI ? 2 : 0,
   forbidOnly: !!process.env.CI,
-  reporter: [['list'], ['html', { open: 'never' }]],
+  reporter: [["list"], ["html", { open: "never" }]],
 
   projects: [
     {
-      name: 'en-desktop',
-      use: { ...devices['Desktop Chrome'], baseURL: BASE, locale: 'en-US', viewport: { width: 1440, height: 900 } },
+      name: "en-desktop",
+      use: {
+        ...devices["Desktop Chrome"],
+        baseURL: BASE,
+        locale: "en-US",
+        viewport: { width: 1440, height: 900 },
+      },
     },
     {
-      name: 'ar-desktop-rtl',
-      use: { ...devices['Desktop Chrome'], baseURL: `${BASE}/ar`, locale: 'ar-AE', viewport: { width: 1440, height: 900 } },
+      name: "ar-desktop-rtl",
+      use: {
+        ...devices["Desktop Chrome"],
+        baseURL: `${BASE}/ar`,
+        locale: "ar-AE",
+        viewport: { width: 1440, height: 900 },
+      },
     },
     {
-      name: 'en-mobile',
-      use: { ...devices['Pixel 7'], baseURL: BASE, locale: 'en-US' },
+      name: "en-mobile",
+      use: { ...devices["Pixel 7"], baseURL: BASE, locale: "en-US" },
     },
     {
       // RTL is a required composition target, not a desktop-only concern.
-      name: 'ar-mobile-rtl',
-      use: { ...devices['iPhone 13'], baseURL: `${BASE}/ar`, locale: 'ar-AE' },
+      name: "ar-mobile-rtl",
+      use: { ...devices["iPhone 13"], baseURL: `${BASE}/ar`, locale: "ar-AE" },
     },
   ],
 
   webServer: process.env.PLAYWRIGHT_SKIP_WEBSERVER
     ? undefined
     : {
-        command: 'pnpm dev',
+        command: "pnpm dev",
         url: BASE,
         reuseExistingServer: !process.env.CI,
         timeout: 180_000,

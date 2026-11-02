@@ -61,7 +61,9 @@ export function registryFromText(
 }
 
 /** Read the register from disk. A missing file is a thrown failure, never an empty inventory. */
-export function readAssetRegister(root = process.cwd()): readonly AssetRecord[] {
+export function readAssetRegister(
+  root = process.cwd(),
+): readonly AssetRecord[] {
   return parseRegister(readRegisterBytes(root));
 }
 
@@ -130,7 +132,8 @@ function registerSnapshot(root: string): RegisterCacheEntry {
   const bytes = readRegisterBytes(resolved);
   const stamp = createHash("sha256").update(bytes).digest("hex");
   const cached = cache;
-  if (cached !== null && cached.root === resolved && cached.stamp === stamp) return cached;
+  if (cached !== null && cached.root === resolved && cached.stamp === stamp)
+    return cached;
   const records = parseRegister(bytes);
   const entry: RegisterCacheEntry = {
     root: resolved,
@@ -146,9 +149,7 @@ export function assetById(
   assetId: string,
   root = process.cwd(),
 ): AssetRecord | null {
-  return (
-    assetRegister(root).find((asset) => asset.assetId === assetId) ?? null
-  );
+  return assetRegister(root).find((asset) => asset.assetId === assetId) ?? null;
 }
 
 export function assetByFilename(
@@ -203,7 +204,8 @@ export function assetsBoundToRoute(
       );
     }
     for (const asset of assets) {
-      if (!matched.some((seen) => seen.assetId === asset.assetId)) matched.push(asset);
+      if (!matched.some((seen) => seen.assetId === asset.assetId))
+        matched.push(asset);
     }
   }
   return matched;
@@ -246,7 +248,9 @@ export function resetAssetRegisterCache(): void {
 export function publiclyServeableAssets(
   root = process.cwd(),
 ): readonly AssetRecord[] {
-  return assetRegister(root).filter((asset) => decidePublicServing(asset).serve);
+  return assetRegister(root).filter(
+    (asset) => decidePublicServing(asset).serve,
+  );
 }
 
 /**

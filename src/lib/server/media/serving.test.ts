@@ -28,7 +28,13 @@
  */
 
 import { createHash } from "node:crypto";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -113,7 +119,10 @@ function rootWithManifest(text: string): string {
  * cache: one helper makes the root, another rewrites the bytes inside the same root, and the assertion is
  * what the next read answers.
  */
-function writeManifestRows(root: string, rows: readonly DerivativeLineage[]): void {
+function writeManifestRows(
+  root: string,
+  rows: readonly DerivativeLineage[],
+): void {
   mkdirSync(path.join(root, DERIVATIVE_STORE_DIR), { recursive: true });
   writeFileSync(
     path.join(root, DERIVATIVE_MANIFEST_PATH),
@@ -122,7 +131,9 @@ function writeManifestRows(root: string, rows: readonly DerivativeLineage[]): vo
   );
 }
 
-function lineageRow(overrides: Partial<DerivativeLineage> = {}): DerivativeLineage {
+function lineageRow(
+  overrides: Partial<DerivativeLineage> = {},
+): DerivativeLineage {
   return {
     assetId: FIRST_ASSET_ID,
     originalFilename: `${FIRST_ASSET_ID}.png`,
@@ -138,7 +149,9 @@ function lineageRow(overrides: Partial<DerivativeLineage> = {}): DerivativeLinea
   };
 }
 
-function manifestObject(rows: readonly DerivativeLineage[]): DerivativeManifest {
+function manifestObject(
+  rows: readonly DerivativeLineage[],
+): DerivativeManifest {
   return {
     derivatives: rows,
     generatedAt: "2026-11-02T00:00:00.000Z",
@@ -159,7 +172,9 @@ function manifestWith(rows: readonly DerivativeLineage[]): DerivativeManifest {
  * in its own types rather than cast its way past the compiler: `unknown[]` here is the hole in the record
  * the case is about, and the same helper carries a bad field override without an `as`.
  */
-function rawManifest(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+function rawManifest(
+  overrides: Record<string, unknown> = {},
+): Record<string, unknown> {
   return {
     derivatives: [],
     generatedAt: "2026-11-02T00:00:00.000Z",
@@ -181,15 +196,25 @@ function rawManifest(overrides: Record<string, unknown> = {}): Record<string, un
  */
 const SYNTHETIC_ID = "NDM-SYNTH-TEST-001";
 const SYNTHETIC_VOCABULARY: RightsVocabulary = {
-  clearedMarkers: ["SYNTHETIC-CLEARED — vocabulary that exists only in this file"],
-  grantedApprovalMarkers: ["SYNTHETIC-APPROVED — vocabulary that exists only in this file"],
+  clearedMarkers: [
+    "SYNTHETIC-CLEARED — vocabulary that exists only in this file",
+  ],
+  grantedApprovalMarkers: [
+    "SYNTHETIC-APPROVED — vocabulary that exists only in this file",
+  ],
   pendingStatements: ["Awaiting Rights Review"],
-  publishedMarkers: ["SYNTHETIC-PUBLISHED — vocabulary that exists only in this file"],
+  publishedMarkers: [
+    "SYNTHETIC-PUBLISHED — vocabulary that exists only in this file",
+  ],
 };
 
 /** The bytes a fixture derivative is made of, and the digest the lineage record will claim for them. */
-const SYNTHETIC_BYTES = new Uint8Array([0x52, 0x49, 0x46, 0x46, 0x57, 0x45, 0x42, 0x50]);
-const SYNTHETIC_DIGEST = createHash("sha256").update(SYNTHETIC_BYTES).digest("hex");
+const SYNTHETIC_BYTES = new Uint8Array([
+  0x52, 0x49, 0x46, 0x46, 0x57, 0x45, 0x42, 0x50,
+]);
+const SYNTHETIC_DIGEST = createHash("sha256")
+  .update(SYNTHETIC_BYTES)
+  .digest("hex");
 
 /**
  * One register cell, quoted the way `scripts/lib/csv.mjs` reads it back. Fixture wording carries commas
@@ -213,13 +238,17 @@ function syntheticCells(overrides: Record<string, string> = {}): string {
     "File Size": String(SYNTHETIC_BYTES.length),
     "SHA-256": SHA_B,
     "Source/Creator": "SYNTHETIC — fixture, not a delivered asset",
-    "Rights Status": "SYNTHETIC-CLEARED — vocabulary that exists only in this file",
-    "Brand/Curatorial Approval": "SYNTHETIC-APPROVED — vocabulary that exists only in this file",
+    "Rights Status":
+      "SYNTHETIC-CLEARED — vocabulary that exists only in this file",
+    "Brand/Curatorial Approval":
+      "SYNTHETIC-APPROVED — vocabulary that exists only in this file",
     "Intended Usage": "Fixture role | Header",
-    "Actual Usage": "SYNTHETIC-PUBLISHED — vocabulary that exists only in this file",
+    "Actual Usage":
+      "SYNTHETIC-PUBLISHED — vocabulary that exists only in this file",
     "Derivative Status": "Derived — fixture",
     "Alt Text Status": "Recorded — fixture",
-    Notes: "Test-only row. The delivered register and the production vocabulary are not touched by it.",
+    Notes:
+      "Test-only row. The delivered register and the production vocabulary are not touched by it.",
     "Verified By": "serving.test.ts",
     "Verified Date": "2026-11-02",
     ...overrides,
@@ -234,12 +263,15 @@ function syntheticAsset(overrides: Record<string, string> = {}): AssetRecord {
     undefined,
     SYNTHETIC_VOCABULARY,
   );
-  if (record === undefined) throw new Error("the synthetic register row produced no record");
+  if (record === undefined)
+    throw new Error("the synthetic register row produced no record");
   return record;
 }
 
 /** A lineage record for the synthetic asset, unvalidated on purpose where a case needs an invalid shape. */
-function syntheticLineage(overrides: Partial<DerivativeLineage> = {}): DerivativeManifest {
+function syntheticLineage(
+  overrides: Partial<DerivativeLineage> = {},
+): DerivativeManifest {
   return {
     derivatives: [
       {
@@ -263,9 +295,12 @@ function syntheticLineage(overrides: Partial<DerivativeLineage> = {}): Derivativ
 }
 
 /** The synthetic asset's lineage row, for the cases that write the record to disk and need it to validate. */
-function syntheticRow(overrides: Partial<DerivativeLineage> = {}): DerivativeLineage {
+function syntheticRow(
+  overrides: Partial<DerivativeLineage> = {},
+): DerivativeLineage {
   const [row] = syntheticLineage(overrides).derivatives;
-  if (row === undefined) throw new Error("the synthetic lineage produced no row");
+  if (row === undefined)
+    throw new Error("the synthetic lineage produced no row");
   return row;
 }
 
@@ -287,7 +322,10 @@ function syntheticServer(options: {
 }
 
 /** A store directory holding one derivative file with exactly these bytes. */
-function storeWithFile(bytes: Uint8Array, name = "synthetic-cleared-asset.webp"): string {
+function storeWithFile(
+  bytes: Uint8Array,
+  name = "synthetic-cleared-asset.webp",
+): string {
   const store = path.join(tempRoot(), DERIVATIVE_STORE_DIR);
   mkdirSync(store, { recursive: true });
   writeFileSync(path.join(store, name), bytes);
@@ -316,15 +354,20 @@ function one<T>(items: readonly T[], what: string): T {
 }
 
 /** A refusal, or a failure that says which asset was served when nothing may be. */
-async function refusal(assetId: string, storeDir?: string): Promise<RefusedDerivative> {
+async function refusal(
+  assetId: string,
+  storeDir?: string,
+): Promise<RefusedDerivative> {
   const outcome = await serveDerivative(assetId, storeDir);
-  if (outcome.kind !== "refused") throw new Error(`${assetId} was served, and nothing may be served yet`);
+  if (outcome.kind !== "refused")
+    throw new Error(`${assetId} was served, and nothing may be served yet`);
   return outcome;
 }
 
 afterEach(() => {
   resetDerivativeManifestCache();
-  for (const dir of tempRoots.splice(0)) rmSync(dir, { force: true, recursive: true });
+  for (const dir of tempRoots.splice(0))
+    rmSync(dir, { force: true, recursive: true });
 });
 
 describe("a missing lineage record is a state, not a crash", () => {
@@ -348,7 +391,12 @@ describe("a missing lineage record is a state, not a crash", () => {
   });
 
   it("answers gate_denied for a real id before the absent store is ever consulted", async () => {
-    expect(await refusal(FIRST_ASSET_ID, path.join(tempRoot(), DERIVATIVE_STORE_DIR))).toEqual({
+    expect(
+      await refusal(
+        FIRST_ASSET_ID,
+        path.join(tempRoot(), DERIVATIVE_STORE_DIR),
+      ),
+    ).toEqual({
       assetId: FIRST_ASSET_ID,
       detail: "rights_not_cleared",
       kind: "refused",
@@ -372,14 +420,24 @@ describe("an unreadable or malformed manifest fails closed", () => {
     const root = rootWithManifest("");
     expect(() => readDerivativeManifest(root)).toThrow(DerivativeManifestError);
     expect(() => readDerivativeManifest(root)).toThrow("is not valid JSON");
-    expect(() => readDerivativeManifest(root)).toThrow(DERIVATIVE_MANIFEST_PATH);
+    expect(() => readDerivativeManifest(root)).toThrow(
+      DERIVATIVE_MANIFEST_PATH,
+    );
   });
 
   it("rejects a manifest that is not an object", () => {
-    expect(() => validateManifest("lineage", "fixture")).toThrow(/manifest is not an object/);
-    expect(() => validateManifest(null, "fixture")).toThrow(/manifest is not an object/);
-    expect(() => validateManifest(undefined, "fixture")).toThrow(/manifest is not an object/);
-    expect(() => validateManifest(42, "fixture")).toThrow(/manifest is not an object/);
+    expect(() => validateManifest("lineage", "fixture")).toThrow(
+      /manifest is not an object/,
+    );
+    expect(() => validateManifest(null, "fixture")).toThrow(
+      /manifest is not an object/,
+    );
+    expect(() => validateManifest(undefined, "fixture")).toThrow(
+      /manifest is not an object/,
+    );
+    expect(() => validateManifest(42, "fixture")).toThrow(
+      /manifest is not an object/,
+    );
   });
 
   it("refuses an array-shaped manifest, which is not a lineage record", () => {
@@ -388,35 +446,47 @@ describe("an unreadable or malformed manifest fails closed", () => {
     // at the required-field checks rather than at the shape check. The refusal is the guarantee; the guard
     // that delivers it is recorded here as an observation, and a future edit to `isRecord` cannot turn this
     // case green by asserting a sentence instead of a property.
-    expect(() => validateManifest([], "fixture")).toThrow(DerivativeManifestError);
-    expect(() => validateManifest([lineageRow()], "fixture")).toThrow(DerivativeManifestError);
+    expect(() => validateManifest([], "fixture")).toThrow(
+      DerivativeManifestError,
+    );
+    expect(() => validateManifest([lineageRow()], "fixture")).toThrow(
+      DerivativeManifestError,
+    );
     // The same property read from disk: an array in `lineage.json` is a corrupt record, not an empty store.
-    expect(() => readDerivativeManifest(rootWithManifest("[]"))).toThrow(DerivativeManifestError);
+    expect(() => readDerivativeManifest(rootWithManifest("[]"))).toThrow(
+      DerivativeManifestError,
+    );
   });
 
   it("rejects a manifest whose generatedAt or storeDirectory is missing or empty", () => {
-    expect(() => validateManifest(rawManifest({ generatedAt: "" }), "fixture")).toThrow(
-      /"generatedAt" is not a non-empty string/,
-    );
-    expect(() => validateManifest(rawManifest({ storeDirectory: 42 }), "fixture")).toThrow(
-      /"storeDirectory" is not a non-empty string/,
-    );
+    expect(() =>
+      validateManifest(rawManifest({ generatedAt: "" }), "fixture"),
+    ).toThrow(/"generatedAt" is not a non-empty string/);
+    expect(() =>
+      validateManifest(rawManifest({ storeDirectory: 42 }), "fixture"),
+    ).toThrow(/"storeDirectory" is not a non-empty string/);
   });
 
   it("rejects an originalsUnchanged that is not a boolean", () => {
     // The build writes this only after hashing every original before and after the run. A truthy string
     // would let a run that rewrote the library claim that it did not.
-    expect(() => validateManifest(rawManifest({ originalsUnchanged: "true" }), "fixture")).toThrow(
-      /"originalsUnchanged" is not a boolean/,
-    );
+    expect(() =>
+      validateManifest(rawManifest({ originalsUnchanged: "true" }), "fixture"),
+    ).toThrow(/"originalsUnchanged" is not a boolean/);
   });
 
   it("rejects a derivatives field that is not an array, and a row that is not an object", () => {
     expect(() =>
-      validateManifest(rawManifest({ derivatives: { 0: lineageRow() } }), "fixture"),
+      validateManifest(
+        rawManifest({ derivatives: { 0: lineageRow() } }),
+        "fixture",
+      ),
     ).toThrow(/"derivatives" is not an array/);
     expect(() =>
-      validateManifest(rawManifest({ derivatives: ["a row that is not an object"] }), "fixture"),
+      validateManifest(
+        rawManifest({ derivatives: ["a row that is not an object"] }),
+        "fixture",
+      ),
     ).toThrow(/not an object/);
   });
 
@@ -431,28 +501,39 @@ describe("an unreadable or malformed manifest fails closed", () => {
     );
   });
 
-  it.each(malformedDigests)("refuses a derivative sha256 that is %s", (_label, sha256) => {
-    // The requirement is the digest's form: lineage is verified by hashing the file and comparing, which is
-    // only possible against a lowercase 64-hex SHA-256. The guard's sentence states that requirement, so it
-    // is the expectation — not a message the implementation happens to print.
-    expect(() => manifestWith([lineageRow({ sha256 })])).toThrow(DerivativeManifestError);
-    expect(() => manifestWith([lineageRow({ sha256 })])).toThrow(
-      /"sha256" is not a lowercase SHA-256 hex digest/,
-    );
-  });
+  it.each(malformedDigests)(
+    "refuses a derivative sha256 that is %s",
+    (_label, sha256) => {
+      // The requirement is the digest's form: lineage is verified by hashing the file and comparing, which is
+      // only possible against a lowercase 64-hex SHA-256. The guard's sentence states that requirement, so it
+      // is the expectation — not a message the implementation happens to print.
+      expect(() => manifestWith([lineageRow({ sha256 })])).toThrow(
+        DerivativeManifestError,
+      );
+      expect(() => manifestWith([lineageRow({ sha256 })])).toThrow(
+        /"sha256" is not a lowercase SHA-256 hex digest/,
+      );
+    },
+  );
 
   it("refuses a row that carries no derivative digest at all", () => {
     // The requirement is only that an empty cell cannot become a served derivative. Which guard answers it
     // — the required-string check or the hex check — is the validator's own ordering, so the refusal is
     // what is asserted here and the ordering is left unasserted rather than frozen into a message.
-    expect(() => manifestWith([lineageRow({ sha256: "" })])).toThrow(DerivativeManifestError);
-    expect(() => manifestWith([lineageRow({ originalSha256: "" })])).toThrow(DerivativeManifestError);
+    expect(() => manifestWith([lineageRow({ sha256: "" })])).toThrow(
+      DerivativeManifestError,
+    );
+    expect(() => manifestWith([lineageRow({ originalSha256: "" })])).toThrow(
+      DerivativeManifestError,
+    );
   });
 
   it("rejects an originalSha256 that cannot join the register", () => {
     // The original's digest is the only link between a derivative and the row that authorised it. Without
     // the hex shape, RB-05's unrecoverable lineage could be recorded and then read back as provenance.
-    expect(() => manifestWith([lineageRow({ originalSha256: "unknown" })])).toThrow(
+    expect(() =>
+      manifestWith([lineageRow({ originalSha256: "unknown" })]),
+    ).toThrow(
       /"originalSha256" is not a lowercase SHA-256 hex digest, so the lineage does not join the register/,
     );
   });
@@ -464,11 +545,14 @@ describe("an unreadable or malformed manifest fails closed", () => {
     ["height zero", { height: 0 }],
     ["bytes negative", { bytes: -40_960 }],
   ];
-  it.each(badNumbers)("rejects a non-positive-integer %s", (_label, override) => {
-    expect(() => manifestWith([lineageRow(override)])).toThrow(
-      /is not a positive integer$/,
-    );
-  });
+  it.each(badNumbers)(
+    "rejects a non-positive-integer %s",
+    (_label, override) => {
+      expect(() => manifestWith([lineageRow(override)])).toThrow(
+        /is not a positive integer$/,
+      );
+    },
+  );
 
   it("rejects a missing required string on a row", () => {
     expect(() => manifestWith([lineageRow({ assetId: "" })])).toThrow(
@@ -480,9 +564,9 @@ describe("an unreadable or malformed manifest fails closed", () => {
   });
 
   it("rejects a duplicate asset id, because two rows would make the bytes ambiguous", () => {
-    expect(() => manifestWith([lineageRow(), lineageRow({ sha256: SHA_B })])).toThrow(
-      /one asset id appears twice/,
-    );
+    expect(() =>
+      manifestWith([lineageRow(), lineageRow({ sha256: SHA_B })]),
+    ).toThrow(/one asset id appears twice/);
   });
 
   it("accepts a well-formed manifest and keeps every field the route needs", () => {
@@ -495,7 +579,9 @@ describe("an unreadable or malformed manifest fails closed", () => {
 
   it("round-trips a manifest written to disk in the store shape", () => {
     const row = lineageRow();
-    const read = readDerivativeManifest(rootWithManifest(JSON.stringify(manifestObject([row]))));
+    const read = readDerivativeManifest(
+      rootWithManifest(JSON.stringify(manifestObject([row]))),
+    );
     expect(read).not.toBeNull();
     expect(read?.derivatives).toEqual([row]);
   });
@@ -567,13 +653,20 @@ describe("the manifest cache and its injection seam", () => {
  */
 describe("SR-08: the lineage cache revalidates against the file", () => {
   it("sees a rewritten digest and filename on the next read, with no reset", () => {
-    const root = rootWithManifest(JSON.stringify(manifestObject([lineageRow()])));
-    expect(derivativeManifest(root)?.derivatives.map((row) => row.sha256)).toEqual([SHA_A]);
+    const root = rootWithManifest(
+      JSON.stringify(manifestObject([lineageRow()])),
+    );
+    expect(
+      derivativeManifest(root)?.derivatives.map((row) => row.sha256),
+    ).toEqual([SHA_A]);
 
-    writeManifestRows(root, [lineageRow({ file: "replaced.webp", sha256: SHA_B })]);
+    writeManifestRows(root, [
+      lineageRow({ file: "replaced.webp", sha256: SHA_B }),
+    ]);
 
     const refreshed = derivativeManifest(root);
-    if (refreshed === null) throw new Error("the rewritten manifest read back as absent");
+    if (refreshed === null)
+      throw new Error("the rewritten manifest read back as absent");
     const row = one(refreshed.derivatives, "the rewritten lineage row");
     expect(row.sha256).toBe(SHA_B);
     expect(row.file).toBe("replaced.webp");
@@ -588,7 +681,9 @@ describe("SR-08: the lineage cache revalidates against the file", () => {
   });
 
   it("sees a record that is withdrawn, which is the direction a cache must never get wrong", () => {
-    const root = rootWithManifest(JSON.stringify(manifestObject([lineageRow()])));
+    const root = rootWithManifest(
+      JSON.stringify(manifestObject([lineageRow()])),
+    );
     expect(derivativeManifest(root)).not.toBeNull();
 
     rmSync(path.join(root, DERIVATIVE_MANIFEST_PATH));
@@ -598,10 +693,16 @@ describe("SR-08: the lineage cache revalidates against the file", () => {
   });
 
   it("throws on corrupt bytes instead of answering from the copy it parsed last", () => {
-    const root = rootWithManifest(JSON.stringify(manifestObject([lineageRow()])));
+    const root = rootWithManifest(
+      JSON.stringify(manifestObject([lineageRow()])),
+    );
     expect(derivativeManifest(root)).not.toBeNull();
 
-    writeFileSync(path.join(root, DERIVATIVE_MANIFEST_PATH), "{ not json", "utf8");
+    writeFileSync(
+      path.join(root, DERIVATIVE_MANIFEST_PATH),
+      "{ not json",
+      "utf8",
+    );
 
     expect(() => derivativeManifest(root)).toThrow(DerivativeManifestError);
   });
@@ -609,7 +710,9 @@ describe("SR-08: the lineage cache revalidates against the file", () => {
   it("still reuses the parse while the bytes have not moved", () => {
     // The point of the digest is freshness without throwing away the cache: same bytes must give the same
     // object, or the fix would have bought revocation speed by re-parsing on every request for nothing.
-    const root = rootWithManifest(JSON.stringify(manifestObject([lineageRow()])));
+    const root = rootWithManifest(
+      JSON.stringify(manifestObject([lineageRow()])),
+    );
     const first = derivativeManifest(root);
     expect(derivativeManifest(root)).toBe(first);
     writeManifestRows(root, [lineageRow()]);
@@ -623,12 +726,16 @@ describe("SR-08: the lineage cache revalidates against the file", () => {
     const root = tempRoot();
     const storeDir = path.join(root, DERIVATIVE_STORE_DIR);
     mkdirSync(storeDir, { recursive: true });
-    writeFileSync(path.join(storeDir, "synthetic-cleared-asset.webp"), SYNTHETIC_BYTES);
+    writeFileSync(
+      path.join(storeDir, "synthetic-cleared-asset.webp"),
+      SYNTHETIC_BYTES,
+    );
     writeManifestRows(root, [syntheticRow()]);
     const serve = createDerivativeServer({
       ...PRODUCTION_SERVING_DEPENDENCIES,
       evaluateServing: decidePublicServing,
-      findAsset: (assetId) => (assetId === SYNTHETIC_ID ? syntheticAsset() : null),
+      findAsset: (assetId) =>
+        assetId === SYNTHETIC_ID ? syntheticAsset() : null,
       readLineageManifest: () => derivativeManifest(root),
       storeDirectory: () => storeDir,
     });
@@ -651,24 +758,35 @@ describe("serveDerivative refuses an id the register does not carry", () => {
     ["a traversal-shaped id", "../../.env"],
     ["a register id with a suffix", `${FIRST_ASSET_ID}-copy`],
     ["a lowercase register id", FIRST_ASSET_ID.toLowerCase()],
-  ])("answers unknown_asset for %s, before any rights decision or file read", async (_label, id) => {
-    const outcome: ServingOutcome = await serveDerivative(
-      id,
-      path.join(tempRoot(), DERIVATIVE_STORE_DIR),
-    );
-    expect(outcome).toEqual({ assetId: id, detail: null, kind: "refused", reason: "unknown_asset" });
-  });
+  ])(
+    "answers unknown_asset for %s, before any rights decision or file read",
+    async (_label, id) => {
+      const outcome: ServingOutcome = await serveDerivative(
+        id,
+        path.join(tempRoot(), DERIVATIVE_STORE_DIR),
+      );
+      expect(outcome).toEqual({
+        assetId: id,
+        detail: null,
+        kind: "refused",
+        reason: "unknown_asset",
+      });
+    },
+  );
 
   it("does not reach the store for an unknown id even when a lineage row exists for another asset", async () => {
     setDerivativeManifest(manifestWith([lineageRow()]));
-    expect(await refusal("NDM-AST-083", tempRoot())).toMatchObject({ reason: "unknown_asset" });
+    expect(await refusal("NDM-AST-083", tempRoot())).toMatchObject({
+      reason: "unknown_asset",
+    });
   });
 });
 
 describe("serveDerivative is fail-closed for the delivered register", () => {
   it("refuses all 82 catalogued assets and produces no served branch", async () => {
     const outcomes: ServingOutcome[] = [];
-    for (const asset of register) outcomes.push(await serveDerivative(asset.assetId));
+    for (const asset of register)
+      outcomes.push(await serveDerivative(asset.assetId));
     expect(outcomes).toHaveLength(82);
     for (const outcome of outcomes) expect(outcome.kind).toBe("refused");
   });
@@ -702,8 +820,12 @@ describe("serveDerivative is fail-closed for the delivered register", () => {
     // `setDerivativeManifest` is the seam a build may use, so an unvalidated record is possible inside one
     // process. Check 2 runs first, which is why an escaping path never becomes the reported reason — and
     // why the containment rule below is asserted on its own rather than through the route.
-    setDerivativeManifest(manifestObject([lineageRow({ file: "../../../../.env" })]));
-    expect(await refusal(FIRST_ASSET_ID, tempRoot())).toMatchObject({ reason: "gate_denied" });
+    setDerivativeManifest(
+      manifestObject([lineageRow({ file: "../../../../.env" })]),
+    );
+    expect(await refusal(FIRST_ASSET_ID, tempRoot())).toMatchObject({
+      reason: "gate_denied",
+    });
   });
 
   it("refuses with gate_denied whatever the private store holds, because the gate runs first", async () => {
@@ -713,7 +835,9 @@ describe("serveDerivative is fail-closed for the delivered register", () => {
     // check 2 runs before the store is opened. That is the measured statement behind this file's header:
     // `serveDerivative` has no input that reaches the served branch while every register row is denied, and
     // the branches below are reached only by giving the same six checks an explicit record.
-    const body = new Uint8Array([0x52, 0x49, 0x46, 0x46, 0x57, 0x45, 0x42, 0x50]);
+    const body = new Uint8Array([
+      0x52, 0x49, 0x46, 0x46, 0x57, 0x45, 0x42, 0x50,
+    ]);
     const recordedDigest = createHash("sha256").update(body).digest("hex");
     const row = lineageRow({ sha256: recordedDigest });
 
@@ -724,13 +848,22 @@ describe("serveDerivative is fail-closed for the delivered register", () => {
     writeFileSync(path.join(goodRoot, DERIVATIVE_STORE_DIR, row.file), body);
 
     const swappedRoot = rootWithManifest(JSON.stringify(manifestObject([row])));
-    writeFileSync(path.join(swappedRoot, DERIVATIVE_STORE_DIR, row.file), new Uint8Array([0x00]));
+    writeFileSync(
+      path.join(swappedRoot, DERIVATIVE_STORE_DIR, row.file),
+      new Uint8Array([0x00]),
+    );
 
     setDerivativeManifest(manifestWith([row]));
     const outcomes = await Promise.all([
       serveDerivative(FIRST_ASSET_ID, bareStore),
-      serveDerivative(FIRST_ASSET_ID, path.join(goodRoot, DERIVATIVE_STORE_DIR)),
-      serveDerivative(FIRST_ASSET_ID, path.join(swappedRoot, DERIVATIVE_STORE_DIR)),
+      serveDerivative(
+        FIRST_ASSET_ID,
+        path.join(goodRoot, DERIVATIVE_STORE_DIR),
+      ),
+      serveDerivative(
+        FIRST_ASSET_ID,
+        path.join(swappedRoot, DERIVATIVE_STORE_DIR),
+      ),
     ]);
     for (const outcome of outcomes) {
       expect(outcome).toEqual({
@@ -744,14 +877,21 @@ describe("serveDerivative is fail-closed for the delivered register", () => {
     // a corrupt file: read directly, they hash to the recorded digest.
     expect(
       createHash("sha256")
-        .update(readFileSync(path.join(goodRoot, DERIVATIVE_STORE_DIR, row.file)))
+        .update(
+          readFileSync(path.join(goodRoot, DERIVATIVE_STORE_DIR, row.file)),
+        )
         .digest("hex"),
     ).toBe(recordedDigest);
   });
 
   it("carries refusal reasons only in the returned outcome, never as fields a handler could echo", async () => {
     const outcome = await refusal(FIRST_ASSET_ID, tempRoot());
-    expect(Object.keys(outcome).sort()).toEqual(["assetId", "detail", "kind", "reason"]);
+    expect(Object.keys(outcome).sort()).toEqual([
+      "assetId",
+      "detail",
+      "kind",
+      "reason",
+    ]);
     expect(outcome).not.toHaveProperty("body");
     expect(outcome).not.toHaveProperty("etag");
     expect(outcome).not.toHaveProperty("mime");
@@ -763,7 +903,10 @@ describe("the four branches a denied asset can never reach", () => {
   // the store are a fixture. That is what makes these results evidence about the production code path
   // rather than about a stand-in.
   it("answers no_lineage when an approved asset has no derivative recorded", async () => {
-    const serve = syntheticServer({ manifest: null, storeDir: storeWithFile(SYNTHETIC_BYTES) });
+    const serve = syntheticServer({
+      manifest: null,
+      storeDir: storeWithFile(SYNTHETIC_BYTES),
+    });
     expect(await serve(SYNTHETIC_ID)).toEqual({
       assetId: SYNTHETIC_ID,
       detail: null,
@@ -778,17 +921,24 @@ describe("the four branches a denied asset can never reach", () => {
       storeDir: storeWithFile(SYNTHETIC_BYTES),
     });
     const outcome = await serve(SYNTHETIC_ID);
-    expect(outcome.kind === "refused" ? outcome.reason : outcome.kind).toBe("no_lineage");
+    expect(outcome.kind === "refused" ? outcome.reason : outcome.kind).toBe(
+      "no_lineage",
+    );
   });
 
   it("answers path_escapes_store for a row whose file leaves the private store", async () => {
     // `validateManifest` rejects a `..` in the text, so this fixture is assembled as a plain object: the
     // point is the second containment gate, the one that reads the filesystem, which has to hold even when
     // a lineage record was built by hand instead of by the pipeline.
-    const escaping = syntheticLineage({ file: "../../../synthetic-escape.webp" });
+    const escaping = syntheticLineage({
+      file: "../../../synthetic-escape.webp",
+    });
     const store = storeWithFile(SYNTHETIC_BYTES);
     const serve = syntheticServer({ manifest: escaping, storeDir: store });
-    expect(await serve(SYNTHETIC_ID)).toMatchObject({ kind: "refused", reason: "path_escapes_store" });
+    expect(await serve(SYNTHETIC_ID)).toMatchObject({
+      kind: "refused",
+      reason: "path_escapes_store",
+    });
   });
 
   it("serves a normalised path that stays inside the store", async () => {
@@ -801,7 +951,9 @@ describe("the four branches a denied asset can never reach", () => {
     });
     // Spread rather than `toEqual(body)`: `node:fs` answers with a `Buffer`, and a deep-equal against a
     // `Uint8Array` compares prototypes, not bytes. The sequence is the thing under test.
-    expect([...served(await serve(SYNTHETIC_ID)).body]).toEqual([...SYNTHETIC_BYTES]);
+    expect([...served(await serve(SYNTHETIC_ID)).body]).toEqual([
+      ...SYNTHETIC_BYTES,
+    ]);
   });
 
   it("answers file_unreadable when the recorded derivative is not on disk", async () => {
@@ -809,8 +961,14 @@ describe("the four branches a denied asset can never reach", () => {
     // no files. The route must be able to answer 404 for it rather than throw.
     const emptyStore = path.join(tempRoot(), DERIVATIVE_STORE_DIR);
     mkdirSync(emptyStore, { recursive: true });
-    const serve = syntheticServer({ manifest: syntheticLineage(), storeDir: emptyStore });
-    expect(await serve(SYNTHETIC_ID)).toMatchObject({ kind: "refused", reason: "file_unreadable" });
+    const serve = syntheticServer({
+      manifest: syntheticLineage(),
+      storeDir: emptyStore,
+    });
+    expect(await serve(SYNTHETIC_ID)).toMatchObject({
+      kind: "refused",
+      reason: "file_unreadable",
+    });
   });
 
   it("answers digest_mismatch when the bytes are not the ones the manifest recorded", async () => {
@@ -818,7 +976,10 @@ describe("the four branches a denied asset can never reach", () => {
       manifest: syntheticLineage(),
       storeDir: storeWithFile(new Uint8Array([0x00, 0x01, 0x02, 0x03])),
     });
-    expect(await serve(SYNTHETIC_ID)).toMatchObject({ kind: "refused", reason: "digest_mismatch" });
+    expect(await serve(SYNTHETIC_ID)).toMatchObject({
+      kind: "refused",
+      reason: "digest_mismatch",
+    });
   });
 
   it("refuses a substitution even though the substitute is a real, readable file", async () => {
@@ -876,7 +1037,9 @@ describe("the served branch, reached for the first time", () => {
       manifest: syntheticLineage({ assetId: "NDM-SYNTH-TEST-777" }),
       storeDir: storeWithFile(SYNTHETIC_BYTES),
     });
-    expect(await serve("NDM-SYNTH-TEST-777")).toMatchObject({ reason: "unknown_asset" });
+    expect(await serve("NDM-SYNTH-TEST-777")).toMatchObject({
+      reason: "unknown_asset",
+    });
   });
 
   it("runs the gate before the store, so an injected record cannot skip it", async () => {
@@ -904,9 +1067,12 @@ describe("the gate's own clauses, through the real evaluator and a synthetic row
   // Each case supplies a lineage record and the correct bytes, so the store is never the reason: whatever
   // comes back is the gate. Previously three of these four denials could not be produced end to end.
   const clearedCells: Record<string, string> = {
-    "Brand/Curatorial Approval": "SYNTHETIC-APPROVED — vocabulary that exists only in this file",
-    "Actual Usage": "SYNTHETIC-PUBLISHED — vocabulary that exists only in this file",
-    "Rights Status": "SYNTHETIC-CLEARED — vocabulary that exists only in this file",
+    "Brand/Curatorial Approval":
+      "SYNTHETIC-APPROVED — vocabulary that exists only in this file",
+    "Actual Usage":
+      "SYNTHETIC-PUBLISHED — vocabulary that exists only in this file",
+    "Rights Status":
+      "SYNTHETIC-CLEARED — vocabulary that exists only in this file",
   };
 
   async function reasonFor(overrides: Record<string, string>): Promise<string> {
@@ -925,19 +1091,25 @@ describe("the gate's own clauses, through the real evaluator and a synthetic row
   });
 
   it("denies rights_not_cleared when the rights wording is not a cleared marker", async () => {
-    expect(await reasonFor({ "Rights Status": "UNKNOWN — no rights statement supplied" })).toBe(
-      "rights_not_cleared",
-    );
+    expect(
+      await reasonFor({
+        "Rights Status": "UNKNOWN — no rights statement supplied",
+      }),
+    ).toBe("rights_not_cleared");
   });
 
   it("denies approval_not_granted for a cleared but unapproved row", async () => {
-    expect(await reasonFor({ "Brand/Curatorial Approval": "Not Approved — no approval record" })).toBe(
-      "approval_not_granted",
-    );
+    expect(
+      await reasonFor({
+        "Brand/Curatorial Approval": "Not Approved — no approval record",
+      }),
+    ).toBe("approval_not_granted");
   });
 
   it("denies not_published for a cleared, approved row that no publish transaction has recorded", async () => {
-    expect(await reasonFor({ "Actual Usage": "Homepage hero" })).toBe("not_published");
+    expect(await reasonFor({ "Actual Usage": "Homepage hero" })).toBe(
+      "not_published",
+    );
   });
 
   it("treats a pending review as a denial, not as a half-permission", async () => {
@@ -953,7 +1125,9 @@ describe("the production binding stays bound to the real register and the real g
     const deps: ServingDependencies = PRODUCTION_SERVING_DEPENDENCIES;
     expect(deps.evaluateServing).toBe(decidePublicServing);
     expect(deps.readLineageManifest).toBe(derivativeManifest);
-    expect(deps.storeDirectory()).toBe(path.join(process.cwd(), DERIVATIVE_STORE_DIR));
+    expect(deps.storeDirectory()).toBe(
+      path.join(process.cwd(), DERIVATIVE_STORE_DIR),
+    );
     // Check 1 answers from the delivered register: the same cached row object, and null for the synthetic id.
     const delivered = one(
       register.filter((asset) => asset.assetId === FIRST_ASSET_ID),
@@ -968,7 +1142,8 @@ describe("the production binding stays bound to the real register and the real g
     const reasons = new Set<string>();
     for (const asset of register) {
       const outcome = await serve(asset.assetId);
-      if (outcome.kind !== "refused") throw new Error(`${asset.assetId} was served from the real register`);
+      if (outcome.kind !== "refused")
+        throw new Error(`${asset.assetId} was served from the real register`);
       reasons.add(outcome.reason);
     }
     expect([...reasons]).toEqual(["gate_denied"]);
@@ -997,12 +1172,18 @@ describe("storePathFor — check 4, the rule that decides which byte is read", (
   });
 
   it("allows a subdirectory and normalises a traversal that stays inside", () => {
-    expect(storePathFor("deep/a.webp", store)).toBe(path.join(inside, "deep", "a.webp"));
+    expect(storePathFor("deep/a.webp", store)).toBe(
+      path.join(inside, "deep", "a.webp"),
+    );
     // `a/b/../c` and `a/c` are the same file, and only one of them looks suspicious as a string. The check
     // runs on the resolved path, so both forms answer the same way — and a climb out of a subdirectory
     // that lands back in the store is a legitimate path, not an escape.
-    expect(storePathFor("a/b/../c.webp", store)).toBe(storePathFor("a/c.webp", store));
-    expect(storePathFor("deep/../escape.webp", store)).toBe(path.join(inside, "escape.webp"));
+    expect(storePathFor("a/b/../c.webp", store)).toBe(
+      storePathFor("a/c.webp", store),
+    );
+    expect(storePathFor("deep/../escape.webp", store)).toBe(
+      path.join(inside, "escape.webp"),
+    );
   });
 
   it.each([
@@ -1010,8 +1191,14 @@ describe("storePathFor — check 4, the rule that decides which byte is read", (
     ["the parent directory itself", ".."],
     ["many levels up", "../../../etc/passwd"],
     ["a nested path that climbs out", "deep/../../outside.webp"],
-    ["a climb out of the store to its neighbour", "../media-derivatives-evil/a.webp"],
-    ["an absolute path outside the store", path.resolve(tmpdir(), "escape.webp")],
+    [
+      "a climb out of the store to its neighbour",
+      "../media-derivatives-evil/a.webp",
+    ],
+    [
+      "an absolute path outside the store",
+      path.resolve(tmpdir(), "escape.webp"),
+    ],
   ])("returns null for %s", (_label, file) => {
     expect(storePathFor(file, store)).toBeNull();
   });
@@ -1024,7 +1211,11 @@ describe("storePathFor — check 4, the rule that decides which byte is read", (
   it("does not let a sibling directory whose name starts with the store name pass", () => {
     // The guard compares against `resolvedStore + path.sep`. Without the separator, a path under
     // `media-derivatives-evil` starts with the string `media-derivatives` and would read as contained.
-    const sibling = path.join(path.dirname(store), `${path.basename(store)}-evil`, "a.webp");
+    const sibling = path.join(
+      path.dirname(store),
+      `${path.basename(store)}-evil`,
+      "a.webp",
+    );
     expect(sibling.startsWith(inside)).toBe(true);
     expect(storePathFor(sibling, store)).toBeNull();
     // The in-store subdirectory form is a different case and is allowed: it resolves inside the store.
@@ -1034,7 +1225,9 @@ describe("storePathFor — check 4, the rule that decides which byte is read", (
   });
 
   it("defaults its store directory to the repository's private store", () => {
-    expect(storePathFor("a.webp")).toBe(path.join(process.cwd(), DERIVATIVE_STORE_DIR, "a.webp"));
+    expect(storePathFor("a.webp")).toBe(
+      path.join(process.cwd(), DERIVATIVE_STORE_DIR, "a.webp"),
+    );
   });
 });
 
@@ -1053,17 +1246,27 @@ describe("the production register still cannot produce a record the gate accepts
     expect(PRODUCTION_RIGHTS_VOCABULARY.grantedApprovalMarkers).toEqual([]);
     expect(PRODUCTION_RIGHTS_VOCABULARY.publishedMarkers).toEqual([]);
     // The only wording production recognises is the pending statement, and pending is a denial.
-    expect(PRODUCTION_RIGHTS_VOCABULARY.pendingStatements).toEqual(["Awaiting Rights Review"]);
+    expect(PRODUCTION_RIGHTS_VOCABULARY.pendingStatements).toEqual([
+      "Awaiting Rights Review",
+    ]);
   });
 
   it("binds every evaluator and the register parser to that vocabulary by default", () => {
-    expect(rightsStateFrom("SYNTHETIC-CLEARED — vocabulary that exists only in this file")).toBe(
-      "unknown",
-    );
-    expect(approvalFrom("SYNTHETIC-APPROVED — vocabulary that exists only in this file")).toBe(
-      "unknown",
-    );
-    expect(publishedFrom("SYNTHETIC-PUBLISHED — vocabulary that exists only in this file")).toBe(false);
+    expect(
+      rightsStateFrom(
+        "SYNTHETIC-CLEARED — vocabulary that exists only in this file",
+      ),
+    ).toBe("unknown");
+    expect(
+      approvalFrom(
+        "SYNTHETIC-APPROVED — vocabulary that exists only in this file",
+      ),
+    ).toBe("unknown");
+    expect(
+      publishedFrom(
+        "SYNTHETIC-PUBLISHED — vocabulary that exists only in this file",
+      ),
+    ).toBe(false);
     // The same row, read once with the test-only vocabulary and once with the default, so the difference is
     // the policy argument and nothing else.
     expect(syntheticAsset().rights).toBe("cleared");
@@ -1073,19 +1276,32 @@ describe("the production register still cannot produce a record the gate accepts
     expect(production.rights).toBe("unknown");
     expect(production.approval).toBe("unknown");
     expect(production.published).toBe(false);
-    expect(decidePublicServing(production)).toEqual({ denial: "rights_not_cleared", serve: false });
+    expect(decidePublicServing(production)).toEqual({
+      denial: "rights_not_cleared",
+      serve: false,
+    });
   });
 
   it("maps rights wording to unknown unless the code has pre-agreed a marker", () => {
-    expect(rightsStateFrom("CLEARED — signed licence on file, expires 2030")).toBe("unknown");
-    expect(rightsStateFrom("Rights holder: estate, licence: CC BY-NC 4.0")).toBe("unknown");
+    expect(
+      rightsStateFrom("CLEARED — signed licence on file, expires 2030"),
+    ).toBe("unknown");
+    expect(
+      rightsStateFrom("Rights holder: estate, licence: CC BY-NC 4.0"),
+    ).toBe("unknown");
     expect(rightsStateFrom("Awaiting Rights Review")).toBe("pending");
-    expect(rightsStateFrom("UNKNOWN — no rights statement supplied")).toBe("unknown");
+    expect(rightsStateFrom("UNKNOWN — no rights statement supplied")).toBe(
+      "unknown",
+    );
   });
 
   it("maps approval wording to unknown or not_approved, never to a grant", () => {
-    expect(approvalFrom("Approved — brand sign-off 2026-11-02")).toBe("unknown");
-    expect(approvalFrom("Not Approved — no approval record supplied")).toBe("not_approved");
+    expect(approvalFrom("Approved — brand sign-off 2026-11-02")).toBe(
+      "unknown",
+    );
+    expect(approvalFrom("Not Approved — no approval record supplied")).toBe(
+      "not_approved",
+    );
     expect(approvalFrom("")).toBe("unknown");
   });
 
@@ -1114,15 +1330,22 @@ describe("the production register still cannot produce a record the gate accepts
       "Actual Usage": "None",
       "Derivative Status": "Derived",
       "Alt Text Status": "Recorded",
-      Notes: "Explicitly controlled fixture text; the delivered register is not touched by this file",
+      Notes:
+        "Explicitly controlled fixture text; the delivered register is not touched by this file",
       "Verified By": "serving.test.ts",
       "Verified Date": "2026-11-02",
     };
     const row = AUDIT_COLUMNS.map((column) => cells[column] ?? "").join(",");
-    const record = one(registryFromText(`${header}\n${row}\n`), "fixture record");
+    const record = one(
+      registryFromText(`${header}\n${row}\n`),
+      "fixture record",
+    );
     expect(record.rights).toBe("unknown");
     expect(record.approval).toBe("unknown");
     expect(record.published).toBe(false);
-    expect(decidePublicServing(record)).toEqual({ denial: "rights_not_cleared", serve: false });
+    expect(decidePublicServing(record)).toEqual({
+      denial: "rights_not_cleared",
+      serve: false,
+    });
   });
 });

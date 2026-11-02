@@ -9,10 +9,7 @@ import {
   unboundReasonFor,
 } from "@/lib/media/usage-map";
 import { ROUTES, type RouteKey, isValidSlug } from "@/domain/routes";
-import {
-  assetRegister,
-  assetsBoundToRoute,
-} from "@/lib/server/media/registry";
+import { assetRegister, assetsBoundToRoute } from "@/lib/server/media/registry";
 import { decidePublicServing } from "@/domain/rights";
 
 /**
@@ -80,7 +77,9 @@ describe("every binding points at a route the navigation contract knows", () => 
 
   it("uses only canonical route keys, or the masthead band", () => {
     for (const binding of SURFACE_BINDINGS) {
-      expect(binding.route === "global" || knownRoutes.has(binding.route)).toBe(true);
+      expect(binding.route === "global" || knownRoutes.has(binding.route)).toBe(
+        true,
+      );
     }
   });
 
@@ -114,9 +113,12 @@ describe("resolution, which is where a bad map becomes a broken page", () => {
   });
 
   it("binds the entrance to the four assets the catalog places there", () => {
-    expect(
-      assetsBoundToRoute("home").map((asset) => asset.assetId),
-    ).toEqual(["NDM-AST-013", "NDM-AST-014", "NDM-AST-004", "NDM-AST-015"]);
+    expect(assetsBoundToRoute("home").map((asset) => asset.assetId)).toEqual([
+      "NDM-AST-013",
+      "NDM-AST-014",
+      "NDM-AST-004",
+      "NDM-AST-015",
+    ]);
   });
 
   it("binds the masthead band to the monogram, separately from the page slots", () => {
@@ -159,10 +161,14 @@ describe("resolution, which is where a bad map becomes a broken page", () => {
       ),
     ).toEqual(["NDM-AST-079"]);
     expect(
-      assetsBoundToRoute("collection-detail", "artifacts").map((a) => a.assetId),
+      assetsBoundToRoute("collection-detail", "artifacts").map(
+        (a) => a.assetId,
+      ),
     ).toEqual(["NDM-AST-081"]);
     expect(
-      assetsBoundToRoute("collection-detail", "souvenirs").map((a) => a.assetId),
+      assetsBoundToRoute("collection-detail", "souvenirs").map(
+        (a) => a.assetId,
+      ),
     ).toEqual(["NDM-AST-082"]);
   });
 
@@ -182,7 +188,9 @@ describe("describeUsage, the sentence the register should carry", () => {
   });
 
   it("resolves a slug binding to the detail path, not the directory", () => {
-    expect(describeUsage(["Morocco World"]).text).toContain("/en/worlds/morocco");
+    expect(describeUsage(["Morocco World"]).text).toContain(
+      "/en/worlds/morocco",
+    );
   });
 
   it("says which surface bars an unbound asset", () => {
@@ -205,7 +213,11 @@ describe("describeUsage, the sentence the register should carry", () => {
   });
 
   it("mixes bound and unbound surfaces into one bound sentence, de-duplicated", () => {
-    const usage = describeUsage(["Homepage hero", "Homepage and identity", "Loading states"]);
+    const usage = describeUsage([
+      "Homepage hero",
+      "Homepage and identity",
+      "Loading states",
+    ]);
     expect(usage.state).toBe("bound");
     expect(usage.text.split("/en").length - 1).toBe(1);
   });
@@ -225,7 +237,8 @@ describe("the map is usage, not permission", () => {
     expect(bound.size).toBeGreaterThan(0);
     for (const assetId of bound) {
       const asset = register.find((candidate) => candidate.assetId === assetId);
-      if (asset === undefined) throw new Error(`${assetId} vanished from the register`);
+      if (asset === undefined)
+        throw new Error(`${assetId} vanished from the register`);
       expect(decidePublicServing(asset).serve).toBe(false);
     }
   });

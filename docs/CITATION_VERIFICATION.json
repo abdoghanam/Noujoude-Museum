@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-02T19:04:34.729Z",
+  "generatedAt": "2026-11-02T19:08:01.026Z",
   "tool": "scripts/verify-citations.mjs",
   "sources": [
     "master = reference/Noujoude_Master_Specification_EN.md (3942 lines)",
@@ -8,12 +8,12 @@
     "asset-req = reference/Noujoude_Asset_and_Brand_Requirements_EN.md (240 lines)",
     "trace-csv = reference/Noujoude_Line_by_Line_Traceability_EN.csv (8176 lines)",
     "env-example = .env.example (83 lines)",
-    "docker-compose = docker-compose.yml (64 lines)",
+    "docker-compose = docker-compose.yml (65 lines)",
     "package.json = package.json (81 lines)",
     "tsconfig = tsconfig.json (43 lines)",
-    "vitest-config = vitest.config.ts (38 lines)",
-    "playwright-config = playwright.config.ts (65 lines)",
-    "eslint-config = eslint.config.mjs (208 lines)",
+    "vitest-config = vitest.config.ts (48 lines)",
+    "playwright-config = playwright.config.ts (75 lines)",
+    "eslint-config = eslint.config.mjs (215 lines)",
     "manifest = Noujoude.photo/_pending_review_AI_generated/_manifest.json (232 lines)",
     "doc:AI_CURATOR_GOVERNANCE.md = docs/AI_CURATOR_GOVERNANCE.md (388 lines)",
     "doc:ARCHITECTURE.md = docs/ARCHITECTURE.md (373 lines)",

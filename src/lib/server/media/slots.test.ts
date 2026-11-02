@@ -117,7 +117,10 @@ function expectedTally(count: number): string {
  */
 function expectedAssetIdsFor(target: RouteTarget): readonly string[] {
   const ids: string[] = [];
-  for (const binding of bindingsForRoute(target.route, target.slug ?? undefined)) {
+  for (const binding of bindingsForRoute(
+    target.route,
+    target.slug ?? undefined,
+  )) {
     for (const asset of assetsForSurface(binding.surface)) {
       if (!ids.includes(asset.assetId)) ids.push(asset.assetId);
     }
@@ -137,7 +140,11 @@ function cleared(asset: AssetRecord): AssetRecord {
 const DIGEST_A = "a".repeat(64);
 const DIGEST_B = "b".repeat(64);
 
-function manifestWith(assetId: string, width: number, height: number): DerivativeManifest {
+function manifestWith(
+  assetId: string,
+  width: number,
+  height: number,
+): DerivativeManifest {
   return {
     derivatives: [
       {
@@ -216,9 +223,9 @@ describe("publicServingSummary", () => {
     // Today both are zero, which is why this is asserted as a property of the vocabulary, not as a
     // difference in the figures.
     const serving = publicServingSummary();
-    const servableViews = TARGETS.flatMap((target) => viewsFor(target, "en")).filter(
-      (view) => slotOutcome(view) === "image",
-    );
+    const servableViews = TARGETS.flatMap((target) =>
+      viewsFor(target, "en"),
+    ).filter((view) => slotOutcome(view) === "image");
     expect(servableViews).toEqual([]);
     expect(serving.gatePassed).toBe(0);
   });
@@ -241,9 +248,14 @@ describe("servingFooterSentence", () => {
     expect(partial).toBe(
       "Pre-publication shell. 82 catalogued assets, 12 pass the public-serving gate; every other asset is withheld by its slot.",
     );
-    expect(servingFooterSentence({ total: 7, cleared: 0, approved: 0, gatePassed: 0 })).toContain(
-      "7 catalogued assets, 0 pass",
-    );
+    expect(
+      servingFooterSentence({
+        total: 7,
+        cleared: 0,
+        approved: 0,
+        gatePassed: 0,
+      }),
+    ).toContain("7 catalogued assets, 0 pass");
     expect(partial).not.toBe(servingFooterSentence(publicServingSummary()));
   });
 
@@ -252,7 +264,9 @@ describe("servingFooterSentence", () => {
       publicServingSummary(),
       { total: 82, cleared: 82, approved: 82, gatePassed: 82 },
     ] as const) {
-      expect(servingFooterSentence(summary)).not.toMatch(/renders? (the )?(imagery|photos)/i);
+      expect(servingFooterSentence(summary)).not.toMatch(
+        /renders? (the )?(imagery|photos)/i,
+      );
     }
   });
 
@@ -273,7 +287,8 @@ describe("the layout band", () => {
     for (const locale of LOCALES) {
       const html = await renderLayout(locale);
       const [masthead] = slotViewsFor("global", locale);
-      if (masthead === undefined) throw new Error("the map binds no Header surface");
+      if (masthead === undefined)
+        throw new Error("the map binds no Header surface");
       // SR-02: the band's structural hook records that the mark is not there yet — which is the fact a
       // visitor needs — and the reason the layer computed is asserted here rather than printed in the
       // page. The route refuses a withheld asset with a 404 that carries no reason; a header that named
@@ -307,7 +322,10 @@ describe("the layout band", () => {
 describe("slotViewsFor — the seam between the map and the register", () => {
   it("has exactly 21 route targets and 46 bound surfaces today", () => {
     expect(TARGETS.length).toBe(21);
-    const surfaces = TARGETS.reduce((sum, target) => sum + viewsFor(target, "en").length, 0);
+    const surfaces = TARGETS.reduce(
+      (sum, target) => sum + viewsFor(target, "en").length,
+      0,
+    );
     expect(surfaces).toBe(46);
   });
 
@@ -322,11 +340,13 @@ describe("slotViewsFor — the seam between the map and the register", () => {
   });
 
   it("binds one surface to one asset with no asset counted twice on a route", () => {
-    const ids = TARGETS.flatMap((target) => viewsFor(target, "en").map((view) => view.assetId));
-    expect(new Set(ids).size).toBe(ids.length);
-    expect(new Set(SURFACE_BINDINGS.map((binding) => binding.surface)).size).toBe(
-      SURFACE_BINDINGS.length,
+    const ids = TARGETS.flatMap((target) =>
+      viewsFor(target, "en").map((view) => view.assetId),
     );
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(
+      new Set(SURFACE_BINDINGS.map((binding) => binding.surface)).size,
+    ).toBe(SURFACE_BINDINGS.length);
   });
 
   it("names each slot with a surface the asset itself declares", () => {
@@ -375,7 +395,9 @@ describe("slotViewsFor — the seam between the map and the register", () => {
   it("refuses every bound slot with the legal reason, in both locales", () => {
     const reasons = new Set(
       LOCALES.flatMap((locale) =>
-        TARGETS.map((target) => slotOutcome(one(viewsFor(target, locale), label(target)))),
+        TARGETS.map((target) =>
+          slotOutcome(one(viewsFor(target, locale), label(target))),
+        ),
       ),
     );
     expect([...reasons]).toEqual(["rights_not_cleared"]);
@@ -383,16 +405,22 @@ describe("slotViewsFor — the seam between the map and the register", () => {
 
   it("leaves 36 catalogued assets on no route, and every one of them is unbound by the map's own list", () => {
     const bound = new Set(
-      TARGETS.flatMap((target) => viewsFor(target, "en").map((view) => view.assetId)),
+      TARGETS.flatMap((target) =>
+        viewsFor(target, "en").map((view) => view.assetId),
+      ),
     );
-    const unbound = assetRegister().filter((asset) => !bound.has(asset.assetId));
+    const unbound = assetRegister().filter(
+      (asset) => !bound.has(asset.assetId),
+    );
     expect(unbound.length).toBe(36);
     const unboundSurfaces = new Set(
       UNBOUND_SURFACES.map((entry) => entry.surface.toLowerCase()),
     );
     for (const asset of unbound) {
       expect(
-        asset.surfaces.every((surface) => unboundSurfaces.has(surface.toLowerCase())),
+        asset.surfaces.every((surface) =>
+          unboundSurfaces.has(surface.toLowerCase()),
+        ),
         `${asset.assetId}: ${asset.surfaces.join(", ")}`,
       ).toBe(true);
     }
@@ -425,9 +453,7 @@ describe("the private store cannot open the gate", () => {
   });
 
   it("serves nothing to any of the 82 assets while the gate refuses them", () => {
-    setDerivativeManifest(
-      manifestWith("NDM-AST-001", 640, 480),
-    );
+    setDerivativeManifest(manifestWith("NDM-AST-001", 640, 480));
     for (const asset of assetRegister()) {
       expect(servedSrcFor(asset)).toBeNull();
     }
@@ -435,7 +461,9 @@ describe("the private store cannot open the gate", () => {
 
   it("keeps the masthead refused even when a lineage row exists for it", () => {
     setDerivativeManifest(manifestWith("NDM-AST-001", 640, 480));
-    const outcome = slotOutcome(one(slotViewsFor("global", "en"), "the global masthead slot"));
+    const outcome = slotOutcome(
+      one(slotViewsFor("global", "en"), "the global masthead slot"),
+    );
     expect(outcome).toBe("rights_not_cleared");
     // The lineage plumbing is live — the slot reports the derivative's pixels, not the original's —
     // and it still draws nothing. That is the difference between an unbuilt feature and a refused one.
@@ -453,9 +481,9 @@ describe("the private store cannot open the gate", () => {
     const { record, facts } = slotInputFor(asset, "en");
     expect(facts.src).toBe("/api/media/NDM-AST-001");
     expect(altTextFor(asset, "en")).toBeNull();
-    expect(slotOutcome({ assetId: asset.assetId, record, facts, surface: "Header" })).toBe(
-      "alt_text_not_recorded",
-    );
+    expect(
+      slotOutcome({ assetId: asset.assetId, record, facts, surface: "Header" }),
+    ).toBe("alt_text_not_recorded");
   });
 
   it("writes no alt text into either locale for any register asset", () => {
@@ -476,7 +504,9 @@ describe("the bound routes as a visitor receives them", () => {
       );
       expect(html).not.toContain("<img");
       expect(html).not.toContain('as="image"');
-      expect(html.match(/data-slot="media-withheld"/g)?.length).toBe(views.length);
+      expect(html.match(/data-slot="media-withheld"/g)?.length).toBe(
+        views.length,
+      );
       /*
        * SR-02, measured over every route the catalog binds rather than over one fixture: before this the
        * assertion was `data-reason="rights_not_cleared"` per view, which is the disclosure being tested
@@ -497,7 +527,9 @@ describe("the bound routes as a visitor receives them", () => {
   it("render nothing at all where the catalog bound nothing", () => {
     for (const route of ["privacy", "terms", "story-detail"] as const) {
       expect(
-        renderToStaticMarkup(createElement(MediaSlotGroup, { views: slotViewsFor(route, "en") })),
+        renderToStaticMarkup(
+          createElement(MediaSlotGroup, { views: slotViewsFor(route, "en") }),
+        ),
       ).toBe("");
     }
   });

@@ -19,14 +19,15 @@
  */
 export function declarationMismatch(filename, w, h) {
   if (!w || !h) return null;
-  const stem = filename.replace(/\.[^.]+$/, '');
+  const stem = filename.replace(/\.[^.]+$/, "");
   const exact = stem.match(/_(\d{2,4})x(\d{2,4})$/);
   const ratio = stem.match(/_(\d{1,2})x(\d{1,2})$/);
-  const size  = stem.match(/_(\d{3,4})$/);
+  const size = stem.match(/_(\d{3,4})$/);
   const actualRatio = w / h;
   if (exact) {
     const [dw, dh] = [Number(exact[1]), Number(exact[2])];
-    if (dw !== w || dh !== h) return `filename declares ${dw}x${dh}, file is ${w}x${h}`;
+    if (dw !== w || dh !== h)
+      return `filename declares ${dw}x${dh}, file is ${w}x${h}`;
     return null;
   }
   if (ratio) {

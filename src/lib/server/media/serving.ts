@@ -39,7 +39,11 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
-import { decidePublicServing, type MediaRecord, type ServingDecision } from "@/domain/rights";
+import {
+  decidePublicServing,
+  type MediaRecord,
+  type ServingDecision,
+} from "@/domain/rights";
 import type { AssetRecord } from "@/lib/media/asset-record";
 import {
   type DerivativeManifest,
@@ -104,7 +108,11 @@ export function storePathFor(
 ): string | null {
   const resolvedStore = path.resolve(storeDir);
   const resolved = path.resolve(resolvedStore, file);
-  if (resolved === resolvedStore || !resolved.startsWith(resolvedStore + path.sep)) return null;
+  if (
+    resolved === resolvedStore ||
+    !resolved.startsWith(resolvedStore + path.sep)
+  )
+    return null;
   return resolved;
 }
 
@@ -147,7 +155,8 @@ export const PRODUCTION_SERVING_DEPENDENCIES: ServingDependencies = {
   evaluateServing: decidePublicServing,
   findAsset: assetById,
   readLineageManifest: derivativeManifest,
-  readFileBytes: async (target: string): Promise<Uint8Array<ArrayBuffer>> => await readFile(target),
+  readFileBytes: async (target: string): Promise<Uint8Array<ArrayBuffer>> =>
+    await readFile(target),
   storeDirectory: defaultStoreDirectory,
 };
 
@@ -168,9 +177,9 @@ export function createDerivativeServer(
     const serving = dependencies.evaluateServing(asset);
     if (!serving.serve) return refused(assetId, "gate_denied", serving.denial);
 
-    const lineage = dependencies.readLineageManifest()?.derivatives.find(
-      (candidate) => candidate.assetId === assetId,
-    );
+    const lineage = dependencies
+      .readLineageManifest()
+      ?.derivatives.find((candidate) => candidate.assetId === assetId);
     if (lineage === undefined) return refused(assetId, "no_lineage");
 
     const target = storePathFor(lineage.file, dependencies.storeDirectory());

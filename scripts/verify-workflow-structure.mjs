@@ -38,23 +38,64 @@
  *
  * Exit 0 = clean. Exit 1 = at least one defect. Reads only: no writes, no network, no runner.
  */
-import { readFileSync, existsSync } from 'node:fs';
-import path from 'node:path';
+import { readFileSync, existsSync } from "node:fs";
+import path from "node:path";
 
-const ROOT = path.resolve(import.meta.dirname, '..');
-const DEFAULT_TARGET = path.join(ROOT, '.github', 'workflows', 'ci.yml');
+const ROOT = path.resolve(import.meta.dirname, "..");
+const DEFAULT_TARGET = path.join(ROOT, ".github", "workflows", "ci.yml");
 const TARGET = process.argv[2] ? path.resolve(process.argv[2]) : DEFAULT_TARGET;
 
 const ALLOWED_ROOT_KEYS = new Set([
-  'name', 'on', 'permissions', 'concurrency', 'env', 'jobs', 'defaults', 'run-name',
+  "name",
+  "on",
+  "permissions",
+  "concurrency",
+  "env",
+  "jobs",
+  "defaults",
+  "run-name",
 ]);
 
 // pnpm's own subcommands: these are not project scripts and must not be reported as missing.
 const PNPM_BUILTINS = new Set([
-  'install', 'i', 'add', 'remove', 'rm', 'run', 'dlx', 'exec', 'x', 'audit', 'list', 'ls',
-  'store', 'init', 'link', 'unlink', 'prune', 'rebuild', 'up', 'why', 'doctor', 'deploy',
-  'patch', 'workspace', 'workspaces', 'import', 'setup', 'help', 'license', 'find-cycles',
-  'hb', 'ping', 'server', 'create', 'get', 'update', 'outdated', 'funding',
+  "install",
+  "i",
+  "add",
+  "remove",
+  "rm",
+  "run",
+  "dlx",
+  "exec",
+  "x",
+  "audit",
+  "list",
+  "ls",
+  "store",
+  "init",
+  "link",
+  "unlink",
+  "prune",
+  "rebuild",
+  "up",
+  "why",
+  "doctor",
+  "deploy",
+  "patch",
+  "workspace",
+  "workspaces",
+  "import",
+  "setup",
+  "help",
+  "license",
+  "find-cycles",
+  "hb",
+  "ping",
+  "server",
+  "create",
+  "get",
+  "update",
+  "outdated",
+  "funding",
 ]);
 
 const SECRET_NAME = /(PASSWORD|SECRET|TOKEN|API_KEY|ACCESS_KEY|PRIVATE_KEY)/i;
@@ -79,11 +120,11 @@ const KEY_RE = /^(?:"([^"]+)"|'([^']+)'|([A-Za-z0-9_.-]+)):(?:[ \t]+(.*))?$/;
  * mis-indented file passes a check that was supposed to catch mis-indentation.
  */
 function parse(text) {
-  const lines = text.split('\n');
-  const open = [];            // stack of indents of the blocks currently open (W3 dedent rule)
+  const lines = text.split("\n");
+  const open = []; // stack of indents of the blocks currently open (W3 dedent rule)
 
-  const blank = (i) => i < lines.length && lines[i].trim() === '';
-  const comment = (i) => i < lines.length && lines[i].trim().startsWith('#');
+  const blank = (i) => i < lines.length && lines[i].trim() === "";
+  const comment = (i) => i < lines.length && lines[i].trim().startsWith("#");
   function next(i) {
     let k = i;
     while (k < lines.length && (blank(k) || comment(k))) k += 1;
@@ -92,12 +133,15 @@ function parse(text) {
   function indentOf(i) {
     const raw = lines[i];
     let n = 0;
-    while (raw[n] === ' ') n += 1;
-    if (raw[n] === '\t') throw new Struct('tab character used for indentation', i + 1);
+    while (raw[n] === " ") n += 1;
+    if (raw[n] === "\t")
+      throw new Struct("tab character used for indentation", i + 1);
     return n;
   }
 
-  function isSeq(i) { return /^-(\s|$)/.test(lines[i].slice(indentOf(i))); }
+  function isSeq(i) {
+    return /^-(\s|$)/.test(lines[i].slice(indentOf(i)));
+  }
 
   function node(i, indent) {
     open.push(indent);
@@ -113,7 +157,9 @@ function parse(text) {
     if (!open.includes(ind)) {
       throw new Struct(
         `line indents to column ${ind}, which opens no enclosing block (expected one of ` +
-        `${open.join(', ')})`, i + 1);
+          `${open.join(", ")})`,
+        i + 1,
+      );
     }
   }
 
@@ -122,28 +168,37 @@ function parse(text) {
     let cur = i;
     for (;;) {
       const k = next(cur);
-      if (k >= lines.length) { cur = k; break; }
+      if (k >= lines.length) {
+        cur = k;
+        break;
+      }
       const ind = indentOf(k);
-      if (ind < indent) { dedentCheck(k); cur = k; break; }
-      if (ind > indent) throw new Struct('sequence item is indented past its sequence', k + 1);
+      if (ind < indent) {
+        dedentCheck(k);
+        cur = k;
+        break;
+      }
+      if (ind > indent)
+        throw new Struct("sequence item is indented past its sequence", k + 1);
       const itemContent = lines[k].slice(ind);
-      if (!isSeq(k)) throw new Struct('mapping key inside a sequence block', k + 1);
+      if (!isSeq(k))
+        throw new Struct("mapping key inside a sequence block", k + 1);
       const head = /^-(\s+|$)/.exec(itemContent)[0];
       const col = ind + head.length;
       const rest = itemContent.slice(head.length);
-      if (rest.trim() === '') {
+      if (rest.trim() === "") {
         const k2 = next(k + 1);
         if (k2 < lines.length && indentOf(k2) > indent) {
           const r = node(k2, indentOf(k2));
           items.push(r.node);
           cur = r.next;
         } else {
-          items.push({ kind: 'null', line: k + 1 });
+          items.push({ kind: "null", line: k + 1 });
           cur = k + 1;
         }
       } else {
         const saved = lines[k];
-        lines[k] = ' '.repeat(col) + rest;
+        lines[k] = " ".repeat(col) + rest;
         let r;
         try {
           r = node(k, col);
@@ -154,7 +209,7 @@ function parse(text) {
         cur = r.next;
       }
     }
-    return { node: { kind: 'seq', items, line: i + 1 }, next: cur };
+    return { node: { kind: "seq", items, line: i + 1 }, next: cur };
   }
 
   function map(i, indent) {
@@ -163,25 +218,43 @@ function parse(text) {
     let cur = i;
     for (;;) {
       const k = next(cur);
-      if (k >= lines.length) { cur = k; break; }
+      if (k >= lines.length) {
+        cur = k;
+        break;
+      }
       const ind = indentOf(k);
-      if (ind < indent) { dedentCheck(k); cur = k; break; }
-      if (ind > indent) throw new Struct('key is indented past its mapping', k + 1);
-      if (isSeq(k)) { cur = k; break; }
+      if (ind < indent) {
+        dedentCheck(k);
+        cur = k;
+        break;
+      }
+      if (ind > indent)
+        throw new Struct("key is indented past its mapping", k + 1);
+      if (isSeq(k)) {
+        cur = k;
+        break;
+      }
       const content = lines[k].slice(ind);
       const m = KEY_RE.exec(content);
-      if (!m) throw new Struct(`line is neither a "key: value" pair nor a sequence item: "${lines[k].trim()}"`, k + 1);
+      if (!m)
+        throw new Struct(
+          `line is neither a "key: value" pair nor a sequence item: "${lines[k].trim()}"`,
+          k + 1,
+        );
       const key = m[1] ?? m[2] ?? m[3];
       if (seen.has(key)) {
-        throw new Struct(`duplicate key "${key}" in one mapping (also at line ${seen.get(key)}); YAML would `
-          + 'silently keep the later value', k + 1);
+        throw new Struct(
+          `duplicate key "${key}" in one mapping (also at line ${seen.get(key)}); YAML would ` +
+            "silently keep the later value",
+          k + 1,
+        );
       }
       seen.set(key, k + 1);
       const rawVal = m[4];
-      let valueNode = { kind: 'null', line: k + 1 };
+      let valueNode = { kind: "null", line: k + 1 };
       let nextCur = k + 1;
 
-      if (rawVal === undefined || rawVal === '') {
+      if (rawVal === undefined || rawVal === "") {
         const k2 = next(k + 1);
         if (k2 < lines.length && indentOf(k2) > indent) {
           const r = node(k2, indentOf(k2));
@@ -193,52 +266,69 @@ function parse(text) {
         let j = k + 1;
         let firstBodyIndent = null;
         for (; j < lines.length; j += 1) {
-          if (blank(j)) { body.push(''); continue; }
+          if (blank(j)) {
+            body.push("");
+            continue;
+          }
           const bi = indentOf(j);
           if (bi <= indent) break;
           if (firstBodyIndent === null) firstBodyIndent = bi;
-          else if (bi < firstBodyIndent) throw new Struct('block scalar body dedents below its first line', j + 1);
+          else if (bi < firstBodyIndent)
+            throw new Struct(
+              "block scalar body dedents below its first line",
+              j + 1,
+            );
           body.push(lines[j].slice(firstBodyIndent));
         }
-        while (body.length && body[body.length - 1] === '') body.pop();
-        if (!body.join('').trim()) throw new Struct('block scalar has no content', k + 1);
-        valueNode = { kind: 'block', text: body.join('\n'), line: k + 1 };
+        while (body.length && body[body.length - 1] === "") body.pop();
+        if (!body.join("").trim())
+          throw new Struct("block scalar has no content", k + 1);
+        valueNode = { kind: "block", text: body.join("\n"), line: k + 1 };
         nextCur = j;
       } else {
-        valueNode = { kind: 'scalar', text: rawVal.trim(), line: k + 1 };
+        valueNode = { kind: "scalar", text: rawVal.trim(), line: k + 1 };
       }
       entries.push({ key, value: valueNode, line: k + 1 });
       cur = nextCur;
     }
-    return { node: { kind: 'map', entries, line: i + 1 }, next: cur };
+    return { node: { kind: "map", entries, line: i + 1 }, next: cur };
   }
 
   const first = next(0);
-  if (first >= lines.length) throw new Struct('the file has no content lines', 1);
+  if (first >= lines.length)
+    throw new Struct("the file has no content lines", 1);
   const r = node(first, indentOf(first));
   const trailing = next(r.next);
-  if (trailing < lines.length) throw new Struct('content follows the root block at the same or a lower column', trailing + 1);
+  if (trailing < lines.length)
+    throw new Struct(
+      "content follows the root block at the same or a lower column",
+      trailing + 1,
+    );
   return r.node;
 }
 
 // ── helpers over the parsed tree ────────────────────────────────────────────────────────────────
-const get = (n, key) => (n && n.kind === 'map' ? n.entries.find((e) => e.key === key)?.value : undefined);
-const keysOf = (n) => (n && n.kind === 'map' ? n.entries.map((e) => e.key) : []);
-const itemsOf = (n) => (n && n.kind === 'seq' ? n.items : []);
+const get = (n, key) =>
+  n && n.kind === "map"
+    ? n.entries.find((e) => e.key === key)?.value
+    : undefined;
+const keysOf = (n) =>
+  n && n.kind === "map" ? n.entries.map((e) => e.key) : [];
+const itemsOf = (n) => (n && n.kind === "seq" ? n.items : []);
 const scalarText = (n) => {
-  if (!n) return '';
-  if (n.kind === 'scalar') return n.text;
-  if (n.kind === 'block') return n.text;
-  if (n.kind === 'seq') return itemsOf(n).map(scalarText).join('\n');
-  return '';
+  if (!n) return "";
+  if (n.kind === "scalar") return n.text;
+  if (n.kind === "block") return n.text;
+  if (n.kind === "seq") return itemsOf(n).map(scalarText).join("\n");
+  return "";
 };
 
 function runBlocks(jobsNode) {
   const out = [];
   for (const job of jobsNode.entries) {
     const jobName = job.key;
-    for (const step of itemsOf(get(job.value, 'steps'))) {
-      const run = get(step, 'run');
+    for (const step of itemsOf(get(job.value, "steps"))) {
+      const run = get(step, "run");
       if (!run) continue;
       out.push({ jobName, step, run, stepLine: step.line, runLine: run.line });
     }
@@ -251,24 +341,35 @@ function runBlocks(jobsNode) {
 // unparsable package.json is reported as its own defect rather than crashing the gate.
 const declaredScripts = new Map();
 try {
-  const pkg = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
-  for (const [k, v] of Object.entries(pkg.scripts ?? {})) declaredScripts.set(k, String(v));
+  const pkg = JSON.parse(readFileSync(path.join(ROOT, "package.json"), "utf8"));
+  for (const [k, v] of Object.entries(pkg.scripts ?? {}))
+    declaredScripts.set(k, String(v));
 } catch {
-  add('W8', 'package.json is missing or unreadable, so the `pnpm <script>` references cannot be checked');
+  add(
+    "W8",
+    "package.json is missing or unreadable, so the `pnpm <script>` references cannot be checked",
+  );
 }
 
-const raw = readFileSync(TARGET, 'utf8');
+const raw = readFileSync(TARGET, "utf8");
 const bytes = readFileSync(TARGET);
 
 // W1 — byte-level facts.
-if (bytes.includes(0x0d)) add('W1', 'carriage-return byte: the workflow must stay LF, like every other file here');
+if (bytes.includes(0x0d))
+  add(
+    "W1",
+    "carriage-return byte: the workflow must stay LF, like every other file here",
+  );
 {
-  const indentedTabs = raw.split('\n').map((l, i) => [l, i + 1])
+  const indentedTabs = raw
+    .split("\n")
+    .map((l, i) => [l, i + 1])
     .filter(([l]) => /^[ ]*\t/.test(l));
-  for (const [, n] of indentedTabs) add('W1', 'tab used in indentation', n);
+  for (const [, n] of indentedTabs) add("W1", "tab used in indentation", n);
 }
-if (bytes.length && bytes[bytes.length - 1] !== 0x0a) add('W1', 'file does not end with a newline');
-if (raw.includes('\uFFFD')) add('W1', 'the file does not decode as UTF-8');
+if (bytes.length && bytes[bytes.length - 1] !== 0x0a)
+  add("W1", "file does not end with a newline");
+if (raw.includes("\uFFFD")) add("W1", "the file does not decode as UTF-8");
 
 // Parse, then the shape rules.
 let root;
@@ -276,70 +377,128 @@ try {
   root = parse(raw);
 } catch (err) {
   if (err instanceof Struct) {
-    add('W3', `structure: ${err.message}`, err.line);
+    add("W3", `structure: ${err.message}`, err.line);
   } else {
     throw err;
   }
 }
 
 if (root) {
-  if (root.kind !== 'map') {
-    add('W2', 'the root of a workflow must be a mapping');
+  if (root.kind !== "map") {
+    add("W2", "the root of a workflow must be a mapping");
   } else {
     const topKeys = keysOf(root);
-    for (const k of topKeys) if (!ALLOWED_ROOT_KEYS.has(k)) add('W2', `unexpected top-level key "${k}"`);
-    if (!topKeys.includes('jobs')) add('W2', 'no `jobs:` block — the workflow defines nothing');
-    if (!topKeys.includes('on')) add('W2', 'no `on:` trigger block');
+    for (const k of topKeys)
+      if (!ALLOWED_ROOT_KEYS.has(k))
+        add("W2", `unexpected top-level key "${k}"`);
+    if (!topKeys.includes("jobs"))
+      add("W2", "no `jobs:` block — the workflow defines nothing");
+    if (!topKeys.includes("on")) add("W2", "no `on:` trigger block");
 
-    const jobs = get(root, 'jobs');
-    if (jobs && jobs.kind === 'map' && jobs.entries.length) {
+    const jobs = get(root, "jobs");
+    if (jobs && jobs.kind === "map" && jobs.entries.length) {
       const jobNames = jobs.entries.map((e) => e.key);
 
       // W4 / W5 — job and step shape.
       for (const job of jobs.entries) {
-        if (job.value?.kind !== 'map') { add('W4', `job "${job.key}" is not a mapping`, job.line); continue; }
-        if (!get(job.value, 'name')) add('W4', `job "${job.key}" has no \`name:\``, job.line);
-        if (!get(job.value, 'runs-on')) add('W4', `job "${job.key}" has no \`runs-on:\``, job.line);
-        const hasSteps = Boolean(get(job.value, 'steps'));
-        const hasUses = Boolean(get(job.value, 'uses'));
-        if (hasSteps && hasUses) add('W4', `job "${job.key}" declares both \`steps:\` and \`uses:\``, job.line);
-        if (!hasSteps && !hasUses) add('W4', `job "${job.key}" declares neither \`steps:\` nor \`uses:\``, job.line);
-        const steps = itemsOf(get(job.value, 'steps'));
-        if (hasSteps && !steps.length) add('W4', `job "${job.key}" has an empty \`steps:\``, job.line);
+        if (job.value?.kind !== "map") {
+          add("W4", `job "${job.key}" is not a mapping`, job.line);
+          continue;
+        }
+        if (!get(job.value, "name"))
+          add("W4", `job "${job.key}" has no \`name:\``, job.line);
+        if (!get(job.value, "runs-on"))
+          add("W4", `job "${job.key}" has no \`runs-on:\``, job.line);
+        const hasSteps = Boolean(get(job.value, "steps"));
+        const hasUses = Boolean(get(job.value, "uses"));
+        if (hasSteps && hasUses)
+          add(
+            "W4",
+            `job "${job.key}" declares both \`steps:\` and \`uses:\``,
+            job.line,
+          );
+        if (!hasSteps && !hasUses)
+          add(
+            "W4",
+            `job "${job.key}" declares neither \`steps:\` nor \`uses:\``,
+            job.line,
+          );
+        const steps = itemsOf(get(job.value, "steps"));
+        if (hasSteps && !steps.length)
+          add("W4", `job "${job.key}" has an empty \`steps:\``, job.line);
         for (const step of steps) {
-          const uses = get(step, 'uses');
-          const run = get(step, 'run');
-          if (uses && run) add('W5', `a step in "${job.key}" declares both \`uses:\` and \`run:\``, step.line);
-          if (!uses && !run) add('W5', `a step in "${job.key}" has neither \`uses:\` nor \`run:\``, step.line);
-          if (run && !get(step, 'name')) add('W5', `a \`run:\` step in "${job.key}" has no \`name:\``, step.line);
-          if (uses && !/^[^/\s]+\/[^@\s]+@[^@\s]+$/.test(scalarText(uses).trim())) {
-            add('W5', `\`uses:\` ref "${scalarText(uses)}" is not owner/repo@ref`, uses.line);
+          const uses = get(step, "uses");
+          const run = get(step, "run");
+          if (uses && run)
+            add(
+              "W5",
+              `a step in "${job.key}" declares both \`uses:\` and \`run:\``,
+              step.line,
+            );
+          if (!uses && !run)
+            add(
+              "W5",
+              `a step in "${job.key}" has neither \`uses:\` nor \`run:\``,
+              step.line,
+            );
+          if (run && !get(step, "name"))
+            add(
+              "W5",
+              `a \`run:\` step in "${job.key}" has no \`name:\``,
+              step.line,
+            );
+          if (
+            uses &&
+            !/^[^/\s]+\/[^@\s]+@[^@\s]+$/.test(scalarText(uses).trim())
+          ) {
+            add(
+              "W5",
+              `\`uses:\` ref "${scalarText(uses)}" is not owner/repo@ref`,
+              uses.line,
+            );
           }
         }
 
         // W6 — the job DAG.
-        const needs = get(job.value, 'needs');
+        const needs = get(job.value, "needs");
         const wanted = needs
-          ? (needs.kind === 'seq' ? itemsOf(needs).map(scalarText) : [scalarText(needs)])
+          ? needs.kind === "seq"
+            ? itemsOf(needs).map(scalarText)
+            : [scalarText(needs)]
           : [];
         for (const w of wanted) {
-          const name = w.trim().replace(/^['"]|['"]$/g, '');
-          if (!jobNames.includes(name)) add('W6', `job "${job.key}" needs "${name}", which is not a job`, job.line);
+          const name = w.trim().replace(/^['"]|['"]$/g, "");
+          if (!jobNames.includes(name))
+            add(
+              "W6",
+              `job "${job.key}" needs "${name}", which is not a job`,
+              job.line,
+            );
         }
       }
 
       // W6 — cycles. A cycle is a workflow that never starts, and GitHub's own error for it arrives
       // long after the file looked harmless.
       {
-        const deps = new Map(jobs.entries.map((e) => [e.key,
-          (() => {
-            const n = get(e.value, 'needs');
-            if (!n) return [];
-            const list = n.kind === 'seq' ? itemsOf(n).map(scalarText) : [scalarText(n)];
-            return list.map((s) => s.trim().replace(/^['"]|['"]$/g, '')).filter((x) => jobNames.includes(x));
-          })()]));
+        const deps = new Map(
+          jobs.entries.map((e) => [
+            e.key,
+            (() => {
+              const n = get(e.value, "needs");
+              if (!n) return [];
+              const list =
+                n.kind === "seq" ? itemsOf(n).map(scalarText) : [scalarText(n)];
+              return list
+                .map((s) => s.trim().replace(/^['"]|['"]$/g, ""))
+                .filter((x) => jobNames.includes(x));
+            })(),
+          ]),
+        );
         const visit = (name, seen) => {
-          if (seen.includes(name)) { add('W6', `needs-cycle: ${seen.join(' -> ')} -> ${name}`); return; }
+          if (seen.includes(name)) {
+            add("W6", `needs-cycle: ${seen.join(" -> ")} -> ${name}`);
+            return;
+          }
           for (const d of deps.get(name) ?? []) visit(d, [...seen, name]);
         };
         for (const n of deps.keys()) visit(n, []);
@@ -354,27 +513,48 @@ if (root) {
         // that merely appears inside prose, an echo, or an existence probe (`if [ -f … ]`) is not a
         // command, and the `armed` step in db-privileges deliberately tests for a file that does not
         // exist yet. Globs (`scripts/db/*.sh`) are skipped: a pattern is not one path.
-        for (const m of text.matchAll(/(?:^|[\s;|(])(node|sh|bash)\s+([A-Za-z0-9_.@/-]+\.[A-Za-z]{2,4})\b/gm)) {
+        for (const m of text.matchAll(
+          /(?:^|[\s;|(])(node|sh|bash)\s+([A-Za-z0-9_.@/-]+\.[A-Za-z]{2,4})\b/gm,
+        )) {
           const relPath = m[2];
-          if (relPath.includes('*') || reported.has(relPath)) continue;
+          if (relPath.includes("*") || reported.has(relPath)) continue;
           reported.add(relPath);
           if (!existsSync(path.join(ROOT, relPath))) {
-            add('W7', `job "${jobName}" runs \`${m[1]} ${relPath}\`, which does not exist in this workspace`, run.line);
+            add(
+              "W7",
+              `job "${jobName}" runs \`${m[1]} ${relPath}\`, which does not exist in this workspace`,
+              run.line,
+            );
           }
         }
         for (const [, script] of text.matchAll(/\bpnpm\s+([a-zA-Z0-9:_-]+)/g)) {
           if (PNPM_BUILTINS.has(script)) continue;
           if (!declaredScripts.has(script)) {
-            add('W8', `job "${jobName}" runs \`pnpm ${script}\`, which package.json does not declare`, run.line);
+            add(
+              "W8",
+              `job "${jobName}" runs \`pnpm ${script}\`, which package.json does not declare`,
+              run.line,
+            );
           }
         }
-        for (const m of text.matchAll(/\b([A-Z0-9_]*(?:PASSWORD|SECRET|TOKEN|API_KEY|ACCESS_KEY|PRIVATE_KEY)[A-Z0-9_]*)\s*=\s*([^\s]+)\b/g)) {
-          const value = m[2].replace(/^['"]|['"]$/g, '');
+        for (const m of text.matchAll(
+          /\b([A-Z0-9_]*(?:PASSWORD|SECRET|TOKEN|API_KEY|ACCESS_KEY|PRIVATE_KEY)[A-Z0-9_]*)\s*=\s*([^\s]+)\b/g,
+        )) {
+          const value = m[2].replace(/^['"]|['"]$/g, "");
           if (!value) continue;
-          if (value.startsWith('$') || value.startsWith('${') || value.startsWith('``')) continue;
+          if (
+            value.startsWith("$") ||
+            value.startsWith("${") ||
+            value.startsWith("``")
+          )
+            continue;
           if (/^(\$\{\{|\$[(])/u.test(value)) continue;
-          add('W10', `job "${jobName}" assigns a literal value to ${m[1]}; secrets are generated per run or `
-            + 'referenced through the runner secret store, never written into this file', run.line);
+          add(
+            "W10",
+            `job "${jobName}" assigns a literal value to ${m[1]}; secrets are generated per run or ` +
+              "referenced through the runner secret store, never written into this file",
+            run.line,
+          );
         }
       }
 
@@ -383,25 +563,38 @@ if (root) {
       // string. Expansion syntax — `${{ secrets.X }}`, `$VAR`, `$(cmd)` — and an empty value are not
       // literals, and must not be reported as if they were.
       function eachMapping(n, visit) {
-        if (!n || typeof n !== 'object') return;
-        if (n.kind === 'map') {
-          for (const e of n.entries) { visit(e); eachMapping(e.value, visit); }
-        } else if (n.kind === 'seq') {
+        if (!n || typeof n !== "object") return;
+        if (n.kind === "map") {
+          for (const e of n.entries) {
+            visit(e);
+            eachMapping(e.value, visit);
+          }
+        } else if (n.kind === "seq") {
           for (const it of n.items) eachMapping(it, visit);
         }
       }
       const isLiteralSecret = (n) => {
-        const s = scalarText(n).trim().replace(/^['"]|['"]$/g, '');
+        const s = scalarText(n)
+          .trim()
+          .replace(/^['"]|['"]$/g, "");
         if (!s) return false;
-        if (s.startsWith('$')) return false;
-        if (s.startsWith('{{')) return false;
+        if (s.startsWith("$")) return false;
+        if (s.startsWith("{{")) return false;
         return true;
       };
       eachMapping(root, (e) => {
-        if (SECRET_NAME.test(e.key) && e.value?.kind === 'scalar' && isLiteralSecret(e.value)) {
-          add('W10', `\`${e.key}:\` on line ${e.line} carries a literal value. CI credentials are generated`
-            + ' per run or read from the runner secret store; Standard §4.2 and the no-secrets-in-artifacts'
-            + ' rule make a literal here a finding even in a local pipeline', e.line);
+        if (
+          SECRET_NAME.test(e.key) &&
+          e.value?.kind === "scalar" &&
+          isLiteralSecret(e.value)
+        ) {
+          add(
+            "W10",
+            `\`${e.key}:\` on line ${e.line} carries a literal value. CI credentials are generated` +
+              " per run or read from the runner secret store; Standard §4.2 and the no-secrets-in-artifacts" +
+              " rule make a literal here a finding even in a local pipeline",
+            e.line,
+          );
         }
       });
 
@@ -417,29 +610,39 @@ if (root) {
         // Node run and does not carry the suite this rule exists to protect.
         const RUNS_TEST = /\bpnpm\s+test(\s|$)/m;
         const optedOut = (step) => {
-          const flag = get(step, 'continue-on-error');
+          const flag = get(step, "continue-on-error");
           if (!flag) return false;
-          return ['true', 'yes', '1'].includes(scalarText(flag).trim().toLowerCase());
+          return ["true", "yes", "1"].includes(
+            scalarText(flag).trim().toLowerCase(),
+          );
         };
         for (const job of jobs.entries) {
-          const steps = itemsOf(get(job.value, 'steps'));
+          const steps = itemsOf(get(job.value, "steps"));
           let formatStep = null;
           for (const step of steps) {
-            const text = scalarText(get(step, 'run'));
+            const text = scalarText(get(step, "run"));
             if (!text) continue;
-            if (RUNS_FORMAT_CHECK.test(text) && !optedOut(step) && formatStep === null) formatStep = step;
+            if (
+              RUNS_FORMAT_CHECK.test(text) &&
+              !optedOut(step) &&
+              formatStep === null
+            )
+              formatStep = step;
             if (RUNS_TEST.test(text) && formatStep !== null) {
-              add('W11', `job "${job.key}" runs \`pnpm format:check\` on line ${formatStep.line} and `
-                + `\`pnpm test\` on line ${step.line}. Steps run in order and a failed step ends the job, `
-                + 'so a formatting finding hides every test result beneath it: run the tests first, give '
-                + 'formatting its own job, or mark the formatting step non-blocking — the rule does not '
-                + 'permit the fourth option, dropping the check', formatStep.line);
+              add(
+                "W11",
+                `job "${job.key}" runs \`pnpm format:check\` on line ${formatStep.line} and ` +
+                  `\`pnpm test\` on line ${step.line}. Steps run in order and a failed step ends the job, ` +
+                  "so a formatting finding hides every test result beneath it: run the tests first, give " +
+                  "formatting its own job, or mark the formatting step non-blocking — the rule does not " +
+                  "permit the fourth option, dropping the check",
+                formatStep.line,
+              );
               formatStep = null;
             }
           }
         }
       }
-
 
       // W9 — CI and `pnpm test:gates` must not drift apart. This is a repository-level statement, so
       // it reads the real package.json when the real workflow is under test. A fixture may not see it:
@@ -450,40 +653,58 @@ if (root) {
       if (TARGET === DEFAULT_TARGET || injected !== undefined) {
         let chained;
         if (injected !== undefined) {
-          chained = injected.split(',').map((s) => s.trim()).filter(Boolean);
+          chained = injected
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
         } else {
-          const gateList = declaredScripts.get('test:gates') ?? '';
-          chained = (gateList.match(/(?:^|&&\s*)node\s+(scripts\/tests\/[A-Za-z0-9_.-]+\.mjs)/g) ?? [])
-            .map((s) => s.replace(/^(?:&&\s*)?node\s+/, ''));
+          const gateList = declaredScripts.get("test:gates") ?? "";
+          chained = (
+            gateList.match(
+              /(?:^|&&\s*)node\s+(scripts\/tests\/[A-Za-z0-9_.-]+\.mjs)/g,
+            ) ?? []
+          ).map((s) => s.replace(/^(?:&&\s*)?node\s+/, ""));
         }
         const inCi = new Set(
-          runBlocks(jobs).map(({ run }) => scalarText(run))
-            .flatMap((t) => t.match(/scripts\/tests\/[A-Za-z0-9_.-]+\.mjs/g) ?? []),
+          runBlocks(jobs)
+            .map(({ run }) => scalarText(run))
+            .flatMap(
+              (t) => t.match(/scripts\/tests\/[A-Za-z0-9_.-]+\.mjs/g) ?? [],
+            ),
         );
         for (const rel of chained) {
           if (!inCi.has(rel)) {
-            add('W9', `\`pnpm test:gates\` chains ${rel} but no step in this workflow runs it — the local gate `
-              + 'list and the pipeline have drifted apart, which is the failure the suites themselves exist '
-              + 'to prevent');
+            add(
+              "W9",
+              `\`pnpm test:gates\` chains ${rel} but no step in this workflow runs it — the local gate ` +
+                "list and the pipeline have drifted apart, which is the failure the suites themselves exist " +
+                "to prevent",
+            );
           }
         }
       }
-    } else if (jobs && jobs.kind === 'map') {
-      add('W2', '`jobs:` is present but empty');
+    } else if (jobs && jobs.kind === "map") {
+      add("W2", "`jobs:` is present but empty");
     }
   }
 }
 
-const rel = path.relative(ROOT, TARGET).replace(/\\/g, '/');
+const rel = path.relative(ROOT, TARGET).replace(/\\/g, "/");
 if (defects.length) {
   for (const d of defects) {
-    console.log(`[${d.code}] ${rel}${d.line ? `:${d.line}` : ''}: ${d.message}`);
+    console.log(
+      `[${d.code}] ${rel}${d.line ? `:${d.line}` : ""}: ${d.message}`,
+    );
   }
   console.log(`FAIL: ${defects.length} workflow-structure defect(s) in ${rel}`);
   process.exit(1);
 }
-console.log(`OK: ${rel} parses as block YAML and its ${keysOf(get(root, 'jobs') ?? { kind: 'map', entries: [] }).length} jobs `
-  + `name every step, reference real jobs, invoke scripts that exist, agree with pnpm test:gates, `
-  + `and carry no literal secret (11 rules)`);
-console.log('NOTE: this is a structural contract check, not a YAML conformance parser and not a CI run.');
+console.log(
+  `OK: ${rel} parses as block YAML and its ${keysOf(get(root, "jobs") ?? { kind: "map", entries: [] }).length} jobs ` +
+    `name every step, reference real jobs, invoke scripts that exist, agree with pnpm test:gates, ` +
+    `and carry no literal secret (11 rules)`,
+);
+console.log(
+  "NOTE: this is a structural contract check, not a YAML conformance parser and not a CI run.",
+);
 process.exit(0);

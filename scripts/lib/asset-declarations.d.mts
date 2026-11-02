@@ -18,5 +18,7 @@ export function declarationMismatch(
   height: number,
 ): string | null;
 
-declare const assetDeclarations: { declarationMismatch: typeof declarationMismatch };
+declare const assetDeclarations: {
+  declarationMismatch: typeof declarationMismatch;
+};
 export default assetDeclarations;

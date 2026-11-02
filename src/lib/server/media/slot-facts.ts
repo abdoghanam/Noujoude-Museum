@@ -62,7 +62,9 @@ let injected: DerivativeManifest | null | undefined;
  * rather than being answered from memory. Absent answers `null`, which is the state a page renders a
  * refusal from.
  */
-export function derivativeManifest(root = process.cwd()): DerivativeManifest | null {
+export function derivativeManifest(
+  root = process.cwd(),
+): DerivativeManifest | null {
   if (injected !== undefined) return injected;
   return manifestSnapshot(root).manifest;
 }
@@ -71,7 +73,8 @@ function manifestSnapshot(root: string): ManifestCacheEntry {
   const resolved = path.resolve(root);
   const { manifest, stamp } = readDerivativeManifestSource(resolved);
   const cached = sourceCache;
-  if (cached !== null && cached.root === resolved && cached.stamp === stamp) return cached;
+  if (cached !== null && cached.root === resolved && cached.stamp === stamp)
+    return cached;
   const entry: ManifestCacheEntry = { manifest, root: resolved, stamp };
   sourceCache = entry;
   return entry;
@@ -95,7 +98,9 @@ export function lineageFor(
   root = process.cwd(),
 ): DerivativeLineage | null {
   return (
-    derivativeManifest(root)?.derivatives.find((row) => row.assetId === assetId) ?? null
+    derivativeManifest(root)?.derivatives.find(
+      (row) => row.assetId === assetId,
+    ) ?? null
   );
 }
 
@@ -128,7 +133,10 @@ export function servedSrcFor(
  * Until then the slot refuses, which is the correct outcome for an image that would otherwise ship with
  * an invented caption or an empty `alt=""` asserting that the picture is decorative.
  */
-export function altTextFor(_asset: AssetRecord, _locale: Locale): string | null {
+export function altTextFor(
+  _asset: AssetRecord,
+  _locale: Locale,
+): string | null {
   return null;
 }
 

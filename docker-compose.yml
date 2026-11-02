@@ -51,7 +51,8 @@ services:
       # PRIVILEGES cannot name a table), verify-privileges.sh asserts the result.
       - ./scripts/db:/opt/ndm-db:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_SUPERUSER} -d ${POSTGRES_DB}"]
+      test:
+        ["CMD-SHELL", "pg_isready -U ${POSTGRES_SUPERUSER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 20

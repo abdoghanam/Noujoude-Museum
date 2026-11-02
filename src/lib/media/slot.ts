@@ -92,10 +92,7 @@ export interface MediaSlotView {
   readonly facts: SlotFacts;
 }
 
-function withheld(
-  record: MediaRecord,
-  reason: WithheldReason,
-): WithheldSlot {
+function withheld(record: MediaRecord, reason: WithheldReason): WithheldSlot {
   // When the reason *is* a rights denial, hand back the domain's own placeholder object so there is one
   // definition of that shape rather than two that happen to match.
   const placeholder = placeholderFor(record);
@@ -120,7 +117,8 @@ export function decideMediaSlot(
   facts: SlotFacts,
 ): SlotDecision {
   const serving = decidePublicServing(record);
-  if (!serving.serve) return withheld(record, serving.denial ?? "unrecognised_state");
+  if (!serving.serve)
+    return withheld(record, serving.denial ?? "unrecognised_state");
   if (facts.src === null || facts.src.trim() === "")
     return withheld(record, "no_image_source");
   if (facts.altText === null || facts.altText.trim() === "")

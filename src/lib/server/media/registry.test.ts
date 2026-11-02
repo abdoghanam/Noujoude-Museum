@@ -22,7 +22,11 @@ import {
   registryFromText,
   resetAssetRegisterCache,
 } from "@/lib/server/media/registry";
-import { AssetRegistryError, type AssetRecord, AUDIT_COLUMNS } from "@/lib/media/asset-record";
+import {
+  AssetRegistryError,
+  type AssetRecord,
+  AUDIT_COLUMNS,
+} from "@/lib/media/asset-record";
 import { decidePublicServing } from "@/domain/rights";
 
 /**
@@ -90,7 +94,9 @@ describe("the delivered register parses through the media layer", () => {
   });
 
   it("records the file it read, so a missing register is a failure and not an empty library", () => {
-    expect(ASSET_REGISTER_PATH).toBe(path.join("docs", "ASSET_INVENTORY_AUDIT.csv"));
+    expect(ASSET_REGISTER_PATH).toBe(
+      path.join("docs", "ASSET_INVENTORY_AUDIT.csv"),
+    );
     expect(() => readAssetRegister(path.join(process.cwd(), "docs"))).toThrow(
       AssetRegistryError,
     );
@@ -125,9 +131,9 @@ describe("the three dimensions of the 82 assets, never merged into one number", 
     expect(tally.rightsCleared).toBe(0);
     expect(tally.rightsPending).toBe(10);
     expect(tally.rightsUnknown).toBe(72);
-    expect(tally.rightsCleared + tally.rightsPending + tally.rightsUnknown).toBe(
-      tally.total,
-    );
+    expect(
+      tally.rightsCleared + tally.rightsPending + tally.rightsUnknown,
+    ).toBe(tally.total);
     // The ten AI-generated assets are the pending ones, and they are the last ten ids.
     expect(
       register.filter((a) => a.rights === "pending").map((a) => a.assetId),
@@ -179,9 +185,9 @@ describe("the three dimensions of the 82 assets, never merged into one number", 
 describe("R-04: a filename is a claim about pixels, and the pixels win", () => {
   it("carries the same 18 name/pixel defects the audit and the preflight gate report", () => {
     expect(registerTally(register).declarationMismatch).toBe(18);
-    expect(
-      register.filter((asset) => asset.declaration !== null),
-    ).toHaveLength(18);
+    expect(register.filter((asset) => asset.declaration !== null)).toHaveLength(
+      18,
+    );
   });
 
   it("states the defect in the audit's own words rather than inventing a format", () => {
@@ -358,12 +364,17 @@ function tempRegisterRoot(rows: readonly string[]): string {
 function writeRegister(root: string, rows: readonly string[]): string {
   const file = path.join(root, ASSET_REGISTER_PATH);
   mkdirSync(path.dirname(file), { recursive: true });
-  writeFileSync(file, `${AUDIT_COLUMNS.join(",")}\n${rows.join("\n")}\n`, "utf8");
+  writeFileSync(
+    file,
+    `${AUDIT_COLUMNS.join(",")}\n${rows.join("\n")}\n`,
+    "utf8",
+  );
   return root;
 }
 
 afterEach(() => {
-  for (const dir of fixtureRoots.splice(0)) rmSync(dir, { force: true, recursive: true });
+  for (const dir of fixtureRoots.splice(0))
+    rmSync(dir, { force: true, recursive: true });
 });
 
 describe("SR-08: the register cache revalidates against the file", () => {
@@ -371,21 +382,28 @@ describe("SR-08: the register cache revalidates against the file", () => {
     const root = tempRegisterRoot([
       registerRow({ "Intended Usage": "fixture role | First surface" }),
     ]);
-    expect(assetRegister(root).map((asset) => asset.assetId)).toEqual(["NDM-AST-001"]);
+    expect(assetRegister(root).map((asset) => asset.assetId)).toEqual([
+      "NDM-AST-001",
+    ]);
     expect(assetsForSurface("First surface", root)).toHaveLength(1);
 
     writeRegister(root, [
-      registerRow({ "Asset ID": "NDM-AST-002", "Intended Usage": "fixture role | Second surface" }),
+      registerRow({
+        "Asset ID": "NDM-AST-002",
+        "Intended Usage": "fixture role | Second surface",
+      }),
     ]);
 
     // Both caches moved together. The surface index used to be a second module variable cleared only by an
     // explicit reset, so a refreshed register could still answer a surface lookup from the old one.
-    expect(assetRegister(root).map((asset) => asset.assetId)).toEqual(["NDM-AST-002"]);
-    expect(assetById("NDM-AST-001", root)).toBeNull();
-    expect(assetsForSurface("First surface", root)).toEqual([]);
-    expect(assetsForSurface("Second surface", root).map((a) => a.assetId)).toEqual([
+    expect(assetRegister(root).map((asset) => asset.assetId)).toEqual([
       "NDM-AST-002",
     ]);
+    expect(assetById("NDM-AST-001", root)).toBeNull();
+    expect(assetsForSurface("First surface", root)).toEqual([]);
+    expect(
+      assetsForSurface("Second surface", root).map((a) => a.assetId),
+    ).toEqual(["NDM-AST-002"]);
   });
 
   it("reports a rights statement that changed underneath it", () => {
@@ -399,11 +417,16 @@ describe("SR-08: the register cache revalidates against the file", () => {
     expect(registerTally(assetRegister(root)).rightsUnknown).toBe(0);
 
     writeRegister(root, [
-      registerRow({ "Rights Status": "Rights withdrawn by the Owner — no clearance in force" }),
+      registerRow({
+        "Rights Status":
+          "Rights withdrawn by the Owner — no clearance in force",
+      }),
     ]);
     expect(registerTally(assetRegister(root)).rightsPending).toBe(0);
     expect(registerTally(assetRegister(root)).rightsUnknown).toBe(1);
-    expect(decidePublicServing(one(assetRegister(root), "the rewritten row")).serve).toBe(false);
+    expect(
+      decidePublicServing(one(assetRegister(root), "the rewritten row")).serve,
+    ).toBe(false);
   });
 
   it("throws when the register disappears, rather than serving the rows it remembered", () => {

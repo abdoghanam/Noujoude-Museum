@@ -84,25 +84,25 @@
  * Reads reference/, docs/, the root configuration and the Owner's photo manifest below
  * Noujoude.photo (all read-only here); writes docs/CITATION_VERIFICATION.json only.
  */
-import fs from 'node:fs';
-import path from 'node:path';
+import fs from "node:fs";
+import path from "node:path";
 
 const ROOT = process.cwd();
-const DOCS = path.join(ROOT, 'docs');
-const OUT = path.join(ROOT, 'docs', 'CITATION_VERIFICATION.json');
+const DOCS = path.join(ROOT, "docs");
+const OUT = path.join(ROOT, "docs", "CITATION_VERIFICATION.json");
 
 // Quotations in docs/ are not limited to the specification. They also cite the repository's own
 // authored configuration (`.env.example` records rules the docs quote back) and each other
 // (`ARCHITECTURE_DECISIONS.md line 221`). A source set that stops at reference/ therefore reports
 // true cross-citations as NOT_FOUND. Every one of these files is read-only to this tool.
 const REPO_SOURCES = [
-  ['env-example', '.env.example', /\.env\.example/i],
-  ['docker-compose', 'docker-compose.yml', /docker-compose\.yml/i],
-  ['package.json', 'package.json', /package\.json/i],
-  ['tsconfig', 'tsconfig.json', /tsconfig\.json/i],
-  ['vitest-config', 'vitest.config.ts', /vitest\.config\.ts/i],
-  ['playwright-config', 'playwright.config.ts', /playwright\.config\.ts/i],
-  ['eslint-config', 'eslint.config.mjs', /eslint\.config\.mjs/i],
+  ["env-example", ".env.example", /\.env\.example/i],
+  ["docker-compose", "docker-compose.yml", /docker-compose\.yml/i],
+  ["package.json", "package.json", /package\.json/i],
+  ["tsconfig", "tsconfig.json", /tsconfig\.json/i],
+  ["vitest-config", "vitest.config.ts", /vitest\.config\.ts/i],
+  ["playwright-config", "playwright.config.ts", /playwright\.config\.ts/i],
+  ["eslint-config", "eslint.config.mjs", /eslint\.config\.mjs/i],
 ];
 
 const REPO_CONFIG_KEYS = new Set(REPO_SOURCES.map(([key]) => key));
@@ -114,26 +114,57 @@ const REPO_CONFIG_KEYS = new Set(REPO_SOURCES.map(([key]) => key));
 // lines 21–23 are unrelated prose — and reported an honest quotation as drift. Like the repository
 // configuration, it is consulted only when the line names it: a bare number never belongs to it.
 const OBSERVED_SOURCES = [
-  ['manifest', 'Noujoude.photo/_pending_review_AI_generated/_manifest.json', /_manifest\.json/i],
+  [
+    "manifest",
+    "Noujoude.photo/_pending_review_AI_generated/_manifest.json",
+    /_manifest\.json/i,
+  ],
 ];
 
 /** Sources that are not requirement text, so an unlabelled line number must never resolve to them. */
-const NON_REQUIREMENT_KEYS = new Set([...REPO_CONFIG_KEYS, ...OBSERVED_SOURCES.map(([key]) => key)]);
+const NON_REQUIREMENT_KEYS = new Set([
+  ...REPO_CONFIG_KEYS,
+  ...OBSERVED_SOURCES.map(([key]) => key),
+]);
 
 // Sibling documents, by filename. MASTER_SPECIFICATION.md is deliberately absent: its body is a
 // verbatim copy of the specification with a line offset, so citing it verifies nothing new and the
 // offset makes its line numbers a trap rather than an authority.
 const DOC_SOURCES = fs
   .readdirSync(DOCS)
-  .filter((f) => f.endsWith('.md') && f !== 'MASTER_SPECIFICATION.md')
-  .map((f) => [`doc:${f}`, `docs/${f}`, new RegExp(f.replace(/[.]/g, '\\.'), 'i')]);
+  .filter((f) => f.endsWith(".md") && f !== "MASTER_SPECIFICATION.md")
+  .map((f) => [
+    `doc:${f}`,
+    `docs/${f}`,
+    new RegExp(f.replace(/[.]/g, "\\."), "i"),
+  ]);
 
 const SOURCES = [
-  ['master', 'reference/Noujoude_Master_Specification_EN.md', /master spec|specification|the spec\b/i],
-  ['standard', 'reference/Noujoude_Technology_and_Security_Standard_EN.md', /\bstandard\b/i],
-  ['directive', 'reference/Noujoude_Master_Execution_Directive_EN.md', /directive/i],
-  ['asset-req', 'reference/Noujoude_Asset_and_Brand_Requirements_EN.md', /asset and brand|brand requirements|asset requirements/i],
-  ['trace-csv', 'reference/Noujoude_Line_by_Line_Traceability_EN.csv', /traceability csv|trace\.csv/i],
+  [
+    "master",
+    "reference/Noujoude_Master_Specification_EN.md",
+    /master spec|specification|the spec\b/i,
+  ],
+  [
+    "standard",
+    "reference/Noujoude_Technology_and_Security_Standard_EN.md",
+    /\bstandard\b/i,
+  ],
+  [
+    "directive",
+    "reference/Noujoude_Master_Execution_Directive_EN.md",
+    /directive/i,
+  ],
+  [
+    "asset-req",
+    "reference/Noujoude_Asset_and_Brand_Requirements_EN.md",
+    /asset and brand|brand requirements|asset requirements/i,
+  ],
+  [
+    "trace-csv",
+    "reference/Noujoude_Line_by_Line_Traceability_EN.csv",
+    /traceability csv|trace\.csv/i,
+  ],
   ...REPO_SOURCES,
   ...OBSERVED_SOURCES,
   ...DOC_SOURCES,
@@ -141,17 +172,19 @@ const SOURCES = [
 
 const norm = (s) =>
   s
-    .replace(/[‘’]/g, "'").replace(/[“”]/g, '"')
-    .replace(/[”]/g, '"').replace(/[«»]/g, '"')
-    .replace(/[–—]/g, '-')
-    .replace(/\u00a0/g, ' ')
-    .replace(/\*\*/g, '')
-    .replace(/[`*_]/g, '')
+    .replace(/[‘’]/g, "'")
+    .replace(/[“”]/g, '"')
+    .replace(/[”]/g, '"')
+    .replace(/[«»]/g, '"')
+    .replace(/[–—]/g, "-")
+    .replace(/\u00a0/g, " ")
+    .replace(/\*\*/g, "")
+    .replace(/[`*_]/g, "")
     .toLowerCase();
 
 const toks = (s) => {
   const m = norm(s).match(/[a-z0-9]+/g);
-  return m ? m.join(' ') : '';
+  return m ? m.join(" ") : "";
 };
 
 // source text, per file: a padded token stream plus the stream offset of every line, so a match
@@ -160,9 +193,9 @@ const toks = (s) => {
 function loadSource(key, rel, hintRe) {
   const abs = path.join(ROOT, rel);
   if (!fs.existsSync(abs)) return null;
-  const text = fs.readFileSync(abs, 'utf8');
+  const text = fs.readFileSync(abs, "utf8");
   const lines = text.split(/\r?\n/);
-  let acc = '';
+  let acc = "";
   const lineStart = [];
   for (const l of lines) {
     lineStart.push(acc.length);
@@ -171,7 +204,9 @@ function loadSource(key, rel, hintRe) {
   return { key, rel, hintRe, lines, lineStart, acc };
 }
 
-const loaded = SOURCES.map(([key, rel, hintRe]) => loadSource(key, rel, hintRe)).filter(Boolean);
+const loaded = SOURCES.map(([key, rel, hintRe]) =>
+  loadSource(key, rel, hintRe),
+).filter(Boolean);
 
 // ── section maps ─────────────────────────────────────────────────────────────
 /**
@@ -200,13 +235,20 @@ function sectionMap(src) {
     if (!h) return;
     const ap = h[2].match(/^Appendix\s+([A-G])\b/i);
     const nm = ap ? null : h[2].match(/^([A-H]|\d+)(?:\.(\d+))?(?:\.(\d+))?\b/);
-    const id = ap ? ap[1].toUpperCase() : nm ? [nm[1], nm[2], nm[3]].filter(Boolean).join('.') : null;
+    const id = ap
+      ? ap[1].toUpperCase()
+      : nm
+        ? [nm[1], nm[2], nm[3]].filter(Boolean).join(".")
+        : null;
     if (id) found.push({ id, level: h[1].length, line: i + 1 });
   });
   for (let k = 0; k < found.length; k++) {
     let end = src.lines.length;
     for (let j = k + 1; j < found.length; j++) {
-      if (found[j].level <= found[k].level) { end = found[j].line - 1; break; }
+      if (found[j].level <= found[k].level) {
+        end = found[j].line - 1;
+        break;
+      }
     }
     found[k].end = end;
   }
@@ -218,11 +260,17 @@ const SECTIONS = new Map(loaded.map((s) => [s.key, sectionMap(s)]));
 // values from them are legitimate without a requirement line number, so they are searched only
 // after every requirement source has failed, and reported as their own class.
 const RECORDED = [
-  ['audit-csv', 'docs/ASSET_INVENTORY_AUDIT.csv'],
-  ['audit-summary', 'docs/asset-audit-summary.json'],
-  ['gap-csv', 'reference/Noujoude_Gap_Closure_Register_EN.csv'],
+  ["audit-csv", "docs/ASSET_INVENTORY_AUDIT.csv"],
+  ["audit-summary", "docs/asset-audit-summary.json"],
+  ["gap-csv", "reference/Noujoude_Gap_Closure_Register_EN.csv"],
 ]
-  .map(([key, rel]) => loadSource(key, rel, /asset_inventory_audit\.csv|gap_closure_register|gap closure register/i))
+  .map(([key, rel]) =>
+    loadSource(
+      key,
+      rel,
+      /asset_inventory_audit\.csv|gap_closure_register|gap closure register/i,
+    ),
+  )
   .filter(Boolean);
 
 /** line number for a character position in the source token stream (`src.acc`) */
@@ -237,7 +285,7 @@ function lineOf(src, accIdx) {
   return lo + 1;
 }
 
-const reEsc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const reEsc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /**
  * One run of a quotation, anchored to token boundaries at both ends so "support" cannot match inside
@@ -269,7 +317,7 @@ function matchStartsInRange(src, chunks, fromLine, toLine) {
   const lo = src.lineStart[fl - 1];
   const hi = endOf(tl);
   const out = [];
-  const head = new RegExp(runRe(chunks[0]).source, 'g');
+  const head = new RegExp(runRe(chunks[0]).source, "g");
   head.lastIndex = Math.max(0, lo - 1);
   let hit;
   while ((hit = head.exec(src.acc)) !== null) {
@@ -312,7 +360,12 @@ function matchIn(src, chunks, fromLine, toLine) {
 /** Does the fragment occur within a small window around `at`? */
 function occursNear(src, chunks, at, window) {
   if (!chunks.length) return null;
-  return matchIn(src, chunks, Math.max(1, at - window), Math.min(src.lines.length, at + window * 2 + 8));
+  return matchIn(
+    src,
+    chunks,
+    Math.max(1, at - window),
+    Math.min(src.lines.length, at + window * 2 + 8),
+  );
 }
 
 /**
@@ -343,27 +396,64 @@ function findAnywhere(src, chunks, nearLine = null) {
  * and a closer only when the next character cannot start one. A straight quote between two word
  * characters (`5" nail`, inches, prime notation) is not a quote at all and is skipped.
  */
-const OPENERS = new Set(['\t', ' ', '(', '[', '{', '|', '*', '_', '>', '<', '`', "'", '“', '«', '“']);
-const CLOSERS = new Set(['\t', ' ', ')', ']', '}', '|', '*', '_', '`', "'", '.', ',', ';', ':', '!', '?', '”', '’', '»', '…']);
+const OPENERS = new Set([
+  "\t",
+  " ",
+  "(",
+  "[",
+  "{",
+  "|",
+  "*",
+  "_",
+  ">",
+  "<",
+  "`",
+  "'",
+  "“",
+  "«",
+  "“",
+]);
+const CLOSERS = new Set([
+  "\t",
+  " ",
+  ")",
+  "]",
+  "}",
+  "|",
+  "*",
+  "_",
+  "`",
+  "'",
+  ".",
+  ",",
+  ";",
+  ":",
+  "!",
+  "?",
+  "”",
+  "’",
+  "»",
+  "…",
+]);
 
 function quotations(line) {
   const out = [];
   let open = -1;
   for (let i = 0; i < line.length; i++) {
     const c = line[i];
-    if (c !== '"' && c !== '“' && c !== '”') continue;
-    const prev = i > 0 ? line[i - 1] : ' ';
-    const next = i < line.length - 1 ? line[i + 1] : ' ';
+    if (c !== '"' && c !== "“" && c !== "”") continue;
+    const prev = i > 0 ? line[i - 1] : " ";
+    const next = i < line.length - 1 ? line[i + 1] : " ";
     // `“`/`”` are self-declaring. A straight `"` is an opener when what precedes it cannot end a
     // word, and a closer when what follows it cannot start one — the neighbour on the OTHER side is
     // what disqualifies it, so `5" nail` (a prime) reads as a closer and never as an opener.
-    const isOpen = c === '“' ? true : c === '”' ? false : OPENERS.has(prev);
-    const isClose = c === '”' ? true : c === '“' ? false : CLOSERS.has(next);
+    const isOpen = c === "“" ? true : c === "”" ? false : OPENERS.has(prev);
+    const isClose = c === "”" ? true : c === "“" ? false : CLOSERS.has(next);
     if (open < 0) {
       if (isOpen) open = i;
       continue;
     }
-    if (isClose || c === '”') {
+    if (isClose || c === "”") {
       const raw = line.slice(open + 1, i);
       if (raw.length >= 20) out.push({ at: open, raw });
       open = -1;
@@ -386,16 +476,20 @@ function chunksOf(frag) {
   // author left out. Both are seams, not content: split on them, keep the surviving runs, and each
   // run still has to appear in the source in order. A run shorter than 3 tokens carries no signal.
   const parts = frag
-    .replace(/\[[^\]]{0,60}\]/g, ' §ELID§ ')
-    .replace(/…|\.{3}/g, ' §ELID§ ')
-    .split('§ELID§');
-  return parts
-    .map((s) => toks(s).replace(/\s+/g, ' ').trim())
-    // A run needs three tokens *and* a letter. `^22.23.4 | | >=24.22.1` — a version matrix cell read
-    // as one fragment because the quotes wrap a table row — is six bare numbers, and six bare numbers
-    // match the version table on the very next line of the Standard by arithmetic alone. Numbers
-    // without words are not evidence that a sentence was quoted.
-    .filter((t) => /[a-z]/.test(t) && t.split(' ').filter(Boolean).length >= 3);
+    .replace(/\[[^\]]{0,60}\]/g, " §ELID§ ")
+    .replace(/…|\.{3}/g, " §ELID§ ")
+    .split("§ELID§");
+  return (
+    parts
+      .map((s) => toks(s).replace(/\s+/g, " ").trim())
+      // A run needs three tokens *and* a letter. `^22.23.4 | | >=24.22.1` — a version matrix cell read
+      // as one fragment because the quotes wrap a table row — is six bare numbers, and six bare numbers
+      // match the version table on the very next line of the Standard by arithmetic alone. Numbers
+      // without words are not evidence that a sentence was quoted.
+      .filter(
+        (t) => /[a-z]/.test(t) && t.split(" ").filter(Boolean).length >= 3,
+      )
+  );
 }
 
 // 1–4 digits: a citation to the first lines of a small file (`docker-compose.yml lines 3–5`) is as
@@ -403,7 +497,8 @@ function chunksOf(frag) {
 // the repository's own configuration look unfounded. The `(?!\.\d)` guards are not cosmetic: the
 // version-compatibility tables in these documents write `prior stable line 3.90.1→3.92.1`, and a
 // matcher that read "line 3" there invented a citation to a line that no author meant.
-const REF_RE = /(?:lines?)\s*[:#]?\s*(\d{1,4})(?!\.\d)(?:\s*(?:[–—-]|to|through)\s*(\d{1,4})(?!\.\d))?/gi;
+const REF_RE =
+  /(?:lines?)\s*[:#]?\s*(\d{1,4})(?!\.\d)(?:\s*(?:[–—-]|to|through)\s*(\d{1,4})(?!\.\d))?/gi;
 // These documents also cite a bare number in parentheses — `"Current review status" (1259)`. Without
 // this form the real citation is invisible to the checker and the quotation gets attributed to
 // whatever other number shares the line, which is how correct rows were reported as drifted.
@@ -433,7 +528,7 @@ const HOUSE_LOCATOR = String.raw`(?:§{1,2}\s?\d+(?:\.\d+){0,2}(?:\s*items?\s*\d
 // and the whole reference would be dropped.
 const HOUSE_REF_RE = new RegExp(
   `(?<![\\dA-Za-z.\\-])${HOUSE_LOCATOR}\\s+(\\d{2,4})(?:\\s*(?:[\\u2013\\u2014-]|to|through)\\s*(\\d{2,4})(?![\\d.\\-\\u2013\\u2014]))?(?![\\d.\\-\\u2013\\u2014])`,
-  'gi',
+  "gi",
 );
 
 /**
@@ -458,14 +553,15 @@ const HOUSE_REF_RE = new RegExp(
 const SEC_TAIL_SUFFIX = String.raw`(?:\s*lines?\s*[:#]?)?\s*\(?\s*$`;
 const SECTION_TAIL = new RegExp(
   `${String.raw`(?:§{1,2}\s*|Appendix\s+)([A-H]|\d+(?:\.\d+){0,2})[,;]?` + SEC_TAIL_SUFFIX}|` +
-    String.raw`(?<![A-Za-z0-9.§])([A-H]\.\d+(?:\.\d+)?|\d+\.\d+(?:\.\d+)?)[,;]?` + SEC_TAIL_SUFFIX,
+    String.raw`(?<![A-Za-z0-9.§])([A-H]\.\d+(?:\.\d+)?|\d+\.\d+(?:\.\d+)?)[,;]?` +
+    SEC_TAIL_SUFFIX,
 );
 
 function sectionIdOf(text, ref) {
   const before = text.slice(0, ref.numAt);
   const m = before.match(SECTION_TAIL);
   if (!m) return null;
-  return (m[1] ?? m[2]).replace(/§\s*/g, '').toUpperCase();
+  return (m[1] ?? m[2]).replace(/§\s*/g, "").toUpperCase();
 }
 
 /**
@@ -511,21 +607,25 @@ const LABEL_WORD = String.raw`(?:[A-Za-z0-9_.-]+\.md|Master\s+Spec(?:ification)?
 const LABEL_ADJ = new RegExp(
   String.raw`(?:^|[^A-Za-z0-9_.-])(${LABEL_WORD})(?:[\x60*\u007e]{1,3})?\s*\(?\s*(?:§{1,2}\s*)?([A-H]?\d+(?:\.\d+){0,2})?` +
     String.raw`(?:\s*(?:items?|invariant|invariants)\s*\d{1,2})?(?:,\s*(?:§{1,2}\s*)?[A-H]?\d+(?:\.\d+){0,2})?[,;]?\s*(?:lines?\s*[:#]?)?\s*\(?\s*$`,
-  'i',
+  "i",
 );
 
 function labelKeyOf(text, ref, sources) {
   const m = text.slice(0, ref.numAt).match(LABEL_ADJ);
   if (!m) return null;
   const word = m[1];
-  const named = sources.find((s) => s.rel.split('/').pop().toLowerCase() === word.toLowerCase());
+  const named = sources.find(
+    (s) => s.rel.split("/").pop().toLowerCase() === word.toLowerCase(),
+  );
   const src = named ?? sources.find((s) => s.hintRe.test(word));
   if (!src) return null;
-  if (ref.sec && !(SECTIONS.get(src.key) ?? []).some((x) => x.id === ref.sec)) return null;
+  if (ref.sec && !(SECTIONS.get(src.key) ?? []).some((x) => x.id === ref.sec))
+    return null;
   if (m[2] && ref.sec === null) {
     // The label carried a section (`Standard §6`) that the citation's number does not repeat; if that
     // section is absent from the file it names, the pairing was misread and must not bind.
-    if (!(SECTIONS.get(src.key) ?? []).some((x) => x.id === m[2].toUpperCase())) return null;
+    if (!(SECTIONS.get(src.key) ?? []).some((x) => x.id === m[2].toUpperCase()))
+      return null;
   }
   return src.key;
 }
@@ -550,12 +650,12 @@ const summary = {
 
 const docFiles = fs
   .readdirSync(DOCS)
-  .filter((f) => f.endsWith('.md'))
+  .filter((f) => f.endsWith(".md"))
   .sort();
 
 for (const f of docFiles) {
   const abs = path.join(DOCS, f);
-  const text = fs.readFileSync(abs, 'utf8');
+  const text = fs.readFileSync(abs, "utf8");
   // The generated working copy embeds the entire specification verbatim; scanning it would
   // "verify" thousands of self-referential quotes and say nothing about the engineering docs. The
   // boundary is not guessed: the header records the offset it measured on write ("source line N =
@@ -564,25 +664,48 @@ for (const f of docFiles) {
   // body — so the original's YAML front matter, whose `title:` lines are the Owner's words and not
   // this repository's, is never mistaken for an uncited quotation here.
   let scanText = text;
-  if (f === 'MASTER_SPECIFICATION.md') {
+  if (f === "MASTER_SPECIFICATION.md") {
     const lines = text.split(/\r?\n/);
-    const row = lines.find((l) => /^\| Line offset inside this copy \|/.test(l));
+    const row = lines.find((l) =>
+      /^\| Line offset inside this copy \|/.test(l),
+    );
     const m = row && row.match(/line N \+ (\d+) of this file/);
     const measured = m ? Number(m[1]) + 1 : null;
-    const master = loaded.find((s) => s.key === 'master');
-    const probe = master.lines.slice(0, 3).join('\n');
-    const found = lines.findIndex((l, i, a) => i > 0 && a.slice(i, i + 3).join('\n') === probe);
+    const master = loaded.find((s) => s.key === "master");
+    const probe = master.lines.slice(0, 3).join("\n");
+    const found = lines.findIndex(
+      (l, i, a) => i > 0 && a.slice(i, i + 3).join("\n") === probe,
+    );
     if (found < 0 || (measured !== null && measured !== found + 1)) {
-      console.error(`${f}: verbatim body boundary unresolved (measured ${measured}, located ${found + 1}) — refusing to scan an unknown window`);
+      console.error(
+        `${f}: verbatim body boundary unresolved (measured ${measured}, located ${found + 1}) — refusing to scan an unknown window`,
+      );
       process.exitCode = 1;
       continue;
     }
-    scanText = lines.slice(0, found).join('\n');
+    scanText = lines.slice(0, found).join("\n");
   }
-  const docLines = scanText.split('\n');
+  const docLines = scanText.split("\n");
 
   summary.files++;
-  const fileResult = { file: `docs/${f}`, checks: [], refChecks: [], counts: { verified: 0, drifted: 0, drifted_other_source: 0, notFound: 0, self_recording: 0, project_record: 0, defined_term: 0, noReference: 0, uncitedVerbatim: 0, ref_ok: 0, ref_defects: 0 } };
+  const fileResult = {
+    file: `docs/${f}`,
+    checks: [],
+    refChecks: [],
+    counts: {
+      verified: 0,
+      drifted: 0,
+      drifted_other_source: 0,
+      notFound: 0,
+      self_recording: 0,
+      project_record: 0,
+      defined_term: 0,
+      noReference: 0,
+      uncitedVerbatim: 0,
+      ref_ok: 0,
+      ref_defects: 0,
+    },
+  };
   // A document must not verify its own quotations: the sibling-doc sources above would
   // match a paraphrase back to the very line it sits on and report it as an attribution. Excluding
   // the file under scan is what makes a cross-document citation mean something.
@@ -596,13 +719,20 @@ for (const f of docFiles) {
     if (isRow(docLines[i])) return [i, i];
     let a = i;
     let b = i;
-    while (a > 0 && docLines[a - 1].trim() !== '' && !isRow(docLines[a - 1]) && !/^#{1,6}\s/.test(docLines[a - 1])) a--;
+    while (
+      a > 0 &&
+      docLines[a - 1].trim() !== "" &&
+      !isRow(docLines[a - 1]) &&
+      !/^#{1,6}\s/.test(docLines[a - 1])
+    )
+      a--;
     while (
       b + 1 < docLines.length &&
-      docLines[b + 1].trim() !== '' &&
+      docLines[b + 1].trim() !== "" &&
       !isRow(docLines[b + 1]) &&
       !/^#{1,6}\s/.test(docLines[b + 1])
-    ) b++;
+    )
+      b++;
     return [a, b];
   };
 
@@ -613,31 +743,48 @@ for (const f of docFiles) {
       raw: r[0],
       from: Number(r[1]),
       to: Number(r[2] ?? r[1]),
-      form: 'line',
+      form: "line",
     }));
     for (const r of s.matchAll(BARE_REF_RE)) {
       const from = Number(r[1]);
-      refs.push({ at: r.index, raw: r[0], from, to: r[2] ? Number(r[2]) : from, form: 'bare' });
+      refs.push({
+        at: r.index,
+        raw: r[0],
+        from,
+        to: r[2] ? Number(r[2]) : from,
+        form: "bare",
+      });
     }
     // House-style citations carry no `line` keyword and no parentheses, so they are harvested here.
     // `r.index` points at the locator, which is what a file label governs from: `Standard §12 281`
     // binds 281 to the Standard because "Standard" precedes the locator, not the number.
     for (const r of s.matchAll(HOUSE_REF_RE)) {
       const from = Number(r[1]);
-      refs.push({ at: r.index, raw: r[0], from, to: r[2] ? Number(r[2]) : from, form: 'house' });
+      refs.push({
+        at: r.index,
+        raw: r[0],
+        from,
+        to: r[2] ? Number(r[2]) : from,
+        form: "house",
+      });
     }
     // The number's own position, whichever citation form wrote it. `r.at` is the start of the match,
     // which for the house style is the locator rather than the number, so the digits are located
     // inside the match text: `G.7 line 3790` and `§11.9 1613` both put 3790 / 1613 after the label.
     for (const r of refs) {
-      r.numAt = r.at + (r.raw ?? '').indexOf(String(r.from));
+      r.numAt = r.at + (r.raw ?? "").indexOf(String(r.from));
       r.sec = sectionIdOf(s, r);
     }
     const hints = [];
     for (const src of sourcesHere) {
-      for (const hm of s.matchAll(new RegExp(src.hintRe.source, 'gi'))) hints.push({ at: hm.index, key: src.key });
+      for (const hm of s.matchAll(new RegExp(src.hintRe.source, "gi")))
+        hints.push({ at: hm.index, key: src.key });
     }
-    return { text: s, refs: refs.filter((r) => r.from > 1).sort((a, b) => a.at - b.at), hints }; // "line 1" matches are prose
+    return {
+      text: s,
+      refs: refs.filter((r) => r.from > 1).sort((a, b) => a.at - b.at),
+      hints,
+    }; // "line 1" matches are prose
   };
 
   // A citation can wrap between its label and its number — `§13.2 (lines` / `1846–1866) adds: …`,
@@ -647,9 +794,13 @@ for (const f of docFiles) {
   // `line(s)` + wrap + number shape, so it cannot borrow a number from an unrelated sentence.
   const LABEL_WRAP = /(?:^|[|(,:;\s])lines?\s*[:#]?\s*$/i;
   const ctxAt = (n, bb) => {
-    const s = docLines[n] ?? '';
-    const next = n + 1 <= bb ? docLines[n + 1] : '';
-    return collect(LABEL_WRAP.test(s) && /^\s*-?\d/.test(next ?? '') ? `${s} ${next.trim()}` : s);
+    const s = docLines[n] ?? "";
+    const next = n + 1 <= bb ? docLines[n + 1] : "";
+    return collect(
+      LABEL_WRAP.test(s) && /^\s*-?\d/.test(next ?? "")
+        ? `${s} ${next.trim()}`
+        : s,
+    );
   };
 
   // Only a hint that PRECEDES a number binds it — and only when that number follows it
@@ -660,9 +811,13 @@ for (const f of docFiles) {
   // source, because four reference files share the `line N` syntax and the tool must not invent
   // an attribution the author did not write.
   const governingOf = (ref) => {
-    const cand = ref.ctx.hints.filter((h) => h.at <= ref.at).sort((a, b) => b.at - a.at)[0];
+    const cand = ref.ctx.hints
+      .filter((h) => h.at <= ref.at)
+      .sort((a, b) => b.at - a.at)[0];
     if (!cand) return null;
-    return ref.ctx.refs.some((r) => r.at > cand.at && r.at < ref.at) ? null : cand;
+    return ref.ctx.refs.some((r) => r.at > cand.at && r.at < ref.at)
+      ? null
+      : cand;
   };
   const namedBy = (ref) => {
     const governing = governingOf(ref);
@@ -671,7 +826,9 @@ for (const f of docFiles) {
     // configuration are consulted only when the line names them: two files sharing the number
     // 301 says nothing about the other's content, and letting them match invented citations
     // that no author wrote.
-    return sourcesHere.filter((s) => !s.key.startsWith('doc:') && !NON_REQUIREMENT_KEYS.has(s.key));
+    return sourcesHere.filter(
+      (s) => !s.key.startsWith("doc:") && !NON_REQUIREMENT_KEYS.has(s.key),
+    );
   };
 
   // Every (source, line) pair this document cites anywhere in itself. This is what turns a quoted
@@ -727,7 +884,11 @@ for (const f of docFiles) {
     const f = new Array(docLines.length).fill(false);
     let open = false;
     for (let i = 0; i < docLines.length; i++) {
-      if (/^\s*(```|~~~)/.test(docLines[i])) { open = !open; f[i] = true; continue; }
+      if (/^\s*(```|~~~)/.test(docLines[i])) {
+        open = !open;
+        f[i] = true;
+        continue;
+      }
       f[i] = open;
     }
     return f;
@@ -738,69 +899,101 @@ for (const f of docFiles) {
     if (inFence[i] || /["“”]/.test(line)) continue;
     const ctxBare = ctxAt(i, blockOf(i)[1]);
     for (const base of ctxBare.refs) {
-      if (base.form === 'bare') continue;
+      if (base.form === "bare") continue;
       // Requirement sources first, exactly as house rule 4 says: an unlabelled number is a requirement
       // line number. A file label joins the set only when the citation itself writes it, and then
       // replaces it — `Standard §10 line 241` is a claim about the Standard, and nothing else.
       const key = labelKeyOf(ctxBare.text, base, sourcesHere);
       const cands = key
         ? sourcesHere.filter((s) => s.key === key)
-        : sourcesHere.filter((s) => !s.key.startsWith('doc:') && !NON_REQUIREMENT_KEYS.has(s.key));
+        : sourcesHere.filter(
+            (s) =>
+              !s.key.startsWith("doc:") && !NON_REQUIREMENT_KEYS.has(s.key),
+          );
       summary.bareRefs++;
-      const cited = `${base.from}${base.to !== base.from ? `–${base.to}` : ''}`;
+      const cited = `${base.from}${base.to !== base.from ? `–${base.to}` : ""}`;
       const longEnough = cands.filter((s) => s.lines.length >= base.to);
       let defect = null;
       if (!longEnough.length) {
         defect = {
-          status: 'REF_PAST_END',
+          status: "REF_PAST_END",
           source: null,
-          detail: `no source this citation can bind to reaches line ${base.to}` +
-            ` (${cands.map((s) => `${s.key} ${s.lines.length}L`).join(', ') || 'no source resolved for this number'})`,
+          detail:
+            `no source this citation can bind to reaches line ${base.to}` +
+            ` (${cands.map((s) => `${s.key} ${s.lines.length}L`).join(", ") || "no source resolved for this number"})`,
         };
       } else if (
-        longEnough.every((s) => !String(s.lines[base.from - 1] ?? '').trim() && !String(s.lines[base.to - 1] ?? '').trim())
+        longEnough.every(
+          (s) =>
+            !String(s.lines[base.from - 1] ?? "").trim() &&
+            !String(s.lines[base.to - 1] ?? "").trim(),
+        )
       ) {
         defect = {
-          status: 'REF_BLANK_TARGET',
+          status: "REF_BLANK_TARGET",
           source: longEnough[0].rel,
-          detail: `line ${cited} is empty in ${longEnough.map((s) => s.key).join(', ')} — nothing is being cited`,
+          detail: `line ${cited} is empty in ${longEnough.map((s) => s.key).join(", ")} — nothing is being cited`,
         };
       } else if (base.sec) {
         const span = sectionSpanOf(ctxBare.text, base);
         const inRange = (s, id, lo, hi) =>
-          (SECTIONS.get(s.key) ?? []).some((x) => x.id === id && lo >= x.line && hi <= x.end);
-        const holders = longEnough.filter((s) => (SECTIONS.get(s.key) ?? []).some((x) => x.id === base.sec));
-        const structured = longEnough.filter((s) => (SECTIONS.get(s.key) ?? []).length > 0);
+          (SECTIONS.get(s.key) ?? []).some(
+            (x) => x.id === id && lo >= x.line && hi <= x.end,
+          );
+        const holders = longEnough.filter((s) =>
+          (SECTIONS.get(s.key) ?? []).some((x) => x.id === base.sec),
+        );
+        const structured = longEnough.filter(
+          (s) => (SECTIONS.get(s.key) ?? []).length > 0,
+        );
         // A span cites the envelope of two sections, so the first id is part of the claim too.
         const covered = holders.some((s) => {
           if (inRange(s, base.sec, base.from, base.to)) return true;
           if (!span || span.last !== base.sec) return false;
-          const first = (SECTIONS.get(s.key) ?? []).find((x) => x.id === span.first);
-          const last = (SECTIONS.get(s.key) ?? []).find((x) => x.id === span.last);
-          return !!first && !!last && base.from >= first.line && base.to <= last.end;
+          const first = (SECTIONS.get(s.key) ?? []).find(
+            (x) => x.id === span.first,
+          );
+          const last = (SECTIONS.get(s.key) ?? []).find(
+            (x) => x.id === span.last,
+          );
+          return (
+            !!first && !!last && base.from >= first.line && base.to <= last.end
+          );
         });
         if (!covered && holders.length) {
           const h = holders[0];
           const x = (SECTIONS.get(h.key) ?? []).find((y) => y.id === base.sec);
           defect = {
-            status: 'REF_SECTION_MISMATCH',
+            status: "REF_SECTION_MISMATCH",
             source: h.rel,
-            detail: `§${base.sec} is ${h.key} lines ${x.line}–${x.end}, but the citation points at line ${cited}` +
-              (span ? ` (span §${span.first}–§${span.last} also unreadable there)` : ''),
+            detail:
+              `§${base.sec} is ${h.key} lines ${x.line}–${x.end}, but the citation points at line ${cited}` +
+              (span
+                ? ` (span §${span.first}–§${span.last} also unreadable there)`
+                : ""),
           };
         } else if (!holders.length && structured.length) {
           defect = {
-            status: 'REF_SECTION_UNKNOWN',
+            status: "REF_SECTION_UNKNOWN",
             source: structured[0].rel,
-            detail: `section §${base.sec} does not exist in ${structured.map((s) => s.key).join(', ')}, ` +
+            detail:
+              `section §${base.sec} does not exist in ${structured.map((s) => s.key).join(", ")}, ` +
               `the sources this citation can bind to`,
           };
         }
       }
-      if (!defect) { fileResult.counts.ref_ok++; continue; }
+      if (!defect) {
+        fileResult.counts.ref_ok++;
+        continue;
+      }
       fileResult.counts.ref_defects++;
       summary.bareRefDefects++;
-      fileResult.refChecks.push({ docLine: i + 1, cited, citation: (base.raw ?? '').trim(), ...defect });
+      fileResult.refChecks.push({
+        docLine: i + 1,
+        cited,
+        citation: (base.raw ?? "").trim(),
+        ...defect,
+      });
     }
   }
 
@@ -815,9 +1008,16 @@ for (const f of docFiles) {
     // quotation to whichever number sat nearest mid-row, sometimes a neighbouring row's, and
     // reporting defects that were the checker's own.
     for (const q of quotations(line)) {
-      const frag = q.raw.replace(/\s*\|\s*/g, ' | ').trim().replace(/^["'”]|[，“"]$/g, '').trim();
+      const frag = q.raw
+        .replace(/\s*\|\s*/g, " | ")
+        .trim()
+        .replace(/^["'”]|[，“"]$/g, "")
+        .trim();
       const chunks = chunksOf(frag);
-      if (!chunks.length) { summary.unmatched++; continue; }
+      if (!chunks.length) {
+        summary.unmatched++;
+        continue;
+      }
       summary.fragments++;
 
       // A quotation is covered if ANY line reference in its sentence puts it there. A finding then
@@ -839,7 +1039,11 @@ for (const f of docFiles) {
         const c = ctxAt(j, bb);
         citations.push(...c.refs.map((r) => ({ ...r, ctx: c })));
       }
-      const scope = own.refs.length ? 'own-line' : citations.length ? 'adjacent-line' : 'none';
+      const scope = own.refs.length
+        ? "own-line"
+        : citations.length
+          ? "adjacent-line"
+          : "none";
       if (!citations.length) {
         summary.noReference++;
         fileResult.counts.noReference++;
@@ -848,7 +1052,9 @@ for (const f of docFiles) {
         // its citation in editing, and those should be attributed. Reporting which ones the
         // requirement files contain turns an untriageable pile into a short actionable list.
         const where = [];
-        for (const src of sourcesHere.filter((s) => !s.key.startsWith('doc:') && !NON_REQUIREMENT_KEYS.has(s.key))) {
+        for (const src of sourcesHere.filter(
+          (s) => !s.key.startsWith("doc:") && !NON_REQUIREMENT_KEYS.has(s.key),
+        )) {
           const at = findAnywhere(src, chunks);
           if (at) where.push({ key: src.key, rel: src.rel, line: at });
         }
@@ -860,7 +1066,7 @@ for (const f of docFiles) {
         // same (source, line) the term was found on is what keeps this from excusing an uncited
         // sentence: a full requirement sentence is never ≤ 8 tokens, and an unanchored term stays
         // reported as uncited verbatim text.
-        const termTokens = toks(frag).split(' ').filter(Boolean).length;
+        const termTokens = toks(frag).split(" ").filter(Boolean).length;
         const anchored = where.filter((w) => anchors.get(`${w.key}:${w.line}`));
         if (anchored.length && termTokens <= 8) {
           summary.definedTerm++;
@@ -868,10 +1074,13 @@ for (const f of docFiles) {
           fileResult.checks.push({
             docLine: i + 1,
             fragment: frag.slice(0, 110),
-            status: 'DEFINED_TERM',
+            status: "DEFINED_TERM",
             verbatimIn: anchored.map((w) => `${w.rel}:${w.line}`),
-            anchoredAt: anchored.map((w) => `${w.key}:${w.line}, cited by this document on line ${anchors.get(`${w.key}:${w.line}`).join(', ')}`),
-            note: 'controlled-vocabulary label: this document cites the source line it comes from, so repeating the label is not a missing citation',
+            anchoredAt: anchored.map(
+              (w) =>
+                `${w.key}:${w.line}, cited by this document on line ${anchors.get(`${w.key}:${w.line}`).join(", ")}`,
+            ),
+            note: "controlled-vocabulary label: this document cites the source line it comes from, so repeating the label is not a missing citation",
           });
           continue;
         }
@@ -882,7 +1091,7 @@ for (const f of docFiles) {
         fileResult.checks.push({
           docLine: i + 1,
           fragment: frag.slice(0, 110),
-          status: 'NO_LINE_REFERENCE',
+          status: "NO_LINE_REFERENCE",
           verbatimIn: where.map((w) => `${w.rel}:${w.line}`),
           note: "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation",
         });
@@ -896,7 +1105,15 @@ for (const f of docFiles) {
         let hit = null;
         for (const src of namedBy(ref)) {
           hit = occursNear(src, chunks, ref.from, window);
-          if (hit) { out = { status: 'VERIFIED', source: src.rel, cited: ref.from, actual: hit }; break; }
+          if (hit) {
+            out = {
+              status: "VERIFIED",
+              source: src.rel,
+              cited: ref.from,
+              actual: hit,
+            };
+            break;
+          }
         }
         if (out) break;
       }
@@ -905,21 +1122,51 @@ for (const f of docFiles) {
         for (const ref of citations) {
           for (const src of namedBy(ref)) {
             const anywhere = findAnywhere(src, chunks, ref.from);
-            if (anywhere) { out = { status: 'LINE_OFF', source: src.rel, cited: ref.from, actual: anywhere, occurrences: occurrences(src, chunks).length }; break; }
+            if (anywhere) {
+              out = {
+                status: "LINE_OFF",
+                source: src.rel,
+                cited: ref.from,
+                actual: anywhere,
+                occurrences: occurrences(src, chunks).length,
+              };
+              break;
+            }
           }
           if (out) break;
         }
       }
       // tier 3 — a number on the line is right for a file the line never named
       if (!out) {
-        const named = new Set(citations.flatMap((ref) => namedBy(ref).map((s) => s.key)));
+        const named = new Set(
+          citations.flatMap((ref) => namedBy(ref).map((s) => s.key)),
+        );
         for (const ref of citations) {
-          for (const src of sourcesHere.filter((s) => !named.has(s.key) && !s.key.startsWith('doc:'))) {
+          for (const src of sourcesHere.filter(
+            (s) => !named.has(s.key) && !s.key.startsWith("doc:"),
+          )) {
             const window = Math.max(4, ref.to - ref.from + 4);
             const hit = occursNear(src, chunks, ref.from, window);
-            if (hit) { out = { status: 'LINE_OFF_OTHER_SOURCE', source: src.rel, cited: ref.from, actual: hit, near: true }; break; }
+            if (hit) {
+              out = {
+                status: "LINE_OFF_OTHER_SOURCE",
+                source: src.rel,
+                cited: ref.from,
+                actual: hit,
+                near: true,
+              };
+              break;
+            }
             const anywhere = findAnywhere(src, chunks, ref.from);
-            if (anywhere) { out = { status: 'LINE_OFF_OTHER_SOURCE', source: src.rel, cited: ref.from, actual: anywhere }; break; }
+            if (anywhere) {
+              out = {
+                status: "LINE_OFF_OTHER_SOURCE",
+                source: src.rel,
+                cited: ref.from,
+                actual: anywhere,
+              };
+              break;
+            }
           }
           if (out) break;
         }
@@ -934,7 +1181,12 @@ for (const f of docFiles) {
         for (const src of RECORDED) {
           const anywhere = findAnywhere(src, chunks);
           if (anywhere) {
-            out = { status: 'SELF_RECORDING', source: src.rel, cited: citations[0].from, actual: anywhere };
+            out = {
+              status: "SELF_RECORDING",
+              source: src.rel,
+              cited: citations[0].from,
+              actual: anywhere,
+            };
             break;
           }
         }
@@ -947,36 +1199,72 @@ for (const f of docFiles) {
         // requirement and a quoted declaration for the evidence — so a requirement-source search
         // cannot see the second one. This tier never uses the line number: it reports where the
         // words actually are, which is what makes the citation checkable rather than unfounded.
-        const ownRecords = sourcesHere.filter((s) => s.key.startsWith('doc:') || NON_REQUIREMENT_KEYS.has(s.key));
+        const ownRecords = sourcesHere.filter(
+          (s) => s.key.startsWith("doc:") || NON_REQUIREMENT_KEYS.has(s.key),
+        );
         for (const src of ownRecords) {
           const anywhere = findAnywhere(src, chunks);
           if (anywhere) {
-            out = { status: 'PROJECT_RECORD', source: src.rel, cited: citations[0].from, actual: anywhere };
+            out = {
+              status: "PROJECT_RECORD",
+              source: src.rel,
+              cited: citations[0].from,
+              actual: anywhere,
+            };
             break;
           }
         }
       }
 
-      if (!out) out = { status: 'NOT_FOUND', source: null, cited: citations[0].from, actual: null };
-      out.citationsOnLine = citations.map((r) => (r.to !== r.from ? `${r.from}-${r.to}` : String(r.from)));
-      out.namedSources = [...new Set(citations.map((r) => governingOf(r)?.key ?? 'any'))];
+      if (!out)
+        out = {
+          status: "NOT_FOUND",
+          source: null,
+          cited: citations[0].from,
+          actual: null,
+        };
+      out.citationsOnLine = citations.map((r) =>
+        r.to !== r.from ? `${r.from}-${r.to}` : String(r.from),
+      );
+      out.namedSources = [
+        ...new Set(citations.map((r) => governingOf(r)?.key ?? "any")),
+      ];
 
-      summary[out.status === 'LINE_OFF_OTHER_SOURCE' ? 'driftedOtherSource'
-        : out.status === 'LINE_OFF' ? 'drifted'
-        : out.status === 'SELF_RECORDING' ? 'selfRecording'
-        : out.status === 'PROJECT_RECORD' ? 'projectRecord'
-        : out.status === 'DEFINED_TERM' ? 'definedTerm'
-        : out.status === 'NOT_FOUND' ? 'notFound'
-        : 'verified']++;
-      const bucket = out.status === 'LINE_OFF_OTHER_SOURCE' ? 'drifted_other_source'
-        : out.status === 'LINE_OFF' ? 'drifted'
-        : out.status === 'SELF_RECORDING' ? 'self_recording'
-        : out.status === 'PROJECT_RECORD' ? 'project_record'
-        : out.status === 'NOT_FOUND' ? 'notFound'
-        : 'verified';
+      summary[
+        out.status === "LINE_OFF_OTHER_SOURCE"
+          ? "driftedOtherSource"
+          : out.status === "LINE_OFF"
+            ? "drifted"
+            : out.status === "SELF_RECORDING"
+              ? "selfRecording"
+              : out.status === "PROJECT_RECORD"
+                ? "projectRecord"
+                : out.status === "DEFINED_TERM"
+                  ? "definedTerm"
+                  : out.status === "NOT_FOUND"
+                    ? "notFound"
+                    : "verified"
+      ]++;
+      const bucket =
+        out.status === "LINE_OFF_OTHER_SOURCE"
+          ? "drifted_other_source"
+          : out.status === "LINE_OFF"
+            ? "drifted"
+            : out.status === "SELF_RECORDING"
+              ? "self_recording"
+              : out.status === "PROJECT_RECORD"
+                ? "project_record"
+                : out.status === "NOT_FOUND"
+                  ? "notFound"
+                  : "verified";
       fileResult.counts[bucket]++;
 
-      fileResult.checks.push({ docLine: i + 1, fragment: frag.slice(0, 110), refScope: scope, ...out });
+      fileResult.checks.push({
+        docLine: i + 1,
+        fragment: frag.slice(0, 110),
+        refScope: scope,
+        ...out,
+      });
     }
   }
   results.push(fileResult);
@@ -984,9 +1272,11 @@ for (const f of docFiles) {
 
 const report = {
   generatedAt: new Date().toISOString(),
-  tool: 'scripts/verify-citations.mjs',
+  tool: "scripts/verify-citations.mjs",
   sources: loaded.map((s) => `${s.key} = ${s.rel} (${s.lines.length} lines)`),
-  recordedSources: RECORDED.map((s) => `${s.key} = ${s.rel} (${s.lines.length} lines)`),
+  recordedSources: RECORDED.map(
+    (s) => `${s.key} = ${s.rel} (${s.lines.length} lines)`,
+  ),
   summary,
   interpretation:
     "VERIFIED = the quotation occurs at (or within a few lines of) a line reference written on the quotation's own markdown line or on the line above/below it inside the same block. Both citation styles are read: `line N` / `(N)` and the registers' declared house style `§11.9 1613–1617`, `G.2 3672`, `Directive 194`. LINE_OFF = genuine quotation, right file, wrong line number. LINE_OFF_OTHER_SOURCE = the quotation exists in a different reference file than the line attributes it to. SELF_RECORDING = the quoted text is a value this project recorded in its own audit registers, or a cell of the Owner's gap-closure register; those carry no requirement line number, so this is a class, not a defect. DEFINED_TERM = a short (≤ 8 token) controlled-vocabulary label with no nearby number, where this same document cites the exact source line the label was found on — the term is anchored once at its definition and repeated as vocabulary, which is not a missing citation. NOT_FOUND = no requirement source contains the quotation; treat as suspect and either restore the source wording or rewrite it as a paraphrase without quotation marks. NO_LINE_REFERENCE = quoted material with no nearby line number, which includes this repository's own vocabulary and is not a citation; when it is verbatim requirement text it is additionally listed as uncited verbatim. Elided quotations (ellipsis or bracketed note) are matched by their surviving runs in order inside a three-line window, so an honest truncated quote is not mistaken for a fabricated one. Quoted strings of fewer than three tokens are skipped (summary.unmatched). " +
@@ -994,7 +1284,7 @@ const report = {
   files: results,
 };
 
-fs.writeFileSync(OUT, JSON.stringify(report, null, 2) + '\n', 'utf8');
+fs.writeFileSync(OUT, JSON.stringify(report, null, 2) + "\n", "utf8");
 
 // NOTE ON THE PRINTED COUNTS, added 31 Oct 2026 because a reader tried to sum them and got 489 from 485.
 // `summary.fragments` is the whole scanned population of quoted strings of >= 3 tokens — the phrase
@@ -1005,37 +1295,57 @@ fs.writeFileSync(OUT, JSON.stringify(report, null, 2) + '\n', 'utf8');
 //     VERIFIED + SELF_RECORDING + PROJECT_RECORD + NO_LINE_REF == fragments   (425 + 10 + 9 + 41 = 485)
 // and adding DEFINED_TERM to that sum double-counts. Line 41's "(of which 0 are verbatim requirement
 // text)" is `uncitedVerbatim`, the only no-reference class that is actionable.
-console.log(`scanned ${summary.files} docs/ markdown files, ${summary.fragments} quoted fragments carrying a line reference (skipped ${summary.unmatched} quoted strings shorter than 3 tokens)`);
 console.log(
-  `VERIFIED ${summary.verified} | LINE_OFF ${summary.drifted} | LINE_OFF_OTHER_SOURCE ${summary.driftedOtherSource} | SELF_RECORDING ${summary.selfRecording} | PROJECT_RECORD ${summary.projectRecord} | DEFINED_TERM ${summary.definedTerm} | NOT_FOUND ${summary.notFound} | NO_LINE_REF ${summary.noReference} (of which ${summary.uncitedVerbatim} are verbatim requirement text with no citation)`
+  `scanned ${summary.files} docs/ markdown files, ${summary.fragments} quoted fragments carrying a line reference (skipped ${summary.unmatched} quoted strings shorter than 3 tokens)`,
+);
+console.log(
+  `VERIFIED ${summary.verified} | LINE_OFF ${summary.drifted} | LINE_OFF_OTHER_SOURCE ${summary.driftedOtherSource} | SELF_RECORDING ${summary.selfRecording} | PROJECT_RECORD ${summary.projectRecord} | DEFINED_TERM ${summary.definedTerm} | NOT_FOUND ${summary.notFound} | NO_LINE_REF ${summary.noReference} (of which ${summary.uncitedVerbatim} are verbatim requirement text with no citation)`,
 );
 // The H-8 population, reported apart because it is a different kind of count: these are references,
 // not quotations, and `summary.fragments` does not include them. Do not add the two sums together.
 console.log(
   `BARE REFERENCES (no quotation on the line): ${summary.bareRefs} checked, ${summary.bareRefDefects} defect(s) ` +
-    `[${results.reduce((a, r) => a + r.counts.ref_ok, 0)} resolve]`
+    `[${results.reduce((a, r) => a + r.counts.ref_ok, 0)} resolve]`,
 );
 for (const r of results) {
-  const bad = r.checks.filter((x) => x.status === 'LINE_OFF' || x.status === 'LINE_OFF_OTHER_SOURCE' || x.status === 'NOT_FOUND');
+  const bad = r.checks.filter(
+    (x) =>
+      x.status === "LINE_OFF" ||
+      x.status === "LINE_OFF_OTHER_SOURCE" ||
+      x.status === "NOT_FOUND",
+  );
   if (!bad.length) continue;
   console.log(
-    `\n${r.file}: VERIFIED ${r.counts.verified} | LINE_OFF ${r.counts.drifted} | OTHER_SRC ${r.counts.drifted_other_source} | NOT_FOUND ${r.counts.notFound} | SELF_REC ${r.counts.self_recording} | NO_REF ${r.counts.noReference}`
+    `\n${r.file}: VERIFIED ${r.counts.verified} | LINE_OFF ${r.counts.drifted} | OTHER_SRC ${r.counts.drifted_other_source} | NOT_FOUND ${r.counts.notFound} | SELF_REC ${r.counts.self_recording} | NO_REF ${r.counts.noReference}`,
   );
   for (const chk of bad) {
-    console.log(`  [${chk.status}] doc:${chk.docLine} cited ${chk.cited}${chk.actual ? ' actual ' + chk.actual : ''} in ${chk.source ?? '-'} :: "${chk.fragment}"`);
+    console.log(
+      `  [${chk.status}] doc:${chk.docLine} cited ${chk.cited}${chk.actual ? " actual " + chk.actual : ""} in ${chk.source ?? "-"} :: "${chk.fragment}"`,
+    );
   }
 }
 for (const r of results) {
-  const uncited = r.checks.filter((x) => x.status === 'NO_LINE_REFERENCE' && x.verbatimIn?.length);
+  const uncited = r.checks.filter(
+    (x) => x.status === "NO_LINE_REFERENCE" && x.verbatimIn?.length,
+  );
   if (!uncited.length) continue;
-  console.log(`\n${r.file}: ${uncited.length} quotation(s) are verbatim requirement text but carry no line reference`);
-  for (const chk of uncited) console.log(`  doc:${chk.docLine} ${chk.verbatimIn.join(', ')} :: "${chk.fragment}"`);
+  console.log(
+    `\n${r.file}: ${uncited.length} quotation(s) are verbatim requirement text but carry no line reference`,
+  );
+  for (const chk of uncited)
+    console.log(
+      `  doc:${chk.docLine} ${chk.verbatimIn.join(", ")} :: "${chk.fragment}"`,
+    );
 }
 for (const r of results) {
   if (!r.refChecks.length) continue;
-  console.log(`\n${r.file}: ${r.refChecks.length} reference(s) with no quotation that do not resolve as written`);
+  console.log(
+    `\n${r.file}: ${r.refChecks.length} reference(s) with no quotation that do not resolve as written`,
+  );
   for (const chk of r.refChecks) {
-    console.log(`  [${chk.status}] doc:${chk.docLine} "${chk.citation}" — ${chk.detail}`);
+    console.log(
+      `  [${chk.status}] doc:${chk.docLine} "${chk.citation}" — ${chk.detail}`,
+    );
   }
 }
 
@@ -1058,16 +1368,26 @@ for (const r of results) {
 const actionable = [];
 for (const r of results) {
   for (const chk of r.checks) {
-    if (chk.status === 'LINE_OFF' || chk.status === 'LINE_OFF_OTHER_SOURCE' || chk.status === 'NOT_FOUND') actionable.push(`${r.file}:${chk.docLine} ${chk.status}`);
-    if (chk.status === 'NO_LINE_REFERENCE' && chk.verbatimIn?.length) actionable.push(`${r.file}:${chk.docLine} uncited verbatim`);
+    if (
+      chk.status === "LINE_OFF" ||
+      chk.status === "LINE_OFF_OTHER_SOURCE" ||
+      chk.status === "NOT_FOUND"
+    )
+      actionable.push(`${r.file}:${chk.docLine} ${chk.status}`);
+    if (chk.status === "NO_LINE_REFERENCE" && chk.verbatimIn?.length)
+      actionable.push(`${r.file}:${chk.docLine} uncited verbatim`);
   }
-  for (const chk of r.refChecks) actionable.push(`${r.file}:${chk.docLine} ${chk.status}`);
+  for (const chk of r.refChecks)
+    actionable.push(`${r.file}:${chk.docLine} ${chk.status}`);
 }
 console.log(`\nwrote docs/CITATION_VERIFICATION.json`);
 if (actionable.length) {
-  console.log(`CITATION GATE FAILED: ${actionable.length} actionable defect(s) (exit 1)`);
+  console.log(
+    `CITATION GATE FAILED: ${actionable.length} actionable defect(s) (exit 1)`,
+  );
   process.exitCode = 1;
 } else {
-  console.log('CITATION GATE PASSED: every quotation is where its line reference says, and every bare reference resolves');
+  console.log(
+    "CITATION GATE PASSED: every quotation is where its line reference says, and every bare reference resolves",
+  );
 }
-

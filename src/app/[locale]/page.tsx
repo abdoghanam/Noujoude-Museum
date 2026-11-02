@@ -45,10 +45,7 @@ export default async function HomePage({ params }: HomePageProps) {
           const anchor = section.title.replace(/\W+/g, "-");
           return (
             <section key={section.title} aria-labelledby={`section-${anchor}`}>
-              <h2
-                className={pageStyles.sectionTitle}
-                id={`section-${anchor}`}
-              >
+              <h2 className={pageStyles.sectionTitle} id={`section-${anchor}`}>
                 {section.title}
               </h2>
               {section.route === "home" ? (

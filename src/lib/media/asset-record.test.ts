@@ -18,7 +18,9 @@ import {
  * what happens on the input that has not arrived yet, and what happens on a register that lies.
  */
 
-const row = (over: Partial<Record<(typeof AUDIT_COLUMNS)[number], string>> = {}): string[] => {
+const row = (
+  over: Partial<Record<(typeof AUDIT_COLUMNS)[number], string>> = {},
+): string[] => {
   const cells: Record<string, string> = {
     "Asset ID": "NDM-AST-001",
     Filename: "hero_16x9.webp",
@@ -125,9 +127,9 @@ describe("the three status dimensions stay three", () => {
 
 describe("the vocabulary the audit actually emits", () => {
   it("maps the two rights statements present in the register", () => {
-    expect(rightsStateFrom("UNKNOWN — no rights statement supplied in reference/")).toBe(
-      "unknown",
-    );
+    expect(
+      rightsStateFrom("UNKNOWN — no rights statement supplied in reference/"),
+    ).toBe("unknown");
     expect(rightsStateFrom("Awaiting Rights Review")).toBe("pending");
   });
 
@@ -183,9 +185,9 @@ describe("a register that lies is refused, not repaired", () => {
   });
 
   it("rejects a header that dropped or added a column", () => {
-    expect(() => recordsFromRows([[...AUDIT_COLUMNS.slice(0, 19)], row()])).toThrow(
-      /expected a 20-column header, found 19/,
-    );
+    expect(() =>
+      recordsFromRows([[...AUDIT_COLUMNS.slice(0, 19)], row()]),
+    ).toThrow(/expected a 20-column header, found 19/);
   });
 
   it("rejects a row whose cell count differs, which is what a shifted column looks like", () => {

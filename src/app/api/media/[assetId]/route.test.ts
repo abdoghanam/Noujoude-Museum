@@ -48,7 +48,10 @@ import {
   resetDerivativeManifestCache,
   setDerivativeManifest,
 } from "@/lib/server/media/slot-facts";
-import { type ServedDerivative, serveDerivative } from "@/lib/server/media/serving";
+import {
+  type ServedDerivative,
+  serveDerivative,
+} from "@/lib/server/media/serving";
 
 const register = assetRegister();
 const FIRST_ASSET_ID = "NDM-AST-001";
@@ -66,8 +69,12 @@ const ENTITY_TAG = `"${"a".repeat(64)}"`;
  * this file invented.
  */
 const SYNTHETIC_ID = "NDM-SYNTH-TEST-001";
-const SYNTHETIC_BYTES = new Uint8Array([0x52, 0x49, 0x46, 0x46, 0x57, 0x45, 0x42, 0x50]);
-const SYNTHETIC_DIGEST = createHash("sha256").update(SYNTHETIC_BYTES).digest("hex");
+const SYNTHETIC_BYTES = new Uint8Array([
+  0x52, 0x49, 0x46, 0x46, 0x57, 0x45, 0x42, 0x50,
+]);
+const SYNTHETIC_DIGEST = createHash("sha256")
+  .update(SYNTHETIC_BYTES)
+  .digest("hex");
 const SYNTHETIC_TAG = `"${SYNTHETIC_DIGEST}"`;
 const SYNTHETIC_SERVED: ServedDerivative = {
   assetId: SYNTHETIC_ID,
@@ -115,7 +122,10 @@ function context(assetId?: string): RouteContext {
   return { params: Promise.resolve(assetId === undefined ? {} : { assetId }) };
 }
 
-function requestFor(headers: HeadersInit = {}, assetId: string = FIRST_ASSET_ID): Request {
+function requestFor(
+  headers: HeadersInit = {},
+  assetId: string = FIRST_ASSET_ID,
+): Request {
   return new Request(`http://localhost:3000/api/media/${assetId}`, { headers });
 }
 
@@ -172,7 +182,10 @@ describe("the handler's surface", () => {
     // to the same bytes. The refusal logic lives in one function precisely so verbs cannot diverge.
     // `createMediaRouteHandler` is not a verb: it is the seam that lets the response rules be read with an
     // explicit service, and nothing in `src/` imports it — `GET` is the only entry point Next will call.
-    expect(Object.keys(mediaRoute).sort()).toEqual(["GET", "createMediaRouteHandler"]);
+    expect(Object.keys(mediaRoute).sort()).toEqual([
+      "GET",
+      "createMediaRouteHandler",
+    ]);
     expect(typeof mediaRoute.GET).toBe("function");
     expect(typeof mediaRoute.createMediaRouteHandler).toBe("function");
   });
@@ -184,8 +197,12 @@ describe("the handler's surface", () => {
     // withheld real id, compared as full fingerprints.
     const production = mediaRoute.createMediaRouteHandler(serveDerivative);
     for (const assetId of [FIRST_ASSET_ID, "NDM-AST-083", "../../.env", ""]) {
-      const left = await fingerprint(await mediaRoute.GET(requestFor(), context(assetId)));
-      const right = await fingerprint(await production(requestFor(), context(assetId)));
+      const left = await fingerprint(
+        await mediaRoute.GET(requestFor(), context(assetId)),
+      );
+      const right = await fingerprint(
+        await production(requestFor(), context(assetId)),
+      );
       expect(right, assetId).toBe(left);
     }
   });
@@ -194,7 +211,10 @@ describe("the handler's surface", () => {
 describe("every catalogued asset is withheld", () => {
   it("refuses all 82 register ids with 404, an empty body and no validator", async () => {
     for (const asset of register) {
-      const response = await mediaRoute.GET(requestFor(), context(asset.assetId));
+      const response = await mediaRoute.GET(
+        requestFor(),
+        context(asset.assetId),
+      );
       expect(response.status, asset.assetId).toBe(404);
       expect(response.ok).toBe(false);
       expect(await response.text(), asset.assetId).toBe("");
@@ -206,26 +226,35 @@ describe("every catalogued asset is withheld", () => {
   it("sends exactly the two refusal headers on all 82", async () => {
     const shapes = new Set<string>();
     for (const asset of register) {
-      const response = await mediaRoute.GET(requestFor(), context(asset.assetId));
+      const response = await mediaRoute.GET(
+        requestFor(),
+        context(asset.assetId),
+      );
       shapes.add(JSON.stringify([...response.headers.entries()].sort()));
     }
-    expect([...shapes]).toEqual(
-      ['[["cache-control","no-store"],["x-content-type-options","nosniff"]]'],
-    );
+    expect([...shapes]).toEqual([
+      '[["cache-control","no-store"],["x-content-type-options","nosniff"]]',
+    ]);
   });
 
   it("never answers 403 for a real id it is withholding", async () => {
     // The distinction is the disclosure rule: 403 means "you are not allowed this known thing", 404 means
     // "there is nothing here". Only the second is safe to say to an anonymous caller.
     for (const asset of register.slice(0, 12)) {
-      const response = await mediaRoute.GET(requestFor(), context(asset.assetId));
+      const response = await mediaRoute.GET(
+        requestFor(),
+        context(asset.assetId),
+      );
       expect([401, 403]).not.toContain(response.status);
       expect(response.status).toBe(404);
     }
   });
 
   it("leaks no reason, no path and no digest into status, headers or body", async () => {
-    const response = await mediaRoute.GET(requestFor(), context(FIRST_ASSET_ID));
+    const response = await mediaRoute.GET(
+      requestFor(),
+      context(FIRST_ASSET_ID),
+    );
     const body = await response.text();
     const wire = [
       String(response.status),
@@ -234,15 +263,25 @@ describe("every catalogued asset is withheld", () => {
       body,
     ].join(" ");
     for (const forbidden of FORBIDDEN_STRINGS) {
-      expect(wire.toLowerCase(), forbidden).not.toContain(forbidden.toLowerCase());
+      expect(wire.toLowerCase(), forbidden).not.toContain(
+        forbidden.toLowerCase(),
+      );
     }
   });
 });
 
 describe("a withheld asset and an imaginary one cannot be told apart", () => {
   it("fingerprint-matches a real withheld id, an unregistered id and a malformed id", async () => {
-    const withheld = await fingerprint(await mediaRoute.GET(requestFor(), context(FIRST_ASSET_ID)));
-    for (const id of ["NDM-AST-083", "ndm-ast-001", `${FIRST_ASSET_ID}.webp`, "../../.env", ""]) {
+    const withheld = await fingerprint(
+      await mediaRoute.GET(requestFor(), context(FIRST_ASSET_ID)),
+    );
+    for (const id of [
+      "NDM-AST-083",
+      "ndm-ast-001",
+      `${FIRST_ASSET_ID}.webp`,
+      "../../.env",
+      "",
+    ]) {
       const response = await mediaRoute.GET(requestFor(), context(id));
       expect(await fingerprint(response), id).toBe(withheld);
     }
@@ -252,7 +291,9 @@ describe("a withheld asset and an imaginary one cannot be told apart", () => {
     expect(
       await fingerprint(await mediaRoute.GET(requestFor(), context())),
     ).toBe(
-      await fingerprint(await mediaRoute.GET(requestFor(), context(FIRST_ASSET_ID))),
+      await fingerprint(
+        await mediaRoute.GET(requestFor(), context(FIRST_ASSET_ID)),
+      ),
     );
   });
 });
@@ -268,7 +309,10 @@ describe("malformed and missing path parameters", () => {
     ["a filename rather than an id", `${FIRST_ASSET_ID}.webp`],
     ["a register id in lower case", FIRST_ASSET_ID.toLowerCase()],
     ["a register id with a suffix", `${FIRST_ASSET_ID}-copy`],
-    ["a path prefix that lands in the store", `../media-derivatives/${FIRST_ASSET_ID}.webp`],
+    [
+      "a path prefix that lands in the store",
+      `../media-derivatives/${FIRST_ASSET_ID}.webp`,
+    ],
   ])("refuses %s without throwing or reading", async (_label, assetId) => {
     const response = await mediaRoute.GET(requestFor(), context(assetId));
     expect(response.status).toBe(404);
@@ -286,19 +330,31 @@ describe("malformed and missing path parameters", () => {
 
 describe("a conditional request cannot turn a refusal into a cached copy", () => {
   const conditionals: Array<[string, Record<string, string>]> = [
-    ["an entity tag shaped like a real digest", { "if-none-match": ENTITY_TAG }],
+    [
+      "an entity tag shaped like a real digest",
+      { "if-none-match": ENTITY_TAG },
+    ],
     ["a weak entity tag", { "if-none-match": 'W/"aaaa"' }],
     ["the wildcard validator", { "if-none-match": "*" }],
-    ["a modification date", { "if-modified-since": "Sun, 02 Nov 2026 00:00:00 GMT" }],
+    [
+      "a modification date",
+      { "if-modified-since": "Sun, 02 Nov 2026 00:00:00 GMT" },
+    ],
   ];
-  it.each(conditionals)("still answers 404 when the client sends %s", async (_label, headers) => {
-    // A `304` asserts that the client already holds a representation of this resource. For a withheld
-    // derivative that is false, and it would also let a cache keep bytes the gate has not authorised.
-    const response = await mediaRoute.GET(requestFor(headers), context(FIRST_ASSET_ID));
-    expect(response.status).toBe(404);
-    expect(response.headers.get("etag")).toBeNull();
-    expect(await response.text()).toBe("");
-  });
+  it.each(conditionals)(
+    "still answers 404 when the client sends %s",
+    async (_label, headers) => {
+      // A `304` asserts that the client already holds a representation of this resource. For a withheld
+      // derivative that is false, and it would also let a cache keep bytes the gate has not authorised.
+      const response = await mediaRoute.GET(
+        requestFor(headers),
+        context(FIRST_ASSET_ID),
+      );
+      expect(response.status).toBe(404);
+      expect(response.headers.get("etag")).toBeNull();
+      expect(await response.text()).toBe("");
+    },
+  );
 });
 
 describe("the private store is not a capability", () => {
@@ -307,10 +363,15 @@ describe("the private store is not a capability", () => {
     // The preconditions, so the assertions below cannot pass on an empty cache or a made-up path: the
     // manifest really does describe this asset, and the segment requested is the one `derivativeUrl`
     // builds — the exact URL a slot would have shipped if the gate had let it get that far.
-    expect(derivativeManifest()?.derivatives.map((row) => row.assetId)).toEqual([FIRST_ASSET_ID]);
+    expect(derivativeManifest()?.derivatives.map((row) => row.assetId)).toEqual(
+      [FIRST_ASSET_ID],
+    );
     expect(derivativeUrl(FIRST_ASSET_ID)).toBe(`/api/media/${FIRST_ASSET_ID}`);
 
-    const response = await mediaRoute.GET(requestFor(), context(FIRST_ASSET_ID));
+    const response = await mediaRoute.GET(
+      requestFor(),
+      context(FIRST_ASSET_ID),
+    );
     expect(response.status).toBe(404);
     expect([...response.headers.keys()].sort()).toEqual([
       "cache-control",
@@ -326,10 +387,15 @@ describe("the private store is not a capability", () => {
   it("refuses even a lineage row whose file escapes the store, and does not throw", async () => {
     const escaping: DerivativeManifest = {
       ...manifestFor(FIRST_ASSET_ID),
-      derivatives: [{ ...lineageRow(FIRST_ASSET_ID), file: "../../../../.env" }],
+      derivatives: [
+        { ...lineageRow(FIRST_ASSET_ID), file: "../../../../.env" },
+      ],
     };
     setDerivativeManifest(escaping);
-    const response = await mediaRoute.GET(requestFor(), context(FIRST_ASSET_ID));
+    const response = await mediaRoute.GET(
+      requestFor(),
+      context(FIRST_ASSET_ID),
+    );
     expect(response.status).toBe(404);
     expect(await response.text()).toBe("");
   });
@@ -349,9 +415,15 @@ describe("the private store is not a capability", () => {
       derivatives: register.map((asset) => lineageRow(asset.assetId)),
     });
     for (const asset of register) {
-      const response = await mediaRoute.GET(requestFor(), context(asset.assetId));
+      const response = await mediaRoute.GET(
+        requestFor(),
+        context(asset.assetId),
+      );
       expect(response.status, asset.assetId).toBe(404);
-      expect(response.headers.get("cache-control"), asset.assetId).not.toContain("must-revalidate");
+      expect(
+        response.headers.get("cache-control"),
+        asset.assetId,
+      ).not.toContain("must-revalidate");
       expect(response.headers.get("etag"), asset.assetId).toBeNull();
     }
   });
@@ -368,7 +440,10 @@ describe("the refusal cache policy", () => {
   });
 
   it("declares no sniffing on a body-less response", async () => {
-    const response = await mediaRoute.GET(requestFor(), context(FIRST_ASSET_ID));
+    const response = await mediaRoute.GET(
+      requestFor(),
+      context(FIRST_ASSET_ID),
+    );
     expect(response.headers.get("x-content-type-options")).toBe("nosniff");
   });
 });
@@ -381,21 +456,31 @@ describe("the served branch, through the handler factory", () => {
   const handler = mediaRoute.createMediaRouteHandler(serveSynthetic);
 
   it("answers 200 with the bytes, the lineage mime and the digest as the validator", async () => {
-    const response = await handler(requestFor({}, SYNTHETIC_ID), context(SYNTHETIC_ID));
+    const response = await handler(
+      requestFor({}, SYNTHETIC_ID),
+      context(SYNTHETIC_ID),
+    );
     expect(response.status).toBe(200);
     expect(response.ok).toBe(true);
     expect(response.headers.get("content-type")).toBe("image/webp");
     expect(response.headers.get("etag")).toBe(SYNTHETIC_TAG);
     expect(response.headers.get("x-content-type-options")).toBe("nosniff");
-    expect(new Uint8Array(await response.arrayBuffer())).toEqual(SYNTHETIC_BYTES);
+    expect(new Uint8Array(await response.arrayBuffer())).toEqual(
+      SYNTHETIC_BYTES,
+    );
   });
 
   it("marks a served derivative revalidable and never stale", async () => {
     // `public` is the point: the bytes are cleared, so a shared cache may hold them. `max-age=0,
     // must-revalidate` means every later visit asks the gate again, which is what keeps a withdrawn asset
     // from surviving in a CDN after its row changes. The refusal branch's `no-store` must not appear here.
-    const response = await handler(requestFor({}, SYNTHETIC_ID), context(SYNTHETIC_ID));
-    expect(response.headers.get("cache-control")).toBe("public, max-age=0, must-revalidate");
+    const response = await handler(
+      requestFor({}, SYNTHETIC_ID),
+      context(SYNTHETIC_ID),
+    );
+    expect(response.headers.get("cache-control")).toBe(
+      "public, max-age=0, must-revalidate",
+    );
     expect(response.headers.get("cache-control")).not.toContain("no-store");
     expect([...response.headers.keys()].sort()).toEqual([
       "cache-control",
@@ -407,7 +492,10 @@ describe("the served branch, through the handler factory", () => {
   });
 
   it("says nothing about the asset's rights, lineage or location in the served response", async () => {
-    const response = await handler(requestFor({}, SYNTHETIC_ID), context(SYNTHETIC_ID));
+    const response = await handler(
+      requestFor({}, SYNTHETIC_ID),
+      context(SYNTHETIC_ID),
+    );
     const wire = [
       String(response.status),
       ...response.headers.keys(),
@@ -419,7 +507,9 @@ describe("the served branch, through the handler factory", () => {
       DERIVATIVE_STORE_DIR,
       "lineage.json",
     ]) {
-      expect(wire.toLowerCase(), forbidden).not.toContain(forbidden.toLowerCase());
+      expect(wire.toLowerCase(), forbidden).not.toContain(
+        forbidden.toLowerCase(),
+      );
     }
     await response.body?.cancel();
   });
@@ -434,7 +524,9 @@ describe("the served branch, through the handler factory", () => {
     expect(response.headers.get("etag")).toBe(SYNTHETIC_TAG);
     // The 304 repeats the validators so the client's stored copy stays refreshable; a 304 without the ETag
     // would force a second full download on the next visit.
-    expect(response.headers.get("cache-control")).toBe("public, max-age=0, must-revalidate");
+    expect(response.headers.get("cache-control")).toBe(
+      "public, max-age=0, must-revalidate",
+    );
   });
 
   it("puts no content type on the 304, which has no representation to describe", async () => {
@@ -462,7 +554,9 @@ describe("the served branch, through the handler factory", () => {
       context(SYNTHETIC_ID),
     );
     expect(response.status).toBe(200);
-    expect(new Uint8Array(await response.arrayBuffer())).toEqual(SYNTHETIC_BYTES);
+    expect(new Uint8Array(await response.arrayBuffer())).toEqual(
+      SYNTHETIC_BYTES,
+    );
   });
 
   it("measures the wildcard and weak-validator divergence from RFC 9110, without calling it correct", async () => {
@@ -507,7 +601,9 @@ describe("the served branch, through the handler factory", () => {
       expect(response.status, assetId).toBe(404);
       shapes.add(JSON.stringify([...response.headers.entries()].sort()));
     }
-    expect([...shapes]).toEqual(['[["cache-control","no-store"],["x-content-type-options","nosniff"]]']);
+    expect([...shapes]).toEqual([
+      '[["cache-control","no-store"],["x-content-type-options","nosniff"]]',
+    ]);
   });
 });
 
@@ -516,7 +612,10 @@ describe("no catalogued asset can reach the served branch", () => {
   // shows that no shipped service produces bytes for any real id. Read together they are evidence about
   // the response rules and about today's rights state — not a claim that any asset is clearable.
   it("answers 404 through the production GET for the id the controlled service serves", async () => {
-    const response = await mediaRoute.GET(requestFor({}, SYNTHETIC_ID), context(SYNTHETIC_ID));
+    const response = await mediaRoute.GET(
+      requestFor({}, SYNTHETIC_ID),
+      context(SYNTHETIC_ID),
+    );
     expect(response.status).toBe(404);
     expect(response.headers.get("etag")).toBeNull();
     expect(response.headers.get("content-type")).toBeNull();
@@ -527,16 +626,24 @@ describe("no catalogued asset can reach the served branch", () => {
     // The fixture is not a register row, so check 1 stops it before the gate — the synthetic approval has
     // no path onto the wire even through the seam that was built for testing it.
     const handler = mediaRoute.createMediaRouteHandler(serveDerivative);
-    const response = await handler(requestFor({}, SYNTHETIC_ID), context(SYNTHETIC_ID));
+    const response = await handler(
+      requestFor({}, SYNTHETIC_ID),
+      context(SYNTHETIC_ID),
+    );
     expect(response.status).toBe(404);
     expect(response.headers.get("cache-control")).toBe("no-store");
   });
 
   it("answers 404 for all 82 through the production GET, with the served headers absent", async () => {
     for (const asset of register) {
-      const response = await mediaRoute.GET(requestFor({}, asset.assetId), context(asset.assetId));
+      const response = await mediaRoute.GET(
+        requestFor({}, asset.assetId),
+        context(asset.assetId),
+      );
       expect(response.status, asset.assetId).toBe(404);
-      expect(response.headers.get("cache-control"), asset.assetId).toBe("no-store");
+      expect(response.headers.get("cache-control"), asset.assetId).toBe(
+        "no-store",
+      );
       expect(response.headers.get("etag"), asset.assetId).toBeNull();
       expect(response.headers.get("content-type"), asset.assetId).toBeNull();
     }
@@ -551,7 +658,10 @@ describe("no catalogued asset can reach the served branch", () => {
     });
     const handler = mediaRoute.createMediaRouteHandler(serveDerivative);
     for (const asset of register.slice(0, 20)) {
-      const response = await handler(requestFor({}, asset.assetId), context(asset.assetId));
+      const response = await handler(
+        requestFor({}, asset.assetId),
+        context(asset.assetId),
+      );
       expect(response.status, asset.assetId).toBe(404);
       expect(response.headers.get("etag"), asset.assetId).toBeNull();
     }

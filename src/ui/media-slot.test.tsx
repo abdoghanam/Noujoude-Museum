@@ -21,7 +21,11 @@ import type {
   SlotRecord,
   WithheldReason,
 } from "@/lib/media/slot";
-import { MediaSlot, MediaSlotGroup, type MediaSlotProps } from "@/ui/media-slot";
+import {
+  MediaSlot,
+  MediaSlotGroup,
+  type MediaSlotProps,
+} from "@/ui/media-slot";
 
 const BASE: SlotRecord = {
   assetId: "NDM-TEST-001",
@@ -44,7 +48,10 @@ const WITHHELD_CASES: Record<
   { readonly record: SlotRecord; readonly facts: SlotFacts }
 > = {
   rights_not_cleared: { record: { ...BASE, rights: "pending" }, facts: READY },
-  approval_not_granted: { record: { ...BASE, approval: "not_approved" }, facts: READY },
+  approval_not_granted: {
+    record: { ...BASE, approval: "not_approved" },
+    facts: READY,
+  },
   not_published: { record: { ...BASE, published: false }, facts: READY },
   unrecognised_state: { record: UNRECOGNISED, facts: READY },
   no_image_source: { record: BASE, facts: { ...READY, src: null } },
@@ -92,28 +99,35 @@ function sentenceOf(html: string): string {
 const DISCLOSURE_ATTRIBUTE = /\sdata-(?:asset-id|surface|reason)=/;
 
 describe("MediaSlot — the withheld branch", () => {
-  it.each(REASONS)("renders a labelled refusal, and no image, for %s", (reason) => {
-    const { record, facts } = caseFor(reason);
-    const html = renderToStaticMarkup(<MediaSlot facts={facts} record={record} />);
-    expect(html).not.toContain("<img");
-    expect(html).not.toContain('as="image"');
-    expect(html).toContain('data-slot="media-withheld"');
-    // Structural labels are English and say so; §4.2 makes the shell bilingual and the Arabic
-    // editorial copy has not been supplied.
-    expect(html).toContain('lang="en"');
-    // The reason is a value the decision carries (`src/lib/media/slot.test.ts` asserts the union per
-    // reason); the id and the placement are register facts. None of the three reaches a browser.
-    expect(html).not.toMatch(DISCLOSURE_ATTRIBUTE);
-    expect(html).not.toContain(reason);
-    expect(html).not.toContain("NDM-TEST-001");
-    const sentence = sentenceOf(html);
-    expect(sentence.length).toBeGreaterThan(20);
-    expect(sentence.endsWith(".")).toBe(true);
-  });
+  it.each(REASONS)(
+    "renders a labelled refusal, and no image, for %s",
+    (reason) => {
+      const { record, facts } = caseFor(reason);
+      const html = renderToStaticMarkup(
+        <MediaSlot facts={facts} record={record} />,
+      );
+      expect(html).not.toContain("<img");
+      expect(html).not.toContain('as="image"');
+      expect(html).toContain('data-slot="media-withheld"');
+      // Structural labels are English and say so; §4.2 makes the shell bilingual and the Arabic
+      // editorial copy has not been supplied.
+      expect(html).toContain('lang="en"');
+      // The reason is a value the decision carries (`src/lib/media/slot.test.ts` asserts the union per
+      // reason); the id and the placement are register facts. None of the three reaches a browser.
+      expect(html).not.toMatch(DISCLOSURE_ATTRIBUTE);
+      expect(html).not.toContain(reason);
+      expect(html).not.toContain("NDM-TEST-001");
+      const sentence = sentenceOf(html);
+      expect(sentence.length).toBeGreaterThan(20);
+      expect(sentence.endsWith(".")).toBe(true);
+    },
+  );
 
   it("renders no dimensions and no caption into a refusal", () => {
     const { record, facts } = caseFor("rights_not_cleared");
-    const html = renderToStaticMarkup(<MediaSlot facts={facts} record={record} />);
+    const html = renderToStaticMarkup(
+      <MediaSlot facts={facts} record={record} />,
+    );
     expect(html).not.toContain("width=");
     expect(html).not.toContain("height=");
     expect(html).not.toContain("Silver dinar");
@@ -151,7 +165,9 @@ describe("MediaSlot — the withheld branch", () => {
 
 describe("MediaSlot — the image branch", () => {
   it("draws exactly the served copy, the recorded alt text and the measured pixels", () => {
-    const html = renderToStaticMarkup(<MediaSlot facts={READY} record={BASE} />);
+    const html = renderToStaticMarkup(
+      <MediaSlot facts={READY} record={BASE} />,
+    );
     expect(html).toContain("<img");
     expect(html).toContain('src="/api/media/NDM-TEST-001"');
     expect(html).toContain('alt="Silver dinar, obverse and reverse"');
@@ -164,7 +180,9 @@ describe("MediaSlot — the image branch", () => {
   });
 
   it("is the only branch that can carry a source at all", () => {
-    const served = renderToStaticMarkup(<MediaSlot facts={READY} record={BASE} />);
+    const served = renderToStaticMarkup(
+      <MediaSlot facts={READY} record={BASE} />,
+    );
     const withheld = renderToStaticMarkup(
       <MediaSlot facts={{ ...READY, src: null }} record={BASE} />,
     );
@@ -181,10 +199,13 @@ describe("MediaSlotGroup", () => {
   });
 
   it("states the two counts it can measure, in the grammar the numbers require", () => {
-    const single = view("NDM-TEST-001", "Coins", caseFor("rights_not_cleared").record, READY);
-    expect(
-      renderToStaticMarkup(<MediaSlotGroup views={[single]} />),
-    ).toContain(
+    const single = view(
+      "NDM-TEST-001",
+      "Coins",
+      caseFor("rights_not_cleared").record,
+      READY,
+    );
+    expect(renderToStaticMarkup(<MediaSlotGroup views={[single]} />)).toContain(
       "Of 1 catalogued surface bound to this route, 0 are cleared for public serving.",
     );
 
@@ -219,8 +240,18 @@ describe("MediaSlotGroup", () => {
 
   it("keeps two placements of one asset as two slots, and names neither placement", () => {
     const views = [
-      view("NDM-TEST-001", "Homepage hero", caseFor("not_published").record, READY),
-      view("NDM-TEST-001", "Museum entrance", caseFor("not_published").record, READY),
+      view(
+        "NDM-TEST-001",
+        "Homepage hero",
+        caseFor("not_published").record,
+        READY,
+      ),
+      view(
+        "NDM-TEST-001",
+        "Museum entrance",
+        caseFor("not_published").record,
+        READY,
+      ),
     ];
     const html = renderToStaticMarkup(<MediaSlotGroup views={views} />);
     // The surface still separates the two items — that is what the React key is for, and a group that
@@ -230,6 +261,8 @@ describe("MediaSlotGroup", () => {
     expect(html).not.toMatch(DISCLOSURE_ATTRIBUTE);
     expect(html).not.toContain("Homepage hero");
     expect(html).not.toContain("Museum entrance");
-    expect(html).toContain("Of 2 catalogued surfaces bound to this route, 0 are cleared");
+    expect(html).toContain(
+      "Of 2 catalogued surfaces bound to this route, 0 are cleared",
+    );
   });
 });

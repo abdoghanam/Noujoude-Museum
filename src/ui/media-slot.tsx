@@ -110,7 +110,9 @@ export function MediaSlotGroup({ views }: MediaSlotGroupProps) {
   const decisions = views.map((view) =>
     decideMediaSlot(view.record, view.facts),
   );
-  const served = decisions.filter((decision) => decision.kind === "image").length;
+  const served = decisions.filter(
+    (decision) => decision.kind === "image",
+  ).length;
   return (
     <div className={styles.group}>
       <p className={styles.tally} data-slot="media-tally" lang="en">

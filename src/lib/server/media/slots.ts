@@ -42,7 +42,9 @@ export function viewFor(
   locale: Locale,
   bindingSurfaces?: readonly string[],
 ): MediaSlotView {
-  const wanted = new Set((bindingSurfaces ?? []).map((surface) => surface.toLowerCase()));
+  const wanted = new Set(
+    (bindingSurfaces ?? []).map((surface) => surface.toLowerCase()),
+  );
   const surface =
     asset.surfaces.find((candidate) => wanted.has(candidate.toLowerCase())) ??
     asset.surfaces[0] ??

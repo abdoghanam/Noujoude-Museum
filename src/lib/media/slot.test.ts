@@ -48,7 +48,10 @@ const UNRECOGNISED: SlotRecord = {
   rights: "revoked",
 } as unknown as SlotRecord;
 
-const CASES: Record<WithheldReason, { readonly record: SlotRecord; readonly facts: SlotFacts }> = {
+const CASES: Record<
+  WithheldReason,
+  { readonly record: SlotRecord; readonly facts: SlotFacts }
+> = {
   // Step 1 — the legal question, answered by `src/domain/rights.ts`.
   rights_not_cleared: {
     record: { ...SERVABLE, rights: "unknown" },
@@ -66,12 +69,17 @@ const CASES: Record<WithheldReason, { readonly record: SlotRecord; readonly fact
   // Step 2 — cleared, but there is nothing to load.
   no_image_source: { record: SERVABLE, facts: { ...READY, src: null } },
   // Step 3 — cleared and locatable, but no alt text has been recorded.
-  alt_text_not_recorded: { record: SERVABLE, facts: { ...READY, altText: null } },
+  alt_text_not_recorded: {
+    record: SERVABLE,
+    facts: { ...READY, altText: null },
+  },
   // Step 4 — everything else passed and the pixels were never measured.
   dimensions_not_measured: { record: { ...SERVABLE, width: 0 }, facts: READY },
 };
 
-const ALL_REASONS: readonly WithheldReason[] = Object.keys(CASES) as WithheldReason[];
+const ALL_REASONS: readonly WithheldReason[] = Object.keys(
+  CASES,
+) as WithheldReason[];
 
 /**
  * Indexing a `Record` under `noUncheckedIndexedAccess` yields `| undefined`, and a test that quietly
@@ -115,8 +123,13 @@ describe("decideMediaSlot — the withheld branch", () => {
     for (const reason of ALL_REASONS) {
       const { record, facts } = caseFor(reason);
       const decision = decideMediaSlot(record, facts);
-      expect(Object.keys(decision).sort()).toEqual(["assetId", "kind", "reason"]);
-      if (decision.kind !== "unpopulated") throw new Error(`${reason} must not be an image branch`);
+      expect(Object.keys(decision).sort()).toEqual([
+        "assetId",
+        "kind",
+        "reason",
+      ]);
+      if (decision.kind !== "unpopulated")
+        throw new Error(`${reason} must not be an image branch`);
       expect(decision).not.toHaveProperty("src");
       expect(decision).not.toHaveProperty("width");
       expect(decision).not.toHaveProperty("height");
@@ -127,7 +140,13 @@ describe("decideMediaSlot — the withheld branch", () => {
     // Every later step is also failing here, and only step 1 is reported: what a visitor sees is the
     // reason the build stopped, not a list of everything else that would also have stopped it.
     const decision = decideMediaSlot(
-      { ...SERVABLE, rights: "pending", approval: "unknown", width: 0, height: -3 },
+      {
+        ...SERVABLE,
+        rights: "pending",
+        approval: "unknown",
+        width: 0,
+        height: -3,
+      },
       { src: null, altText: null },
     );
     expect(decision).toEqual({

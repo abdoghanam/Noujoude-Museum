@@ -125,18 +125,30 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-function stringField(record: Record<string, unknown>, key: string, where: string): string {
+function stringField(
+  record: Record<string, unknown>,
+  key: string,
+  where: string,
+): string {
   const value = record[key];
   if (typeof value !== "string" || value.length === 0) {
-    throw new DerivativeManifestError(`${where}: "${key}" is not a non-empty string`);
+    throw new DerivativeManifestError(
+      `${where}: "${key}" is not a non-empty string`,
+    );
   }
   return value;
 }
 
-function numberField(record: Record<string, unknown>, key: string, where: string): number {
+function numberField(
+  record: Record<string, unknown>,
+  key: string,
+  where: string,
+): number {
   const value = record[key];
   if (typeof value !== "number" || !Number.isInteger(value) || value <= 0) {
-    throw new DerivativeManifestError(`${where}: "${key}" is not a positive integer`);
+    throw new DerivativeManifestError(
+      `${where}: "${key}" is not a positive integer`,
+    );
   }
   return value;
 }
@@ -147,30 +159,45 @@ function numberField(record: Record<string, unknown>, key: string, where: string
  * A derivative entry whose `file` escapes the store directory would turn the serving route into an
  * arbitrary file read, so the path is checked against traversal here rather than sanitised later.
  */
-export function validateManifest(value: unknown, where: string): DerivativeManifest {
-  if (!isRecord(value)) throw new DerivativeManifestError(`${where}: manifest is not an object`);
+export function validateManifest(
+  value: unknown,
+  where: string,
+): DerivativeManifest {
+  if (!isRecord(value))
+    throw new DerivativeManifestError(`${where}: manifest is not an object`);
   const generatedAt = stringField(value, "generatedAt", where);
   const storeDirectory = stringField(value, "storeDirectory", where);
   const originalsUnchanged = value["originalsUnchanged"];
   if (typeof originalsUnchanged !== "boolean") {
-    throw new DerivativeManifestError(`${where}: "originalsUnchanged" is not a boolean`);
+    throw new DerivativeManifestError(
+      `${where}: "originalsUnchanged" is not a boolean`,
+    );
   }
   const rows = value["derivatives"];
   if (!Array.isArray(rows)) {
-    throw new DerivativeManifestError(`${where}: "derivatives" is not an array`);
+    throw new DerivativeManifestError(
+      `${where}: "derivatives" is not an array`,
+    );
   }
   const derivatives: DerivativeLineage[] = rows.map((row, index) => {
     const at = `${where} derivatives[${String(index)}]`;
-    if (!isRecord(row)) throw new DerivativeManifestError(`${at}: not an object`);
+    if (!isRecord(row))
+      throw new DerivativeManifestError(`${at}: not an object`);
     const file = stringField(row, "file", at);
-    if (file.includes("..") || file.startsWith("/") || /^[A-Za-z]:/.test(file)) {
+    if (
+      file.includes("..") ||
+      file.startsWith("/") ||
+      /^[A-Za-z]:/.test(file)
+    ) {
       throw new DerivativeManifestError(
         `${at}: "file" is ${file}, which would resolve outside ${storeDirectory}`,
       );
     }
     const sha256 = stringField(row, "sha256", at);
     if (!/^[0-9a-f]{64}$/.test(sha256)) {
-      throw new DerivativeManifestError(`${at}: "sha256" is not a lowercase SHA-256 hex digest`);
+      throw new DerivativeManifestError(
+        `${at}: "sha256" is not a lowercase SHA-256 hex digest`,
+      );
     }
     const originalSha256 = stringField(row, "originalSha256", at);
     if (!/^[0-9a-f]{64}$/.test(originalSha256)) {
