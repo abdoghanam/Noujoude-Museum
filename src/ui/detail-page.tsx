@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 
+import type { ReactNode } from "react";
+
 import type { Locale } from "@/domain/locale";
 import { type RouteKey, isValidSlug } from "@/domain/routes";
 import { PageShell } from "@/ui/page-shell";
@@ -24,9 +26,21 @@ export interface DetailPageProps {
   readonly slug: string | string[] | undefined;
   /** What kind of record the route would have served, from the §4.2 Purpose column. */
   readonly kind: "country" | "collection" | "artifact" | "story";
+  /**
+   * The route's media slots, built by the page from `src/lib/server/media/slots.ts`. They arrive as
+   * children rather than being resolved here because this component is in `src/ui/`, which is inside the
+   * eslint client-boundary scope and reads nothing from disk.
+   */
+  readonly children?: ReactNode;
 }
 
-export function DetailPage({ route, locale, slug, kind }: DetailPageProps) {
+export function DetailPage({
+  route,
+  locale,
+  slug,
+  kind,
+  children,
+}: DetailPageProps) {
   const candidate = typeof slug === "string" ? slug : undefined;
   if (!isValidSlug(candidate)) notFound();
 
@@ -41,6 +55,7 @@ export function DetailPage({ route, locale, slug, kind }: DetailPageProps) {
         </code>{" "}
         resolves to nothing. This is an empty state, not a missing asset.
       </p>
+      {children}
     </PageShell>
   );
 }
