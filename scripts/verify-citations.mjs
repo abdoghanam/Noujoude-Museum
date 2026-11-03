@@ -82,14 +82,30 @@
  *     conclusion. A passing citation is necessary evidence, not sufficient.
  *
  * Reads reference/, docs/, the root configuration and the Owner's photo manifest below
- * Noujoude.photo (all read-only here); writes docs/CITATION_VERIFICATION.json only.
+ * Noujoude.photo (all read-only here); writes its report to exactly one file, by default
+ * docs/CITATION_VERIFICATION.json, redirected with `--out <path>`.
  */
 import fs from "node:fs";
 import path from "node:path";
 
 const ROOT = process.cwd();
 const DOCS = path.join(ROOT, "docs");
-const OUT = path.join(ROOT, "docs", "CITATION_VERIFICATION.json");
+
+// Where the report lands is a parameter, not a constant. `pnpm audit:citations` deliberately writes the
+// tracked artifact, but a test that verifies the real docs/ set has to be able to run this same checker
+// without rewriting a tracked file. Measured 3 November 2026: `pnpm test:gates` moved
+// docs/CITATION_VERIFICATION.json — its `generatedAt` field alone — and so broke the SHA-256 manifest
+// pin on a checkpoint whose content had not otherwise changed. With no `--out` the behaviour is the
+// default above, unchanged.
+const OUT_FLAG = process.argv.indexOf("--out");
+if (OUT_FLAG > -1 && !process.argv[OUT_FLAG + 1]) {
+  console.error("usage error: --out needs a path");
+  process.exit(2);
+}
+const OUT =
+  OUT_FLAG > -1
+    ? path.resolve(ROOT, process.argv[OUT_FLAG + 1])
+    : path.join(ROOT, "docs", "CITATION_VERIFICATION.json");
 
 // Quotations in docs/ are not limited to the specification. They also cite the repository's own
 // authored configuration (`.env.example` records rules the docs quote back) and each other

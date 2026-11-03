@@ -1,0 +1,14 @@
+import sharp from 'sharp';
+const { data, info } = await sharp('brand/_trace/base.png').raw().toBuffer({ resolveWithObject: true });
+const W = info.width, CH = info.channels;
+const A = (x, y) => data[(y * W + x) * CH + 3] > 60;
+const rows = (x, y0, y1) => { const r=[]; let s=null;
+  for (let y=y0;y<=y1;y++){const on=A(x,y-32); if(on&&s===null)s=y; if(!on&&s!==null){r.push(`${s}-${y-1}`);s=null;}} if(s!==null)r.push(`${s}-${y1}`); return r.join(' '); };
+const cols = (y, x0, x1) => { const r=[]; let s=null;
+  for (let x=x0;x<=x1;x++){const on=A(x,y-32); if(on&&s===null)s=x; if(!on&&s!==null){r.push(`${s}-${x-1}`);s=null;}} if(s!==null)r.push(`${s}-${x1}`); return r.join(' '); };
+console.log('x=512 down :', rows(512, 190, 300));
+console.log('x=512 up   :', rows(512, 720, 860));
+console.log('y=512 left :', cols(512, 180, 300));
+console.log('y=512 right:', cols(512, 720, 840));
+console.log('x=512 crest:', rows(512, 60, 260));
+console.log('x=512 foot :', rows(512, 760, 960));

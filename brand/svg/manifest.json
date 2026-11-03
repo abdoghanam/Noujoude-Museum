@@ -1,0 +1,252 @@
+{
+ "generatedBy": "brand/_tools/build.mjs",
+ "generatedAt": "2026-11-02",
+ "name": {
+  "latin": "Noujoude",
+  "arabic": "نجود",
+  "arabicSource": "Owner-supplied 2026-11-02 — docs/OWNER_INPUT_REGISTER.md OID-01 / OID-02"
+ },
+ "tagline": {
+  "latin": "DIGITAL HERITAGE MUSEUM",
+  "arabic": "متحف التراث الرقمي",
+  "status": "DERIVED. The Arabic tagline is a build proposal, not an Owner fact; OID-02 is still open. It must not be published as approved copy."
+ },
+ "palette": {
+  "noir": "#111014",
+  "midnight": "#1A151C",
+  "burgundy": "#351522",
+  "burgundy2": "#552536",
+  "gold": "#C6A56B",
+  "champagne": "#DFC99E",
+  "ivory": "#F3EBDD",
+  "paper": "#E5D8C3",
+  "stone": "#9D9184",
+  "rose": "#A96D78",
+  "wood": "#30241F",
+  "glass": "#D8D9D5"
+ },
+ "sealInkBox": {
+  "x0": 94,
+  "y0": 95,
+  "x1": 929,
+  "y1": 936,
+  "w": 836,
+  "h": 842
+ },
+ "type": {
+  "latin": {
+   "text": "Noujoude",
+   "direction": "ltr",
+   "ink": {
+    "w": 809.4,
+    "h": 201.6
+   },
+   "aspect": 4.01,
+   "glyphs": 8,
+   "tracking": 30
+  },
+  "latinCaps": {
+   "text": "NOUJOUDE",
+   "direction": "ltr",
+   "ink": {
+    "w": 724.6,
+    "h": 87.9
+   },
+   "aspect": 8.24,
+   "glyphs": 8,
+   "tracking": 300
+  },
+  "latinTagline": {
+   "text": "DIGITAL HERITAGE MUSEUM",
+   "direction": "ltr",
+   "ink": {
+    "w": 934.17,
+    "h": 30.68
+   },
+   "aspect": 30.45,
+   "glyphs": 23,
+   "tracking": 320
+  },
+  "arabicAmiri": {
+   "text": "نجود",
+   "direction": "rtl",
+   "ink": {
+    "w": 273,
+    "h": 209.4
+   },
+   "aspect": 1.3,
+   "glyphs": 4,
+   "tracking": 0
+  },
+  "arabicTajawal": {
+   "text": "نجود",
+   "direction": "rtl",
+   "ink": {
+    "w": 387.8,
+    "h": 180
+   },
+   "aspect": 2.15,
+   "glyphs": 4,
+   "tracking": 0
+  },
+  "arabicKashida": {
+   "text": "نــجــود",
+   "direction": "rtl",
+   "ink": {
+    "w": 450.8,
+    "h": 160.6
+   },
+   "aspect": 2.81,
+   "glyphs": 6,
+   "tracking": 0
+  },
+  "arabicTagline": {
+   "text": "متحف التراث الرقمي",
+   "direction": "rtl",
+   "ink": {
+    "w": 517.32,
+    "h": 68.7
+   },
+   "aspect": 7.53,
+   "glyphs": 18,
+   "tracking": 0
+  }
+ },
+ "assets": [
+  {
+   "file": "noujoude-wordmark-latin.svg",
+   "role": "Primary Wordmark",
+   "script": "Latin"
+  },
+  {
+   "file": "noujoude-wordmark-latin-ornamented.svg",
+   "role": "Primary Wordmark + laurel",
+   "script": "Latin"
+  },
+  {
+   "file": "noujoude-wordmark-arabic.svg",
+   "role": "Primary Wordmark",
+   "script": "Arabic",
+   "face": "Amiri Bold"
+  },
+  {
+   "file": "noujoude-wordmark-arabic-tajawal.svg",
+   "role": "Primary Wordmark (alternate)",
+   "script": "Arabic",
+   "face": "Tajawal Bold"
+  },
+  {
+   "file": "noujoude-wordmark-arabic-kashida.svg",
+   "role": "Primary Wordmark (display variant)",
+   "script": "Arabic",
+   "face": "Amiri Bold + kashida"
+  },
+  {
+   "file": "noujoude-lockup-horizontal-latin.svg",
+   "role": "Primary lockup",
+   "script": "Latin"
+  },
+  {
+   "file": "noujoude-lockup-horizontal-arabic.svg",
+   "role": "Primary lockup (mirrored)",
+   "script": "Arabic"
+  },
+  {
+   "file": "noujoude-lockup-stacked-latin.svg",
+   "role": "Stacked Wordmark",
+   "script": "Latin"
+  },
+  {
+   "file": "noujoude-lockup-stacked-arabic.svg",
+   "role": "Stacked Wordmark",
+   "script": "Arabic"
+  },
+  {
+   "file": "noujoude-badge-burgundy.svg",
+   "role": "Burgundy Badge",
+   "script": "none"
+  },
+  {
+   "file": "noujoude-icon-app.svg",
+   "role": "Application icon",
+   "script": "none"
+  },
+  {
+   "file": "noujoude-mark-small.svg",
+   "role": "Small-size mark / favicon",
+   "script": "none"
+  },
+  {
+   "file": "noujoude-watermark-latin.svg",
+   "role": "Watermark",
+   "script": "Latin"
+  },
+  {
+   "file": "noujoude-watermark-arabic.svg",
+   "role": "Watermark",
+   "script": "Arabic"
+  },
+  {
+   "file": "noujoude-seal.svg",
+   "role": "N Monogram / Seal",
+   "script": "none",
+   "note": "copy of brand/noujoude-monogram-seal.svg — edit the master, not this"
+  }
+ ],
+ "monoSet": {
+  "dir": "brand/svg/mono/",
+  "files": [
+   "noujoude-wordmark-latin.svg",
+   "noujoude-wordmark-arabic.svg",
+   "noujoude-wordmark-arabic-tajawal.svg",
+   "noujoude-wordmark-arabic-kashida.svg",
+   "noujoude-wordmark-latin-ornamented.svg",
+   "noujoude-lockup-horizontal-latin.svg",
+   "noujoude-lockup-horizontal-arabic.svg",
+   "noujoude-lockup-stacked-latin.svg",
+   "noujoude-lockup-stacked-arabic.svg",
+   "noujoude-seal.svg"
+  ],
+  "excludes": [
+   "noujoude-badge-burgundy.svg",
+   "noujoude-icon-app.svg",
+   "noujoude-mark-small.svg",
+   "noujoude-watermark-latin.svg",
+   "noujoude-watermark-arabic.svg"
+  ],
+  "note": "Single ink, painted with currentColor. Use it wherever a CSS custom property cannot reach (librsvg-based rasterisers ignore var()), and on any ground that is not dark."
+ },
+ "rules": {
+  "clearSpace": "lockups and badges: 0.24 × seal ink diameter on every side. Wordmark alone: 1 × its own cap height. Small mark: 0.5 × the mark box. Clear space is NOT baked into any viewBox.",
+  "minimumSize": {
+   "smallMarkPx": 16,
+   "sealPx": 64,
+   "wordmarkLatinPxWidth": 132,
+   "wordmarkArabicPxWidth": 110,
+   "lockupHorizontalPxWidth": 260,
+   "lockupStackedPxWidth": 150,
+   "printWordmarkMm": 24
+  },
+  "neverStretch": "uniform scale only — run() applies one k to x and y",
+  "neverLetterspaceArabic": true,
+  "shaping": "HarfBuzz with the default feature set. isol/init/medi/fina are deliberately NOT requested: the Arabic shaper already selects the positional forms, and re-enabling those tags as user features runs the GSUB lookups a second time over the output glyphs, which un-joins them. Verified against Blink: نجود = 143.7/100em and 4 ink islands either way.",
+  "joinCheck": "node brand/_tools/joincheck.mjs brand/svg/noujoude-wordmark-arabic.svg 1024  → 4 components",
+  "bilingualSizing": "the Arabic name is sized by HEIGHT against the Latin name (×1.25), never by width — Arabic ink is 1.30:1 against Latin 4.01:1, so matched widths give a 2× taller word.",
+  "neverRecreateTheSealFromText": "the seal is drawn artwork; §12.7 forbids substituting type for it",
+  "backgrounds": [
+   "noir #111014",
+   "midnight #1A151C",
+   "burgundy #351522",
+   "ivory #F3EBDD",
+   "paper #E5D8C3"
+  ],
+  "onLightGrounds": "gold on ivory measures 1.9:1 — below any text threshold. On light grounds set --ndm-gold to burgundy #351522, or use the badge form on its own disc."
+ },
+ "licences": {
+  "Cormorant Garamond": "OFL 1.1 — brand/_tools/fonts/CormorantGaramond-OFL.txt",
+  "Inter": "OFL 1.1 — brand/_tools/fonts/Inter-OFL.txt",
+  "Tajawal": "OFL 1.1 — brand/_tools/fonts/Tajawal-OFL.txt",
+  "Amiri": "OFL 1.1 — brand/_tools/fonts/Amiri-OFL.txt",
+  "note": "All four are SIL Open Font Licence 1.1. Outlines were drawn from them by HarfBuzz and shipped as paths, so no font file is redistributed with a mark and no licence text has to travel with one. The OFL does reserve the font NAMES — do not rename a face to \"Noujoude\"."
+ }
+}

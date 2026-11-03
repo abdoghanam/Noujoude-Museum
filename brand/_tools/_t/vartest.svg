@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 40" width="100" height="40">
+  <style>svg { --ndm-gold: #FF0000; } rect.b { fill: var(--ndm-gold, #C6A56B); }</style>
+  <rect class="b" x="0" y="0" width="30" height="40"/>
+  <rect x="35" y="0" width="30" height="40" fill="var(--ndm-gold, #C6A56B)"/>
+  <rect x="70" y="0" width="30" height="40" fill="#C6A56B"/>
+</svg>

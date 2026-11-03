@@ -1,0 +1,798 @@
+{
+ "generatedBy": "brand/_tools/export.mjs",
+ "count": 88,
+ "assets": [
+  {
+   "file": "favicon/favicon-16.png",
+   "src": "noujoude-mark-small.svg",
+   "ground": "transparent",
+   "ink": null,
+   "width": 16,
+   "height": 16,
+   "bytes": 474
+  },
+  {
+   "file": "favicon/favicon-32.png",
+   "src": "noujoude-mark-small.svg",
+   "ground": "transparent",
+   "ink": null,
+   "width": 32,
+   "height": 32,
+   "bytes": 1072
+  },
+  {
+   "file": "favicon/favicon-48.png",
+   "src": "noujoude-mark-small.svg",
+   "ground": "transparent",
+   "ink": null,
+   "width": 48,
+   "height": 48,
+   "bytes": 1609
+  },
+  {
+   "file": "app-icon/apple-touch-180.png",
+   "src": "noujoude-mark-small.svg",
+   "ground": "transparent",
+   "ink": null,
+   "width": 180,
+   "height": 180,
+   "bytes": 6290
+  },
+  {
+   "file": "app-icon/icon-1024.png",
+   "src": "noujoude-icon-app.svg",
+   "ground": "transparent",
+   "ink": null,
+   "width": 1024,
+   "height": 1024,
+   "bytes": 215629
+  },
+  {
+   "file": "app-icon/icon-512.png",
+   "src": "noujoude-icon-app.svg",
+   "ground": "transparent",
+   "ink": null,
+   "width": 512,
+   "height": 512,
+   "bytes": 81799
+  },
+  {
+   "file": "app-icon/icon-384.png",
+   "src": "noujoude-icon-app.svg",
+   "ground": "transparent",
+   "ink": null,
+   "width": 384,
+   "height": 384,
+   "bytes": 54001
+  },
+  {
+   "file": "app-icon/icon-192.png",
+   "src": "noujoude-icon-app.svg",
+   "ground": "transparent",
+   "ink": null,
+   "width": 192,
+   "height": 192,
+   "bytes": 18826
+  },
+  {
+   "file": "app-icon/icon-167.png",
+   "src": "noujoude-icon-app.svg",
+   "ground": "transparent",
+   "ink": null,
+   "width": 167,
+   "height": 167,
+   "bytes": 15274
+  },
+  {
+   "file": "app-icon/icon-152.png",
+   "src": "noujoude-icon-app.svg",
+   "ground": "transparent",
+   "ink": null,
+   "width": 152,
+   "height": 152,
+   "bytes": 13056
+  },
+  {
+   "file": "app-icon/icon-120.png",
+   "src": "noujoude-icon-app.svg",
+   "ground": "transparent",
+   "ink": null,
+   "width": 120,
+   "height": 120,
+   "bytes": 9008
+  },
+  {
+   "file": "app-icon/icon-96.png",
+   "src": "noujoude-icon-app.svg",
+   "ground": "transparent",
+   "ink": null,
+   "width": 96,
+   "height": 96,
+   "bytes": 6235
+  },
+  {
+   "file": "app-icon/icon-76.png",
+   "src": "noujoude-icon-app.svg",
+   "ground": "transparent",
+   "ink": null,
+   "width": 76,
+   "height": 76,
+   "bytes": 4465
+  },
+  {
+   "file": "app-icon/icon-64.png",
+   "src": "noujoude-icon-app.svg",
+   "ground": "transparent",
+   "ink": null,
+   "width": 64,
+   "height": 64,
+   "bytes": 3351
+  },
+  {
+   "file": "badge/badge-1024.png",
+   "src": "noujoude-badge-burgundy.svg",
+   "ground": "transparent",
+   "ink": null,
+   "width": 1024,
+   "height": 1024,
+   "bytes": 301304
+  },
+  {
+   "file": "badge/badge-512.png",
+   "src": "noujoude-badge-burgundy.svg",
+   "ground": "transparent",
+   "ink": null,
+   "width": 512,
+   "height": 512,
+   "bytes": 118665
+  },
+  {
+   "file": "badge/badge-256.png",
+   "src": "noujoude-badge-burgundy.svg",
+   "ground": "transparent",
+   "ink": null,
+   "width": 256,
+   "height": 256,
+   "bytes": 43549
+  },
+  {
+   "file": "seal/seal-1024-noir.png",
+   "src": "noujoude-seal.svg",
+   "ground": "noir",
+   "ink": null,
+   "width": 1024,
+   "height": 1024,
+   "bytes": 234272
+  },
+  {
+   "file": "seal/seal-1024-midnight.png",
+   "src": "noujoude-seal.svg",
+   "ground": "midnight",
+   "ink": null,
+   "width": 1024,
+   "height": 1024,
+   "bytes": 233770
+  },
+  {
+   "file": "seal/seal-1024-burgundy.png",
+   "src": "noujoude-seal.svg",
+   "ground": "burgundy",
+   "ink": null,
+   "width": 1024,
+   "height": 1024,
+   "bytes": 232949
+  },
+  {
+   "file": "seal/seal-512-noir.png",
+   "src": "noujoude-seal.svg",
+   "ground": "noir",
+   "ink": null,
+   "width": 512,
+   "height": 512,
+   "bytes": 93346
+  },
+  {
+   "file": "seal/seal-512-midnight.png",
+   "src": "noujoude-seal.svg",
+   "ground": "midnight",
+   "ink": null,
+   "width": 512,
+   "height": 512,
+   "bytes": 93025
+  },
+  {
+   "file": "seal/seal-512-burgundy.png",
+   "src": "noujoude-seal.svg",
+   "ground": "burgundy",
+   "ink": null,
+   "width": 512,
+   "height": 512,
+   "bytes": 92705
+  },
+  {
+   "file": "seal/seal-256-noir.png",
+   "src": "noujoude-seal.svg",
+   "ground": "noir",
+   "ink": null,
+   "width": 256,
+   "height": 256,
+   "bytes": 34258
+  },
+  {
+   "file": "seal/seal-256-midnight.png",
+   "src": "noujoude-seal.svg",
+   "ground": "midnight",
+   "ink": null,
+   "width": 256,
+   "height": 256,
+   "bytes": 34144
+  },
+  {
+   "file": "seal/seal-256-burgundy.png",
+   "src": "noujoude-seal.svg",
+   "ground": "burgundy",
+   "ink": null,
+   "width": 256,
+   "height": 256,
+   "bytes": 34010
+  },
+  {
+   "file": "seal/seal-128-noir.png",
+   "src": "noujoude-seal.svg",
+   "ground": "noir",
+   "ink": null,
+   "width": 128,
+   "height": 128,
+   "bytes": 11523
+  },
+  {
+   "file": "seal/seal-128-midnight.png",
+   "src": "noujoude-seal.svg",
+   "ground": "midnight",
+   "ink": null,
+   "width": 128,
+   "height": 128,
+   "bytes": 11486
+  },
+  {
+   "file": "seal/seal-128-burgundy.png",
+   "src": "noujoude-seal.svg",
+   "ground": "burgundy",
+   "ink": null,
+   "width": 128,
+   "height": 128,
+   "bytes": 11436
+  },
+  {
+   "file": "seal/seal-1024-ivory.png",
+   "src": "mono/noujoude-seal.svg",
+   "ground": "ivory",
+   "ink": "#351522",
+   "width": 1024,
+   "height": 1024,
+   "bytes": 136709
+  },
+  {
+   "file": "seal/seal-1024-paper.png",
+   "src": "mono/noujoude-seal.svg",
+   "ground": "paper",
+   "ink": "#351522",
+   "width": 1024,
+   "height": 1024,
+   "bytes": 135245
+  },
+  {
+   "file": "seal/seal-512-ivory.png",
+   "src": "mono/noujoude-seal.svg",
+   "ground": "ivory",
+   "ink": "#351522",
+   "width": 512,
+   "height": 512,
+   "bytes": 57388
+  },
+  {
+   "file": "seal/seal-512-paper.png",
+   "src": "mono/noujoude-seal.svg",
+   "ground": "paper",
+   "ink": "#351522",
+   "width": 512,
+   "height": 512,
+   "bytes": 56828
+  },
+  {
+   "file": "seal/seal-256-ivory.png",
+   "src": "mono/noujoude-seal.svg",
+   "ground": "ivory",
+   "ink": "#351522",
+   "width": 256,
+   "height": 256,
+   "bytes": 25122
+  },
+  {
+   "file": "seal/seal-256-paper.png",
+   "src": "mono/noujoude-seal.svg",
+   "ground": "paper",
+   "ink": "#351522",
+   "width": 256,
+   "height": 256,
+   "bytes": 24823
+  },
+  {
+   "file": "seal/seal-128-ivory.png",
+   "src": "mono/noujoude-seal.svg",
+   "ground": "ivory",
+   "ink": "#351522",
+   "width": 128,
+   "height": 128,
+   "bytes": 10141
+  },
+  {
+   "file": "seal/seal-128-paper.png",
+   "src": "mono/noujoude-seal.svg",
+   "ground": "paper",
+   "ink": "#351522",
+   "width": 128,
+   "height": 128,
+   "bytes": 10045
+  },
+  {
+   "file": "wordmark/latin-264-noir.png",
+   "src": "noujoude-wordmark-latin.svg",
+   "ground": "noir",
+   "ink": null,
+   "width": 264,
+   "height": 71,
+   "bytes": 4927
+  },
+  {
+   "file": "wordmark/latin-264-burgundy.png",
+   "src": "noujoude-wordmark-latin.svg",
+   "ground": "burgundy",
+   "ink": null,
+   "width": 264,
+   "height": 71,
+   "bytes": 4865
+  },
+  {
+   "file": "wordmark/latin-528-noir.png",
+   "src": "noujoude-wordmark-latin.svg",
+   "ground": "noir",
+   "ink": null,
+   "width": 528,
+   "height": 143,
+   "bytes": 10578
+  },
+  {
+   "file": "wordmark/latin-528-burgundy.png",
+   "src": "noujoude-wordmark-latin.svg",
+   "ground": "burgundy",
+   "ink": null,
+   "width": 528,
+   "height": 143,
+   "bytes": 10481
+  },
+  {
+   "file": "wordmark/latin-1056-noir.png",
+   "src": "noujoude-wordmark-latin.svg",
+   "ground": "noir",
+   "ink": null,
+   "width": 1056,
+   "height": 286,
+   "bytes": 24475
+  },
+  {
+   "file": "wordmark/latin-1056-burgundy.png",
+   "src": "noujoude-wordmark-latin.svg",
+   "ground": "burgundy",
+   "ink": null,
+   "width": 1056,
+   "height": 286,
+   "bytes": 24208
+  },
+  {
+   "file": "wordmark/arabic-220-noir.png",
+   "src": "noujoude-wordmark-arabic.svg",
+   "ground": "noir",
+   "ink": null,
+   "width": 220,
+   "height": 173,
+   "bytes": 5376
+  },
+  {
+   "file": "wordmark/arabic-220-burgundy.png",
+   "src": "noujoude-wordmark-arabic.svg",
+   "ground": "burgundy",
+   "ink": null,
+   "width": 220,
+   "height": 173,
+   "bytes": 5334
+  },
+  {
+   "file": "wordmark/arabic-440-noir.png",
+   "src": "noujoude-wordmark-arabic.svg",
+   "ground": "noir",
+   "ink": null,
+   "width": 440,
+   "height": 346,
+   "bytes": 12738
+  },
+  {
+   "file": "wordmark/arabic-440-burgundy.png",
+   "src": "noujoude-wordmark-arabic.svg",
+   "ground": "burgundy",
+   "ink": null,
+   "width": 440,
+   "height": 346,
+   "bytes": 12650
+  },
+  {
+   "file": "wordmark/arabic-880-noir.png",
+   "src": "noujoude-wordmark-arabic.svg",
+   "ground": "noir",
+   "ink": null,
+   "width": 880,
+   "height": 691,
+   "bytes": 31408
+  },
+  {
+   "file": "wordmark/arabic-880-burgundy.png",
+   "src": "noujoude-wordmark-arabic.svg",
+   "ground": "burgundy",
+   "ink": null,
+   "width": 880,
+   "height": 691,
+   "bytes": 31228
+  },
+  {
+   "file": "wordmark/latin-ornamented-264-noir.png",
+   "src": "noujoude-wordmark-latin-ornamented.svg",
+   "ground": "noir",
+   "ink": null,
+   "width": 264,
+   "height": 101,
+   "bytes": 6111
+  },
+  {
+   "file": "wordmark/latin-ornamented-528-noir.png",
+   "src": "noujoude-wordmark-latin-ornamented.svg",
+   "ground": "noir",
+   "ink": null,
+   "width": 528,
+   "height": 202,
+   "bytes": 13982
+  },
+  {
+   "file": "wordmark/latin-264-ivory.png",
+   "src": "mono/noujoude-wordmark-latin.svg",
+   "ground": "ivory",
+   "ink": "#351522",
+   "width": 264,
+   "height": 71,
+   "bytes": 5084
+  },
+  {
+   "file": "wordmark/latin-264-paper.png",
+   "src": "mono/noujoude-wordmark-latin.svg",
+   "ground": "paper",
+   "ink": "#351522",
+   "width": 264,
+   "height": 71,
+   "bytes": 5021
+  },
+  {
+   "file": "wordmark/latin-528-ivory.png",
+   "src": "mono/noujoude-wordmark-latin.svg",
+   "ground": "ivory",
+   "ink": "#351522",
+   "width": 528,
+   "height": 143,
+   "bytes": 10912
+  },
+  {
+   "file": "wordmark/latin-528-paper.png",
+   "src": "mono/noujoude-wordmark-latin.svg",
+   "ground": "paper",
+   "ink": "#351522",
+   "width": 528,
+   "height": 143,
+   "bytes": 10813
+  },
+  {
+   "file": "wordmark/latin-1056-ivory.png",
+   "src": "mono/noujoude-wordmark-latin.svg",
+   "ground": "ivory",
+   "ink": "#351522",
+   "width": 1056,
+   "height": 286,
+   "bytes": 25215
+  },
+  {
+   "file": "wordmark/latin-1056-paper.png",
+   "src": "mono/noujoude-wordmark-latin.svg",
+   "ground": "paper",
+   "ink": "#351522",
+   "width": 1056,
+   "height": 286,
+   "bytes": 25012
+  },
+  {
+   "file": "wordmark/arabic-220-ivory.png",
+   "src": "mono/noujoude-wordmark-arabic.svg",
+   "ground": "ivory",
+   "ink": "#351522",
+   "width": 220,
+   "height": 173,
+   "bytes": 5571
+  },
+  {
+   "file": "wordmark/arabic-220-paper.png",
+   "src": "mono/noujoude-wordmark-arabic.svg",
+   "ground": "paper",
+   "ink": "#351522",
+   "width": 220,
+   "height": 173,
+   "bytes": 5525
+  },
+  {
+   "file": "wordmark/arabic-440-ivory.png",
+   "src": "mono/noujoude-wordmark-arabic.svg",
+   "ground": "ivory",
+   "ink": "#351522",
+   "width": 440,
+   "height": 346,
+   "bytes": 13133
+  },
+  {
+   "file": "wordmark/arabic-440-paper.png",
+   "src": "mono/noujoude-wordmark-arabic.svg",
+   "ground": "paper",
+   "ink": "#351522",
+   "width": 440,
+   "height": 346,
+   "bytes": 13046
+  },
+  {
+   "file": "wordmark/arabic-880-ivory.png",
+   "src": "mono/noujoude-wordmark-arabic.svg",
+   "ground": "ivory",
+   "ink": "#351522",
+   "width": 880,
+   "height": 691,
+   "bytes": 32119
+  },
+  {
+   "file": "wordmark/arabic-880-paper.png",
+   "src": "mono/noujoude-wordmark-arabic.svg",
+   "ground": "paper",
+   "ink": "#351522",
+   "width": 880,
+   "height": 691,
+   "bytes": 31931
+  },
+  {
+   "file": "lockup/horizontal-latin-320-noir.png",
+   "src": "noujoude-lockup-horizontal-latin.svg",
+   "ground": "noir",
+   "ink": null,
+   "width": 320,
+   "height": 121,
+   "bytes": 18303
+  },
+  {
+   "file": "lockup/horizontal-latin-320-burgundy.png",
+   "src": "noujoude-lockup-horizontal-latin.svg",
+   "ground": "burgundy",
+   "ink": null,
+   "width": 320,
+   "height": 121,
+   "bytes": 18165
+  },
+  {
+   "file": "lockup/horizontal-latin-640-noir.png",
+   "src": "noujoude-lockup-horizontal-latin.svg",
+   "ground": "noir",
+   "ink": null,
+   "width": 640,
+   "height": 242,
+   "bytes": 51471
+  },
+  {
+   "file": "lockup/horizontal-latin-640-burgundy.png",
+   "src": "noujoude-lockup-horizontal-latin.svg",
+   "ground": "burgundy",
+   "ink": null,
+   "width": 640,
+   "height": 242,
+   "bytes": 51174
+  },
+  {
+   "file": "lockup/horizontal-latin-1280-noir.png",
+   "src": "noujoude-lockup-horizontal-latin.svg",
+   "ground": "noir",
+   "ink": null,
+   "width": 1280,
+   "height": 483,
+   "bytes": 136314
+  },
+  {
+   "file": "lockup/horizontal-latin-1280-burgundy.png",
+   "src": "noujoude-lockup-horizontal-latin.svg",
+   "ground": "burgundy",
+   "ink": null,
+   "width": 1280,
+   "height": 483,
+   "bytes": 135463
+  },
+  {
+   "file": "lockup/horizontal-arabic-320-noir.png",
+   "src": "noujoude-lockup-horizontal-arabic.svg",
+   "ground": "noir",
+   "ink": null,
+   "width": 320,
+   "height": 179,
+   "bytes": 29181
+  },
+  {
+   "file": "lockup/horizontal-arabic-320-burgundy.png",
+   "src": "noujoude-lockup-horizontal-arabic.svg",
+   "ground": "burgundy",
+   "ink": null,
+   "width": 320,
+   "height": 179,
+   "bytes": 28988
+  },
+  {
+   "file": "lockup/horizontal-arabic-640-noir.png",
+   "src": "noujoude-lockup-horizontal-arabic.svg",
+   "ground": "noir",
+   "ink": null,
+   "width": 640,
+   "height": 358,
+   "bytes": 79325
+  },
+  {
+   "file": "lockup/horizontal-arabic-640-burgundy.png",
+   "src": "noujoude-lockup-horizontal-arabic.svg",
+   "ground": "burgundy",
+   "ink": null,
+   "width": 640,
+   "height": 358,
+   "bytes": 78679
+  },
+  {
+   "file": "lockup/horizontal-arabic-1280-noir.png",
+   "src": "noujoude-lockup-horizontal-arabic.svg",
+   "ground": "noir",
+   "ink": null,
+   "width": 1280,
+   "height": 716,
+   "bytes": 201357
+  },
+  {
+   "file": "lockup/horizontal-arabic-1280-burgundy.png",
+   "src": "noujoude-lockup-horizontal-arabic.svg",
+   "ground": "burgundy",
+   "ink": null,
+   "width": 1280,
+   "height": 716,
+   "bytes": 200270
+  },
+  {
+   "file": "lockup/stacked-latin-240-noir.png",
+   "src": "noujoude-lockup-stacked-latin.svg",
+   "ground": "noir",
+   "ink": null,
+   "width": 240,
+   "height": 271,
+   "bytes": 35042
+  },
+  {
+   "file": "lockup/stacked-latin-480-noir.png",
+   "src": "noujoude-lockup-stacked-latin.svg",
+   "ground": "noir",
+   "ink": null,
+   "width": 480,
+   "height": 542,
+   "bytes": 93266
+  },
+  {
+   "file": "lockup/stacked-latin-960-noir.png",
+   "src": "noujoude-lockup-stacked-latin.svg",
+   "ground": "noir",
+   "ink": null,
+   "width": 960,
+   "height": 1084,
+   "bytes": 232600
+  },
+  {
+   "file": "lockup/stacked-arabic-240-noir.png",
+   "src": "noujoude-lockup-stacked-arabic.svg",
+   "ground": "noir",
+   "ink": null,
+   "width": 240,
+   "height": 372,
+   "bytes": 40953
+  },
+  {
+   "file": "lockup/stacked-arabic-480-noir.png",
+   "src": "noujoude-lockup-stacked-arabic.svg",
+   "ground": "noir",
+   "ink": null,
+   "width": 480,
+   "height": 744,
+   "bytes": 109386
+  },
+  {
+   "file": "lockup/stacked-arabic-960-noir.png",
+   "src": "noujoude-lockup-stacked-arabic.svg",
+   "ground": "noir",
+   "ink": null,
+   "width": 960,
+   "height": 1487,
+   "bytes": 269967
+  },
+  {
+   "file": "lockup/horizontal-latin-320-ivory.png",
+   "src": "mono/noujoude-lockup-horizontal-latin.svg",
+   "ground": "ivory",
+   "ink": "#351522",
+   "width": 320,
+   "height": 121,
+   "bytes": 16281
+  },
+  {
+   "file": "lockup/horizontal-latin-640-ivory.png",
+   "src": "mono/noujoude-lockup-horizontal-latin.svg",
+   "ground": "ivory",
+   "ink": "#351522",
+   "width": 640,
+   "height": 242,
+   "bytes": 39687
+  },
+  {
+   "file": "lockup/horizontal-arabic-320-ivory.png",
+   "src": "mono/noujoude-lockup-horizontal-arabic.svg",
+   "ground": "ivory",
+   "ink": "#351522",
+   "width": 320,
+   "height": 179,
+   "bytes": 23150
+  },
+  {
+   "file": "lockup/horizontal-arabic-640-ivory.png",
+   "src": "mono/noujoude-lockup-horizontal-arabic.svg",
+   "ground": "ivory",
+   "ink": "#351522",
+   "width": 640,
+   "height": 358,
+   "bytes": 54054
+  },
+  {
+   "file": "social/og-1200x630.png",
+   "src": "noujoude-lockup-stacked-latin.svg",
+   "ground": "noir",
+   "ink": null,
+   "width": 1200,
+   "height": 630,
+   "bytes": 69879
+  },
+  {
+   "file": "social/og-1200x630-arabic.png",
+   "src": "noujoude-lockup-stacked-arabic.svg",
+   "ground": "noir",
+   "ink": null,
+   "width": 1200,
+   "height": 630,
+   "bytes": 92762
+  },
+  {
+   "file": "social/square-1024.png",
+   "src": "noujoude-badge-burgundy.svg",
+   "ground": "transparent",
+   "ink": null,
+   "width": 1024,
+   "height": 1024,
+   "bytes": 301364
+  }
+ ]
+}
