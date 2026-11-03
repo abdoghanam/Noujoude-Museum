@@ -17,7 +17,7 @@ Four rules govern every line of it, inherited and not negotiable:
 | Rule | Source | Effect here |
 |---|---|---|
 | A requirement is accepted only by implemented behaviour plus recorded evidence | `reference/Noujoude_Master_Specification_EN.md` §20.1 (lines 3003–3006) | Nothing in this report is a pass; the readings in §12 are computed against that rule |
-| A gate may be marked passed only with recorded evidence and an identified approver | `docs/IMPLEMENTATION_PLAN.md` §4A (lines 340–355) | Every status word here carries the measurement or the register row that produced it |
+| A gate may be marked passed only with recorded evidence and an identified approver | `docs/IMPLEMENTATION_PLAN.md` §4A (lines 358–371) | Every status word here carries the measurement or the register row that produced it |
 | The specification is not the implementation | `docs/MASTER_SPECIFICATION.md` §0.6 (working-copy lines 202–214) | Design dimensions are reported as *specified and unimplemented*, never as *delivered* |
 | Missing facts stay missing | Owner authorization §2, 1 November 2026 | 20 of 22 Owner inputs are still open and are listed as blockers, not answered |
 

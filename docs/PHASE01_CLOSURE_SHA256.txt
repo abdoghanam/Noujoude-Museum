@@ -1,15 +1,15 @@
-# docs/PHASE01_CLOSURE_SHA256.txt — SHA-256 manifest of the tracked tree, regenerated last on 3 November 2026 over 226 tracked files.
+# docs/PHASE01_CLOSURE_SHA256.txt — SHA-256 manifest of the tracked tree, regenerated last on 3 November 2026: 226 digests over a 227-file tracked tree.
 # What each half of a line is: the NAME comes from `git ls-files` (227 tracked, this file excluded by the rule below); the BYTES
-#   come from the working tree at regeneration time, which carried the SR-32/SR-33 counter-reconciliation batch uncommitted — so this
-#   is a manifest of the tree as it stood, not of HEAD. Its predecessor (223 digests over a 224-file tree, written 00:23 the same day)
-#   is superseded here, not deleted: it is recoverable from git as the blob at HEAD, and the 2 November closure-pinned copy (191
-#   digests over the 192-file closure tree) is preserved outside the repository at
+#   come from the working tree at regeneration time, which carried this window's re-certification prose uncommitted — so this
+#   is a manifest of the tree as it stood, not of HEAD. Its predecessor (226 digests over the same 227-file tree, taken earlier in this same window
+#   at the same HEAD c397163, before the counting correction and the last citation run) is superseded here, not deleted, and pinned by its own SHA-256 675218b4127e8a477264be10e53485a5d486061b44cac8dc72e33d80f3659f4f. The 2 November
+#   closure-pinned copy (191 digests over the 192-file closure tree) is preserved outside the repository at
 #   noujoude-stabilization/risk-register-2026-11-02/pre-SR-32-2026-11-03/ with SHA-256
 #   1499414a85037cd37da57ae3cf13c12b09eda9d678ca9812276672a3dc52c88c.
 # Generator on this host (Git Bash): git ls-files -z | grep -zv '^docs/PHASE01_CLOSURE_SHA256.txt$' | while IFS= read -r -d '' f; do sha256sum "$f"; done
 # Verification: sha256sum -c --quiet docs/PHASE01_CLOSURE_SHA256.txt — exit 0 and no output means every digest matched. This file is deliberately excluded from its own digest list.
 # Count method, because SR-32 was a counting bug: entries = `grep -Ec '^[0-9a-f]{64} \*'` = 226. An *unanchored* `grep -Ec '[0-9a-f]{64}'`
-#   reads 227 here because the line above pins the superseded copy with a full digest. Anchor the pattern. Header lines: 12; total lines: 238.
+#   reads 228 here because two header lines pin full digests. Anchor the pattern. Header lines: 12; total lines: 238.
 6cabf7b6e2bb07b744656ec58f9ca96ecd68068f238c10b81bfe748c7bb96c05 *.env.example
 cf782af434d3058b4f09f242c778be1b80fcae3d92f6a056d5e4b80148c0b4be *.github/workflows/ci.yml
 509f338a0dbe07256e57b5609c29265ecbbb0a43cba2e85e0d04cb637ffde92c *.gitignore
@@ -108,22 +108,22 @@ c99666ea6794c1f5dde0b3c579b18ed3e132733dfb8646973523d2f2bb39a06b *docs/ARCHITECT
 7b3f7a2bbc781c33ee138407a2614887d90b928130877ada64a248911f356f79 *docs/ARCHITECTURE_DECISIONS.md
 ac29aa022bd2e8836d1cd3211fb9d25b206e66e28da1043cedf942c902206535 *docs/ASSET_INVENTORY_AUDIT.csv
 a03f2f9e1085bb0028627a6fed65d99c1cdc0a075f471fa054bf16165ac162e5 *docs/BRAND_ASSET_INVENTORY.csv
-492d754eeb41fe5a3bbcadf05fa01712116032403eb0d08a594dd019c84e8dc5 *docs/CHANGELOG.md
+2ff5118f65ce40791acd43a4031a003ce0783d8dbe6fae47ed163ae036d18405 *docs/CHANGELOG.md
 c9c30b2f056375afefeaf183112b1af4b9bfcdbe1a419266f8c26e2b7e5d888c *docs/CITATION_TRIAGE_2026-10-31.superseded.txt
-af9e3d7ae39ac8fbd6bc6e1c3dc35ac66e73c6b86b806286853cf72fa3aa48e6 *docs/CITATION_VERIFICATION.json
+16d031d546a878e05cc03c5d79cbcca13b85a31e34c8f8c613a27bbc71fc1a38 *docs/CITATION_VERIFICATION.json
 faeac36e195f94dec7d8271cf437c6f4fe1b27ed0cfda7a2e3d06a988b077493 *docs/DATA_MODEL.md
 d3fe0d6adf92317da13311c59d6a25bf4d88a7b9e8debe673a2f90562b7356b4 *docs/DEPENDENCY_AUDIT_2026-11-02.txt
 76615e0a37d978b26098ac3b7ffeb6939430f0b889185509341ac7da394b8ce8 *docs/DOCX_MD_ALIGNMENT.json
-9e807906f877d7660d1abda9b9247e0b7dbe400a3c8d1e91404d7b380c9489b8 *docs/IMPLEMENTATION_PLAN.md
+572c569c00f9e2773843dc297346c00bde1d1a135a4132f4ea0739637a1dfb45 *docs/IMPLEMENTATION_PLAN.md
 cbe841404e529ffe9250723575f626741fc4c69f1ae1ceefa80240f86f0174b6 *docs/MASTER_SPECIFICATION.md
 e6d5b8157b01ac75cd80d0e2e26aa4bb6178e013d62e98c980ef861cf9b12bbf *docs/MEDIA_AND_RIGHTS_GOVERNANCE.md
 7e6d7c3963aaa29d6a42d209be385eae41971932898c9121324e59c963c3c0e2 *docs/MOTION_SYSTEM.md
 0398bf45bdb8fa5b40321570d9d25c9c4db8720545db90cffe3cac1497e84d52 *docs/OWNER_INPUT_REGISTER.md
-0bf0dc52eded6b8fd656688b8725217172ee3fb951bc218e45e2cb08777e523b *docs/PHASE01_CLOSURE.json
+914782be648e21338ff5a911a73749f3a6f7bf90f8c0eeae3c5a796862abdec1 *docs/PHASE01_CLOSURE.json
 8f79752fdfdc407a39f7f6f757e4d7840ae3e70de06c91356f7903325b8156eb *docs/PHASE01_CLOSURE_REVERIFY_2026-11-02_1445.txt
 28f956780cf6ddde8db6ca83798758162c3b9e8e928e89c6af950c0cd9445578 *docs/PHASE01_CLOSURE_TRANSCRIPT.txt
-f40c839fd3dd4a2957e8bdfc3d24262e28307d63dfd3cd75fc6d0701ab3139cb *docs/PHASE1_DISCOVERY_AND_READINESS.md
-72282ec1257166e3c56b42cac0641d704d9621495570ea8fac63807a62b03ea1 *docs/QUALITY_ACCEPTANCE_FRAMEWORK.md
+74a0df9c50c9b6034b27b77d8e2f3a4b9413c5a4e2d5b4cb972d4b63540e539d *docs/PHASE1_DISCOVERY_AND_READINESS.md
+96ae960b41c9b8cd2d1c3fa56a0fba085e2eac844ef48111c65a56bff35ed672 *docs/QUALITY_ACCEPTANCE_FRAMEWORK.md
 f4caa261a782ad2f32295c5a289ead21e773babbaf447faebe17b4879a038fbb *docs/REFERENCE_INTEGRITY.json
 5d3fb0b45ac907867c6d6daf99303ce527d38449ebc89f9ce439803a91bed958 *docs/REQUIREMENTS_TRACEABILITY.md
 bc6ac348f3de4a72f86b4aac7528f6a64437cab9b7a962340021d2a13ac955cb *docs/ROUTE_RUNTIME_EVIDENCE.txt

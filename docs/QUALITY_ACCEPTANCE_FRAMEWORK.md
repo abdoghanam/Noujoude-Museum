@@ -14,7 +14,7 @@ Companion: `docs/PHASE1_DISCOVERY_AND_READINESS.md` — the discovery report thi
 | It is | It is not |
 |---|---|
 | A single consolidated statement of the thirteen quality dimensions, their weights, their acceptance requirements, their statuses and their evidence rules | A replacement for the Master Specification, which remains the requirement authority and is unchanged by this document |
-| A reporting overlay that makes progress comparable across dimensions and across time | A gate. Gate passage is governed by `docs/IMPLEMENTATION_PLAN.md` §4A (lines 340–355) and requires recorded evidence with a named approver |
+| A reporting overlay that makes progress comparable across dimensions and across time | A gate. Gate passage is governed by `docs/IMPLEMENTATION_PLAN.md` §4A (lines 358–371) and requires recorded evidence with a named approver |
 | A machine for refusing to average away blockers | A route to a comfortable number. Under its own rules the project today scores single digits, and that is the correct reading |
 | An adopted measuring instrument, adopted conditionally by the Owner on 2 November 2026 on condition that its arithmetic is honest | An approval record for anything except its own scoring rules. It approves no gate, no deployment and no content; §7A says which level a published number speaks to |
 
