@@ -239,6 +239,13 @@ function indexBySurface(
  * Kept for a re-audit inside one process and for tests. It is no longer the *only* way a change becomes
  * visible — that is the point of the digest key above — so the security property does not depend on
  * someone remembering to call it.
+ *
+ * Risk **SR-10** named this export alongside `setDerivativeManifest` as a test thread in shipped code. The
+ * two are not the same kind of object, and the distinction is why one is gone and this one stays: a setter
+ * can publish a record that never passed the validator, while this function only discards a parse, and what
+ * replaces it is re-read from the file and re-validated by `parseRegister` on the next call. It cannot make
+ * the register say anything the CSV does not say. `resetDerivativeManifestCache` in
+ * `src/lib/server/media/slot-facts.ts` is the same kind of cache drop and stays for the same reason.
  */
 export function resetAssetRegisterCache(): void {
   cache = null;

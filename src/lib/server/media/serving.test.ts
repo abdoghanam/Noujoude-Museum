@@ -1,8 +1,8 @@
 /**
- * src/lib/server/media/serving.test.ts — the six checks on `/api/media/<id>`, in both directions.
+ * src/lib/server/media/serving.test.ts — the seven checks on `/api/media/<id>`, in both directions.
  *
  * Three modules form the path under test: `derivative-store.ts` reads and shape-checks the lineage record,
- * `slot-facts.ts` owns the cache that holds it, and `serving.ts` runs the six checks that decide whether a
+ * `slot-facts.ts` owns the cache that holds it, and `serving.ts` runs the seven checks that decide whether a
  * byte reaches a browser. `src/app/api/media/[assetId]/route.test.ts` covers the HTTP answer those same
  * decisions produce.
  *
@@ -15,9 +15,10 @@
  *
  * Two entry points are covered, and the difference between them is the whole point. `serveDerivative` is
  * the production binding — real register, real gate, real store — and it refuses all 82 catalogued assets,
- * which the fail-closed blocks below assert. `createDerivativeServer` takes the same six checks with
- * explicit dependencies, and that is how the four branches a denied asset can never reach
- * (`no_lineage`, `path_escapes_store`, `file_unreadable`, `digest_mismatch`) and the `served` branch itself
+ * which the fail-closed blocks below assert. `createDerivativeServer` takes the same seven checks with
+ * explicit dependencies, and that is how the branches a denied asset can never reach
+ * (`no_lineage`, `path_escapes_store`, `too_large`, `size_mismatch`, `file_unreadable`, `digest_mismatch`)
+ * and the `served` branch itself
  * are tested: through a **synthetic** record, built by the real evaluator under a vocabulary that exists
  * only in this file, with an id outside the delivered range and cells that say `SYNTHETIC`. Production's
  * `PRODUCTION_RIGHTS_VOCABULARY` keeps empty `clearedMarkers`, empty `grantedApprovalMarkers` and empty
@@ -32,7 +33,9 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readdirSync,
   rmSync,
+  statSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -61,14 +64,15 @@ import {
   validateManifest,
 } from "@/lib/server/media/derivative-store";
 import { assetRegister, registryFromText } from "@/lib/server/media/registry";
+import * as slotFacts from "@/lib/server/media/slot-facts";
 import {
   derivativeManifest,
   lineageFor,
   resetDerivativeManifestCache,
-  setDerivativeManifest,
 } from "@/lib/server/media/slot-facts";
 import {
   createDerivativeServer,
+  MAX_SERVED_DERIVATIVE_BYTES,
   PRODUCTION_SERVING_DEPENDENCIES,
   type RefusedDerivative,
   type ServedDerivative,
@@ -82,6 +86,16 @@ const register = assetRegister();
 const FIRST_ASSET_ID = "NDM-AST-001";
 const SHA_A = "a".repeat(64);
 const SHA_B = "b".repeat(64);
+
+/**
+ * The delivered originals, read by one test only.
+ *
+ * `serving.ts` justifies its byte ceiling against the largest file in this directory, so the ceiling test
+ * re-measures the directory rather than trusting the comment. It is enumerated, never written, and the
+ * serving path itself never opens it — `registry.ts` documents why a record about the library is not a
+ * handle into it.
+ */
+const ASSET_LIBRARY_DIR = path.join(process.cwd(), "Noujoude.photo");
 
 /**
  * The digest shapes a lineage row must not carry. Typed as a mutable tuple array because `it.each`
@@ -304,7 +318,7 @@ function syntheticRow(
   return row;
 }
 
-/** The shipped six checks, bound to a synthetic record, a fixed manifest and a temp store. */
+/** The shipped seven checks, bound to a synthetic record, a fixed manifest and a temp store. */
 function syntheticServer(options: {
   readonly manifest: DerivativeManifest | null;
   readonly storeDir: string;
@@ -334,7 +348,7 @@ function storeWithFile(
 
 function served(outcome: ServingOutcome): ServedDerivative {
   if (outcome.kind !== "served") {
-    // The refusal's own reason, so a red run says which of the six checks answered rather than leaving the
+    // The refusal's own reason, so a red run says which of the seven checks answered rather than leaving the
     // reader to guess between `no_lineage` and `digest_mismatch`.
     throw new Error(
       `expected served bytes, got ${outcome.reason}${outcome.detail === null ? "" : ` (${outcome.detail})`}`,
@@ -356,9 +370,9 @@ function one<T>(items: readonly T[], what: string): T {
 /** A refusal, or a failure that says which asset was served when nothing may be. */
 async function refusal(
   assetId: string,
-  storeDir?: string,
+  root?: string,
 ): Promise<RefusedDerivative> {
-  const outcome = await serveDerivative(assetId, storeDir);
+  const outcome = await serveDerivative(assetId, root);
   if (outcome.kind !== "refused")
     throw new Error(`${assetId} was served, and nothing may be served yet`);
   return outcome;
@@ -391,12 +405,7 @@ describe("a missing lineage record is a state, not a crash", () => {
   });
 
   it("answers gate_denied for a real id before the absent store is ever consulted", async () => {
-    expect(
-      await refusal(
-        FIRST_ASSET_ID,
-        path.join(tempRoot(), DERIVATIVE_STORE_DIR),
-      ),
-    ).toEqual({
+    expect(await refusal(FIRST_ASSET_ID, tempRoot())).toEqual({
       assetId: FIRST_ASSET_ID,
       detail: "rights_not_cleared",
       kind: "refused",
@@ -587,47 +596,87 @@ describe("an unreadable or malformed manifest fails closed", () => {
   });
 });
 
-describe("the manifest cache and its injection seam", () => {
-  it("holds what was injected instead of re-reading a disk that holds nothing", () => {
-    const manifest = manifestWith([lineageRow()]);
-    setDerivativeManifest(manifest);
-    expect(derivativeManifest()).toBe(manifest);
-    // The measured disk state two blocks above is `null`, so this answer can only have come from the
-    // cache — the same source `PRODUCTION_SERVING_DEPENDENCIES.readLineageManifest` reads, which is why a
-    // build can publish lineage without a disk round-trip per request.
-    expect(lineageFor(FIRST_ASSET_ID)).toEqual(lineageRow());
+describe("the manifest cache, and the seam that used to bypass validation", () => {
+  it("has no exported injection setter left to bypass the validator", () => {
+    // Risk **SR-10**: `setDerivativeManifest` published a record straight into the process, around
+    // `validateManifest` — the check that rejects a `file` climbing out of the store, a malformed digest
+    // and a duplicated asset id. Nothing in production ever called it, so its removal costs no behaviour
+    // and closes the door. This assertion is the regression guard: if the seam comes back, this fails.
+    expect(
+      Object.keys(slotFacts).sort(),
+      "slot-facts must export readers and a cache drop, and nothing that writes a record in",
+    ).toEqual([
+      "altTextFor",
+      "derivativeManifest",
+      "lineageFor",
+      "resetDerivativeManifestCache",
+      "servedSrcFor",
+      "slotInputFor",
+    ]);
+    expect(
+      "setDerivativeManifest" in
+        (slotFacts as unknown as Record<string, unknown>),
+    ).toBe(false);
   });
 
-  it("answers null when null is injected, which is the absence a page must render", () => {
-    setDerivativeManifest(manifestWith([lineageRow()]));
-    setDerivativeManifest(null);
-    expect(derivativeManifest()).toBeNull();
-    expect(lineageFor(FIRST_ASSET_ID)).toBeNull();
+  it("reads the record from the store it is pointed at", () => {
+    const root = rootWithManifest(
+      JSON.stringify(manifestObject([lineageRow()])),
+    );
+    const manifest = derivativeManifest(root);
+    expect(manifest?.derivatives).toEqual([lineageRow()]);
+    // The same source `PRODUCTION_SERVING_DEPENDENCIES.readLineageManifest` reads, and the row the slot
+    // layer resolves through it.
+    expect(lineageFor(FIRST_ASSET_ID, root)).toEqual(lineageRow());
   });
 
-  it("discards the injected record on reset and falls back to the disk", () => {
-    setDerivativeManifest(manifestWith([lineageRow()]));
-    resetDerivativeManifestCache();
-    expect(derivativeManifest()).toBeNull();
-    expect(lineageFor(FIRST_ASSET_ID)).toBeNull();
+  it("answers null for a store that has never been built, which is the absence a page must render", () => {
+    const root = tempRoot();
+    expect(derivativeManifest(root)).toBeNull();
+    expect(lineageFor(FIRST_ASSET_ID, root)).toBeNull();
   });
 
   it("re-reads on demand and caches between reads", () => {
-    const first = derivativeManifest();
+    const root = rootWithManifest(
+      JSON.stringify(manifestObject([lineageRow()])),
+    );
+    const first = derivativeManifest(root);
+    expect(derivativeManifest(root)).toBe(first);
     resetDerivativeManifestCache();
-    expect(derivativeManifest()).toBe(first);
-    expect(derivativeManifest()).toBe(derivativeManifest());
+    const again = derivativeManifest(root);
+    expect(again).not.toBe(first);
+    expect(again).toEqual(first);
+  });
+
+  it("rejects a record on disk that never passed the validator, instead of serving its shape", () => {
+    // The positive form of the removal above: a lineage row whose `file` escapes the store cannot reach the
+    // serving checks at all, because the only door left is the file and the file is validated on read.
+    const root = tempRoot();
+    mkdirSync(path.join(root, DERIVATIVE_STORE_DIR), { recursive: true });
+    writeFileSync(
+      path.join(root, DERIVATIVE_MANIFEST_PATH),
+      JSON.stringify(
+        rawManifest({
+          derivatives: [{ ...lineageRow(), file: "../../../../.env" }],
+        }),
+      ),
+      "utf8",
+    );
+    expect(() => derivativeManifest(root)).toThrow(DerivativeManifestError);
+    expect(() => readDerivativeManifest(root)).toThrow(DerivativeManifestError);
   });
 
   it("finds a lineage row by asset id and reports absence for ids the record does not carry", () => {
-    setDerivativeManifest(
-      manifestWith([
-        lineageRow(),
-        lineageRow({ assetId: "NDM-AST-002", file: "NDM-AST-002.webp" }),
-      ]),
+    const root = rootWithManifest(
+      JSON.stringify(
+        manifestObject([
+          lineageRow(),
+          lineageRow({ assetId: "NDM-AST-002", file: "NDM-AST-002.webp" }),
+        ]),
+      ),
     );
-    expect(lineageFor("NDM-AST-002")?.file).toBe("NDM-AST-002.webp");
-    expect(lineageFor("NDM-AST-003")).toBeNull();
+    expect(lineageFor("NDM-AST-002", root)?.file).toBe("NDM-AST-002.webp");
+    expect(lineageFor("NDM-AST-003", root)).toBeNull();
   });
 
   it("builds the serving URL from the lineage id and percent-encodes anything that is not an id", () => {
@@ -761,10 +810,7 @@ describe("serveDerivative refuses an id the register does not carry", () => {
   ])(
     "answers unknown_asset for %s, before any rights decision or file read",
     async (_label, id) => {
-      const outcome: ServingOutcome = await serveDerivative(
-        id,
-        path.join(tempRoot(), DERIVATIVE_STORE_DIR),
-      );
+      const outcome: ServingOutcome = await serveDerivative(id, tempRoot());
       expect(outcome).toEqual({
         assetId: id,
         detail: null,
@@ -775,10 +821,16 @@ describe("serveDerivative refuses an id the register does not carry", () => {
   );
 
   it("does not reach the store for an unknown id even when a lineage row exists for another asset", async () => {
-    setDerivativeManifest(manifestWith([lineageRow()]));
-    expect(await refusal("NDM-AST-083", tempRoot())).toMatchObject({
+    // The record is on disk and valid, and the register still answers first: check 1 costs no file open.
+    const root = rootWithManifest(
+      JSON.stringify(manifestObject([lineageRow()])),
+    );
+    expect(await refusal("NDM-AST-083", root)).toMatchObject({
       reason: "unknown_asset",
     });
+    // Precondition, so the assertion above is about order and not about an empty fixture: the lineage row
+    // really is readable from this root, for the id it names.
+    expect(lineageFor(FIRST_ASSET_ID, root)?.assetId).toBe(FIRST_ASSET_ID);
   });
 });
 
@@ -809,40 +861,53 @@ describe("serveDerivative is fail-closed for the delivered register", () => {
   });
 
   it("consults the gate before the store, so a lineage row cannot open the gate", async () => {
-    setDerivativeManifest(manifestWith([lineageRow()]));
-    expect(await refusal(FIRST_ASSET_ID, tempRoot())).toMatchObject({
+    const root = rootWithManifest(
+      JSON.stringify(manifestObject([lineageRow()])),
+    );
+    expect(await refusal(FIRST_ASSET_ID, root)).toMatchObject({
       detail: "rights_not_cleared",
       reason: "gate_denied",
     });
+    // Precondition: the record is readable and names this very asset, so the refusal is check 2 answering
+    // and not an empty fixture.
+    expect(lineageFor(FIRST_ASSET_ID, root)?.assetId).toBe(FIRST_ASSET_ID);
   });
 
-  it("still refuses with gate_denied when the injected lineage would escape the store", async () => {
-    // `setDerivativeManifest` is the seam a build may use, so an unvalidated record is possible inside one
-    // process. Check 2 runs first, which is why an escaping path never becomes the reported reason — and
-    // why the containment rule below is asserted on its own rather than through the route.
-    setDerivativeManifest(
-      manifestObject([lineageRow({ file: "../../../../.env" })]),
+  it("refuses with gate_denied before reading a lineage record that would escape the store", async () => {
+    // Check 2 runs first, which is why an escaping `file` never becomes the reported reason through the
+    // production binding — and why the containment rule is asserted separately, on a path that has already
+    // passed the gate. The record here is not validated on read: the read never happens, because the gate
+    // denied it. Asserting both halves is what makes this case about order rather than about luck.
+    const escapingRoot = rootWithManifest(
+      JSON.stringify(
+        rawManifest({
+          derivatives: [{ ...lineageRow(), file: "../../../../.env" }],
+        }),
+      ),
     );
-    expect(await refusal(FIRST_ASSET_ID, tempRoot())).toMatchObject({
+    expect(await refusal(FIRST_ASSET_ID, escapingRoot)).toMatchObject({
       reason: "gate_denied",
     });
+    expect(() => derivativeManifest(escapingRoot)).toThrow(
+      DerivativeManifestError,
+    );
   });
 
   it("refuses with gate_denied whatever the private store holds, because the gate runs first", async () => {
-    // The input that would reach checks 3 to 6, built as honestly as a test can build it: a real file in a
-    // real store directory, whose bytes hash to exactly what the injected manifest recorded. Through the
-    // production binding it is refused for the same reason as an absent manifest and a swapped file, because
-    // check 2 runs before the store is opened. That is the measured statement behind this file's header:
-    // `serveDerivative` has no input that reaches the served branch while every register row is denied, and
-    // the branches below are reached only by giving the same six checks an explicit record.
+    // The input that would reach checks 3 to 7, built as honestly as a test can build it: a real file in a
+    // real store directory, whose bytes hash to exactly what the record on disk claims. Through the
+    // production binding each of these is refused for the same reason as an absent manifest and a swapped
+    // file, because check 2 runs before the store is opened. That is the measured statement behind this
+    // file's header: `serveDerivative` has no input that reaches the served branch while every register row
+    // is denied, and the branches below are reached only by giving the same seven checks an explicit record.
     const body = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x57, 0x45, 0x42, 0x50,
     ]);
     const recordedDigest = createHash("sha256").update(body).digest("hex");
-    const row = lineageRow({ sha256: recordedDigest });
+    const row = lineageRow({ bytes: body.length, sha256: recordedDigest });
 
-    const bareStore = path.join(tempRoot(), DERIVATIVE_STORE_DIR);
-    mkdirSync(bareStore, { recursive: true });
+    const bareRoot = tempRoot();
+    mkdirSync(path.join(bareRoot, DERIVATIVE_STORE_DIR), { recursive: true });
 
     const goodRoot = rootWithManifest(JSON.stringify(manifestObject([row])));
     writeFileSync(path.join(goodRoot, DERIVATIVE_STORE_DIR, row.file), body);
@@ -853,17 +918,10 @@ describe("serveDerivative is fail-closed for the delivered register", () => {
       new Uint8Array([0x00]),
     );
 
-    setDerivativeManifest(manifestWith([row]));
     const outcomes = await Promise.all([
-      serveDerivative(FIRST_ASSET_ID, bareStore),
-      serveDerivative(
-        FIRST_ASSET_ID,
-        path.join(goodRoot, DERIVATIVE_STORE_DIR),
-      ),
-      serveDerivative(
-        FIRST_ASSET_ID,
-        path.join(swappedRoot, DERIVATIVE_STORE_DIR),
-      ),
+      serveDerivative(FIRST_ASSET_ID, bareRoot),
+      serveDerivative(FIRST_ASSET_ID, goodRoot),
+      serveDerivative(FIRST_ASSET_ID, swappedRoot),
     ]);
     for (const outcome of outcomes) {
       expect(outcome).toEqual({
@@ -898,8 +956,8 @@ describe("serveDerivative is fail-closed for the delivered register", () => {
   });
 });
 
-describe("the four branches a denied asset can never reach", () => {
-  // Same shipped `createDerivativeServer`, same six checks, same `node:fs` reader — only the record and
+describe("the six refusal branches a denied asset can never reach", () => {
+  // Same shipped `createDerivativeServer`, same seven checks, same `node:fs` reader — only the record and
   // the store are a fixture. That is what makes these results evidence about the production code path
   // rather than about a stand-in.
   it("answers no_lineage when an approved asset has no derivative recorded", async () => {
@@ -971,15 +1029,34 @@ describe("the four branches a denied asset can never reach", () => {
     });
   });
 
-  it("answers digest_mismatch when the bytes are not the ones the manifest recorded", async () => {
+  it("answers digest_mismatch when bytes of the recorded length are not the recorded bytes", async () => {
+    // A same-length substitution, so it is the digest that refuses and not the size probe: eight bytes in,
+    // eight bytes out, different content. Before SR-09 this case used four bytes, which the earlier check
+    // now answers first — and that ordering is exactly what the two cases below pin separately.
+    const swapped = new Uint8Array([
+      0x52, 0x49, 0x46, 0x46, 0x57, 0x45, 0x42, 0x00,
+    ]);
+    expect(swapped.length).toBe(SYNTHETIC_BYTES.length);
     const serve = syntheticServer({
       manifest: syntheticLineage(),
-      storeDir: storeWithFile(new Uint8Array([0x00, 0x01, 0x02, 0x03])),
+      storeDir: storeWithFile(swapped),
     });
     expect(await serve(SYNTHETIC_ID)).toMatchObject({
       kind: "refused",
       reason: "digest_mismatch",
     });
+  });
+
+  it("answers size_mismatch when the file is not the length the record claims, before hashing it", async () => {
+    // SR-09's integrity half of the size probe: a shorter file is a different derivative, and saying so costs
+    // one `stat` instead of a full read plus a full SHA-256.
+    const serve = syntheticServer({
+      manifest: syntheticLineage(),
+      storeDir: storeWithFile(new Uint8Array([0x00, 0x01, 0x02, 0x03])),
+    });
+    const outcome = await serve(SYNTHETIC_ID);
+    expect(outcome).toMatchObject({ kind: "refused", reason: "size_mismatch" });
+    expect((outcome as RefusedDerivative).detail).toContain("4 bytes");
   });
 
   it("refuses a substitution even though the substitute is a real, readable file", async () => {
@@ -992,6 +1069,142 @@ describe("the four branches a denied asset can never reach", () => {
     })(SYNTHETIC_ID);
     expect(outcome.kind).toBe("refused");
     expect(outcome).not.toHaveProperty("body");
+  });
+});
+
+describe("SR-09: the serving ceiling is enforced before the file is read", () => {
+  /** A store that would be read if the ceiling let it: valid bytes, correct digest, wrong size. */
+  function oversizedStore(): {
+    readonly bytes: Uint8Array;
+    readonly digest: string;
+  } {
+    const bytes = new Uint8Array(MAX_SERVED_DERIVATIVE_BYTES + 1).fill(0x41);
+    return {
+      bytes,
+      digest: createHash("sha256").update(bytes).digest("hex"),
+    };
+  }
+
+  it("is a ceiling above every catalogued original, measured against the register rather than the directory", () => {
+    /*
+     * The anchor is the 82 originals the register catalogues, stat-ed through its own `libraryPath` column.
+     * Enumerating the directory instead is a different and wrong measurement: `Noujoude.photo/` holds 97
+     * files, and the largest of them is `Noujoude.photo.rar` at 6,143,950 bytes — the delivery container,
+     * which is not an asset, is not a derivative's source, and is not something the media layer may serve.
+     * The first run of this case measured that 6,143,950 and failed, which is the failure this file is for:
+     * it caught a justification that had been written from a loose enumeration.
+     */
+    const measured = register.map((asset) => ({
+      assetId: asset.assetId,
+      bytes: statSync(path.join(ASSET_LIBRARY_DIR, asset.libraryPath)).size,
+      path: asset.libraryPath,
+    }));
+    expect(measured.length, "the register is the census being measured").toBe(
+      82,
+    );
+    const largest = measured.reduce(
+      (best, candidate) => (candidate.bytes > best.bytes ? candidate : best),
+      measured[0] as { assetId: string; bytes: number; path: string },
+    );
+    expect(largest.path).toBe("gold_embroidery_detail_1x1.jpg");
+    expect(largest.bytes).toBe(398_236); // measured 2 November 2026, against the delivered files
+    // The ceiling is a serving bound, not a pipeline bound, and it sits above every thing a pipeline could
+    // be pointed at today: a resize at any sane setting is smaller than its source, so the margin below is
+    // the room a legitimate derivative has, and the number is ~10× the largest original.
+    expect(largest.bytes).toBeLessThan(MAX_SERVED_DERIVATIVE_BYTES);
+    expect(MAX_SERVED_DERIVATIVE_BYTES / largest.bytes).toBeGreaterThan(10);
+    expect(MAX_SERVED_DERIVATIVE_BYTES).toBe(4 * 1024 * 1024);
+  });
+
+  it("records what actually sits in the library directory, so the anchor above is checkable", () => {
+    const entries = readdirSync(ASSET_LIBRARY_DIR, {
+      recursive: true,
+      withFileTypes: true,
+    }).filter((entry) => entry.isFile());
+    const files = entries.map((entry) => entry.name);
+    const images = files.filter((name) => /\.(png|jpe?g|webp)$/i.test(name));
+    // `Dirent.parentPath` is the directory the entry was found in, already resolved against the root
+    // handed to `readdirSync`, so it is joined with the name alone. (`Dirent.path` is the pre-20.11 name and
+    // is gone from the Node 24 types this project pins.)
+    const largestFile = Math.max(
+      ...entries.map(
+        (entry) => statSync(path.join(entry.parentPath, entry.name)).size,
+      ),
+    );
+    // 97 files under the tree, 93 of them images (14 JPG, 79 WebP), and the single biggest is the archive.
+    expect(files.length).toBe(97);
+    expect(images.length).toBe(93);
+    expect(largestFile).toBe(6_143_950);
+    expect(largestFile).toBeGreaterThan(MAX_SERVED_DERIVATIVE_BYTES);
+    // Which is the honest statement of the trade: something in that directory is bigger than the ceiling.
+    // It is not an asset and the register cannot point at it, so no authorised derivative can be refused by
+    // this check, and the check is not a claim about the directory's total size.
+  });
+
+  it("refuses a record that declares more bytes than the ceiling allows", async () => {
+    // The declaration alone is enough to refuse: no `stat`, no read, no hash. That is the half of SR-09 the
+    // manifest can answer on its own, and the reason the check sits above the disk probe.
+    const serve = syntheticServer({
+      manifest: syntheticLineage({
+        bytes: MAX_SERVED_DERIVATIVE_BYTES + 1,
+      }),
+      storeDir: storeWithFile(SYNTHETIC_BYTES),
+    });
+    expect(await serve(SYNTHETIC_ID)).toMatchObject({
+      kind: "refused",
+      reason: "too_large",
+    });
+  });
+
+  it("refuses on the measured size when the record understates it, and reads nothing", async () => {
+    // The claim is a small file; the disk holds one byte over the ceiling. Trusting the claim would have
+    // allocated it, which is the defect: the ceiling has to be enforced against the filesystem.
+    const oversized = oversizedStore();
+    let askedFor = "";
+    const serve = createDerivativeServer({
+      ...PRODUCTION_SERVING_DEPENDENCIES,
+      evaluateServing: decidePublicServing,
+      findAsset: (assetId) =>
+        assetId === SYNTHETIC_ID ? syntheticAsset() : null,
+      readLineageManifest: () =>
+        syntheticLineage({ bytes: SYNTHETIC_BYTES.length }),
+      readFileBytes: async (target: string) => {
+        askedFor = target;
+        return await PRODUCTION_SERVING_DEPENDENCIES.readFileBytes(target);
+      },
+      storeDirectory: () => storeWithFile(oversized.bytes),
+    });
+    const outcome = await serve(SYNTHETIC_ID);
+    expect(outcome).toMatchObject({ kind: "refused", reason: "too_large" });
+    // The proof that the ceiling is *before* the read: the reader was never handed this path.
+    expect(askedFor).toBe("");
+  });
+
+  it("serves a file of exactly the ceiling, so the bound is > and not >=", async () => {
+    const atCap = new Uint8Array(MAX_SERVED_DERIVATIVE_BYTES).fill(0x42);
+    const serve = syntheticServer({
+      manifest: syntheticLineage({
+        bytes: atCap.length,
+        sha256: createHash("sha256").update(atCap).digest("hex"),
+      }),
+      storeDir: storeWithFile(atCap),
+    });
+    expect(served(await serve(SYNTHETIC_ID)).body.byteLength).toBe(
+      atCap.length,
+    );
+  });
+
+  it("refuses when the size probe cannot answer, which is the absence a fresh checkout has", async () => {
+    const emptyStore = path.join(tempRoot(), DERIVATIVE_STORE_DIR);
+    mkdirSync(emptyStore, { recursive: true });
+    const serve = syntheticServer({
+      manifest: syntheticLineage(),
+      storeDir: emptyStore,
+    });
+    expect(await serve(SYNTHETIC_ID)).toMatchObject({
+      kind: "refused",
+      reason: "file_unreadable",
+    });
   });
 });
 
@@ -1022,14 +1235,20 @@ describe("the served branch, reached for the first time", () => {
     expect(syntheticAsset().checksum).toBe(SHA_B);
   });
 
-  it("verifies the digest rather than trusting the manifest's `bytes` claim", async () => {
+  it("refuses size_mismatch when the record overstates the file, before the digest is ever computed", async () => {
+    // The record claims 999,999 bytes; the store holds 8. This case asserted `served` until SR-09 put a
+    // length probe ahead of the hash, and the change is the point: an integrity check that reads the whole
+    // file first is an unbounded cost, so the honest answer now is that the mismatch is refused and nothing
+    // is returned. That the digest is *computed* rather than copied is pinned elsewhere — a same-length
+    // substitution above reaches check 7 and answers `digest_mismatch`, and the served branch below requires
+    // the served ETag to equal the digest of the bytes it hands out.
     const serve = syntheticServer({
       manifest: syntheticLineage({ bytes: 999_999 }),
       storeDir: storeWithFile(SYNTHETIC_BYTES),
     });
-    const outcome = served(await serve(SYNTHETIC_ID));
-    expect(outcome.body.byteLength).toBe(SYNTHETIC_BYTES.length);
-    expect(outcome.etag).toBe(SYNTHETIC_DIGEST);
+    const outcome = await serve(SYNTHETIC_ID);
+    expect(outcome).toMatchObject({ kind: "refused", reason: "size_mismatch" });
+    expect(outcome).not.toHaveProperty("etag");
   });
 
   it("answers unknown_asset for an id the synthetic register does not carry, before the gate", async () => {

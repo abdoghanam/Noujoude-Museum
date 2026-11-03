@@ -60,3 +60,10 @@ brand/_tools/_t/*.jpg
 # Regenerable on every run, so they must never reach the index or a digest manifest.
 playwright-report/
 test-results/
+
+# Gate-run scratch written by this project's own tooling on 31 October 2026 (risk SR-34). They are
+# transcripts of `node scripts/...` runs, superseded by every later measured run, and they were the
+# residue `.gitignore` line 20's `.tmp/` rule never covered. Moved out of the working tree, byte-for-byte,
+# to the 3 November evidence bundle `residue-tmp-txt-2026-11-03/` with their digests recorded there —
+# preserved, not deleted. The rule stays so a future scratch redirect cannot silently re-litter the root.
+tmp_*.txt

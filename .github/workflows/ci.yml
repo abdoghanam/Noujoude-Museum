@@ -195,8 +195,10 @@ jobs:
 
   # ── 2. Toolchain quality gate (Standard §2.3 step 9 / plan gate G0) ────────
   # Gate order is the register's SR-26, and the reason is a measured fact, not a style preference:
-  # `Formatting check` used to be the first check step in this job. `pnpm format:check` exits 1 on the
-  # tree as it stands (measured 2 Nov 2026: 41 files unformatted), a GitHub Actions step fails the job
+  # `Formatting check` used to be the first check step in this job. `pnpm format:check` exited 1 on the
+  # tree as it stood then (measured 2 Nov 2026: 41 files unformatted; re-measured 3 Nov 2026 after the
+  # Owner-authorized reformatting batch: exit 0, "All matched files use Prettier code style!"), a GitHub
+  # Actions step fails the job
   # by default, and the `pnpm test`, `pnpm typecheck` and `pnpm build` steps beneath it were never
   # reached. The job's colour then reported on prettier indentation while saying nothing at all about
   # 295 tests, and no transcript distinguished "tests passed" from "tests never ran".
@@ -317,10 +319,14 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Formatting check (never writes)
-        # OID-25 records that the repository is not yet formatted, and that closing it is an Owner
-        # decision about scope: `pnpm format` would rewrite 41 files, including the files whose digests
-        # are the Phase 0/1 closure manifest, so a cosmetic pass invalidates measured closure evidence.
-        # This step therefore reports the state rather than silently repairing it.
+        # This step reports the state rather than silently repairing it — it never writes, whatever the
+        # count is. The history behind that choice: OID-25 recorded an unformatted repository and counted
+        # 41 files that a `pnpm format` pass would rewrite, including the files whose digests are the
+        # Phase 0/1 closure manifest, so closing the gate cosmetically would have invalidated measured
+        # closure evidence. The Owner decided OID-25 on 3 November 2026 by authorizing exactly that
+        # dedicated reformatting batch, the closure manifest was scheduled for regeneration as the last
+        # step after it, and the re-measured count on this line's own tree is 0: `pnpm format:check`
+        # exits 0 with "All matched files use Prettier code style!".
         run: pnpm format:check
 
   # ── 3. ADR-019 database privilege gate ─────────────────────────────────────

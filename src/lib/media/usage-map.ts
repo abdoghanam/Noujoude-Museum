@@ -611,9 +611,9 @@ function pathOf(binding: SurfaceBinding): string {
  * The usage sentence for one asset, from its own declared surfaces.
  *
  * This is what `docs/ASSET_INVENTORY_AUDIT.csv`'s `Actual Usage` column should say. It is derived from
- * the record's surfaces and this map, so it cannot go stale the way the delivered literal does — the
- * register today reads "None — no application code exists yet (src/ is empty)" on all 82 rows, a
- * sentence that stopped being true when `src/` was populated and that no tool recomputes.
+ * the record's surfaces and this map, so it cannot go stale the way the delivered literal did — until
+ * 3 November 2026 the register asserted on all 82 rows that `src/` was empty, a sentence that stopped
+ * being true when `src/` was populated and that no tool recomputed until the generator measured it.
  *
  * Three states, kept distinct per Master Spec A.9: bound (a route references it), unbound (the baseline
  * gives it no route), and unrecognised (the catalog named a surface this map has never seen — a defect

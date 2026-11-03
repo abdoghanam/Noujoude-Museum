@@ -12,6 +12,12 @@ const INERT_ENV: Record<string, string> = {
   OTEL_EXPORTER_OTLP_ENDPOINT: "",
   S3_ACCESS_KEY_ID: "",
   S3_SECRET_ACCESS_KEY: "",
+  // `src/lib/server/media/request-limits.ts` reads this and refuses to run in-process limiting under a
+  // deployment that declares Redis (register SR-04). Vitest loads no dotenv file, so without this line the
+  // suite inherits whatever the shell that started it happens to export — and a machine that carries a real
+  // deployment value would turn every rate-limit test red for a reason that has nothing to do with the code
+  // under test. Empty means "unset" to the parser, which is the state `.env.example` ships in.
+  RATE_LIMIT_REDIS_URL: "",
 };
 
 for (const [k, v] of Object.entries(INERT_ENV)) process.env[k] = v;

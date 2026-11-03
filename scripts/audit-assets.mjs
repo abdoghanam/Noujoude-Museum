@@ -202,6 +202,31 @@ const { catalog, perCategory } = parseCatalog();
 const { byName, records } = physicalIndex();
 const ai = loadAiManifest();
 
+// ------------------------------------------------------ usage column wording
+// This column used to carry a hardcoded sentence — "None — no application code
+// exists yet (src/ is empty)" — on all 82 rows. That sentence stopped being true on
+// 2 November 2026, when the application was initialised under `src/`, and because the
+// audit rewrote it on every run no document edit could repair it: the generator had to
+// stop asserting a fact it never measured. What the register actually holds is still
+// that no usage mapping is stored *here*; the binding lives in
+// `src/lib/media/usage-map.ts`, which is the module that resolves a declared surface to
+// a canonical route. The `src/` count below is taken at audit time, so this cell cannot
+// go stale the way the literal did. If the register ever gains a usage column fed from
+// the map, this note is the thing to delete.
+function usageColumnNote() {
+  let files;
+  try {
+    files = walk(path.join(ROOT, "src")).length;
+  } catch {
+    return "None recorded — no usage mapping is stored in this register (src/ could not be read)";
+  }
+  return files === 0
+    ? "None recorded — no usage mapping is stored in this register, and src/ holds 0 files"
+    : `None recorded — no usage mapping is stored in this register; usage is resolved in code by src/lib/media/usage-map.ts (src/ holds ${files} files at audit time)`;
+}
+
+const USAGE_NOTE = usageColumnNote();
+
 const expectedCounts = {
   "A.2": 12,
   "A.3": 18,
@@ -391,7 +416,7 @@ for (const c of catalog) {
       : "UNKNOWN — no rights statement supplied in reference/",
     "Not Approved — no approval record supplied",
     `${c.role} | ${c.association}`,
-    "None — no application code exists yet (src/ is empty)",
+    USAGE_NOTE,
     isAi
       ? "DERIVATIVE (webp) from a PNG original that is not retained"
       : "Original (no derivatives produced)",

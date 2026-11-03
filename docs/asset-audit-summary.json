@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-01T14:14:21.932Z",
+  "generatedAt": "2026-11-03T01:31:45.403Z",
   "tool": "scripts/audit-assets.mjs",
   "workspaceRoot": "E:/no",
   "catalogTotal": 82,
@@ -39,14 +39,26 @@
     "A.8.2": 4
   },
   "catalogParseDrift": [],
-  "physicalFileCount": 85,
-  "physicalBytesTotal": 6467873,
+  "physicalFileCount": 97,
+  "physicalBytesTotal": 14300868,
   "uncataloguedFiles": [
+    {
+      "path": "GENERATED_ASSETS_MANIFEST_AR.md",
+      "bytes": 9241,
+      "sha256": "3b35fc1bec7d4a571cf14b24e95a078525c6cf39f1282dc6bf07d2b285df28d3",
+      "mime": null
+    },
     {
       "path": "logo_presentation_scene_16x9_v3.webp",
       "bytes": 7572,
       "sha256": "771a118b2135b699e0f9ebff1102075e90c5a58b936b7e92bf4fca628fd25e47",
       "mime": "image/webp"
+    },
+    {
+      "path": "Noujoude.photo.rar",
+      "bytes": 6143950,
+      "sha256": "c92597cf0db9dc4e2cda53b76c5e02fb0755c37246164f52dca68cd1524296b5",
+      "mime": null
     },
     {
       "path": "_pending_review_AI_generated/GENERATED_ASSETS_MANIFEST_AR.md",

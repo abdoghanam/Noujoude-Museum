@@ -67,8 +67,8 @@ verified are different states."*
 | Rights Reviewed | **0** | `ASSET_INVENTORY_AUDIT.csv` column *Rights Status*: 72 × "UNKNOWN — no rights statement supplied in reference/", 10 × "Awaiting Rights Review" (state name at Master Spec §13.3 line 1885) |
 | Curatorial/Brand Approved | **0** | column *Brand/Curatorial Approval*: **82 × "Not Approved — no approval record supplied"** |
 | Optimized | **0** | column *Derivative Status*: 72 × "Original (no derivatives produced)"; `sharp` is a candidate pin, not installed |
-| Integrated | **0** | column *Actual Usage*: "None — no application code exists yet (src/ is empty)"; `src/` holds one README |
-| Verified in Context | **0** | no routes, no components, no renders |
+| Integrated | **0** | column *Actual Usage*, regenerated 3 Nov 2026: 82/82 read "None recorded — no usage mapping is stored in this register; usage is resolved in code by src/lib/media/usage-map.ts (src/ holds 61 files at audit time)". The register stores **no** usage for any asset; `usage-map.ts` computes it from each row's declared surfaces. Measured on the same tree, and corrected the same day after an earlier draft of this row claimed `next/image` appeared in one file: **0** `next/image` imports exist under `src/` — the string occurs once, at `src/ui/media-slot.tsx:20`, inside the comment that records why plain `<img>` is used instead — and of the 21 `<img>` occurrences over 6 `src/` files, exactly **1** is a rendered element (`src/ui/media-slot.tsx:69`); the other 20 are comments, docstrings and test assertions. All 16 `Noujoude.photo` lines under `src/` are comments, guards and test paths — no asset bytes reach a page, because every serving refusal answers 404 while rights are unreviewed |
+| Verified in Context | **0** | the stage asks for an asset seen in a rendered page; no asset is served, so none can be seen. The pages themselves do render and were probed over loopback (`docs/ROUTE_RUNTIME_EVIDENCE.txt`) — that is page evidence, not asset evidence |
 
 **So: 2 of 8 stages have any evidence at all, and the furthest any asset has travelled on the *governance*
 chain (as opposed to the *filesystem* chain) is `Located`.** Any dashboard reporting a single completion
@@ -164,7 +164,7 @@ Derivative Status, Alt Text Status, Notes, Verified By, Verified Date`.
 | focal point | — | ❌ | `focal_point` structured coordinates (§8.14 line 1314); §19.7 line 2954 |
 | responsive variants | — | ❌ none exist | A.10 "responsive variants"; §13.1 line 1844 "Mobile-specific variants and responsive derivatives" |
 | checksum | `SHA-256` | ✅ all 82 baselined and re-verified 82/82 (`ARCHITECTURE_DECISIONS.md` §7.1 preflight run) | integrity + dedupe (§16.8 line 2508) |
-| associated page/entity | `Actual Usage` | ✅ recorded as "None — no application code exists yet (src/ is empty)" | many-to-many usage (§8.17 line 1372) |
+| associated page/entity | `Actual Usage` | ◐ the column records **no** usage for any row; since 3 Nov 2026 it names `src/lib/media/usage-map.ts` as the resolver (the delivered text used to assert "None — no application code exists yet (src/ is empty)" on 82/82, which no tool recomputed) | many-to-many usage (§8.17 line 1372) |
 | status | `Physical Status` + `Rights Status` + `Derivative Status` | ◐ three separate dimensions, correctly **not** merged (S-10) | three fields per §2 |
 | approval record | `Brand/Curatorial Approval` | ✅ **82 × "Not Approved — no approval record supplied"** | approver identity, date, scope |
 | revision history | — | ❌ | `Revision` entity §8.16 line 1354; §8.18 line 1391 |
@@ -485,8 +485,8 @@ Blocker identifiers in this section are **RB-nn** (media/rights). They are disti
 | RB-05 | **Lineage broken for 10 assets** (source PNGs absent). | §6.4 | Standard §6 line 193; §8.14 line 1318; §13.4 line 1895 | Blocked by Owner Input + Not Implemented |
 | RB-06 | **Format integrity defect on 1 asset** (`.jpg` holding WebP). | §6.2 | Standard §6 line 187; M-04/M-06 in `SECURITY_AND_PERMISSIONS.md` §10 | Not Implemented |
 | RB-07 | **Dimension claims false on 18 assets**, incl. two brand marks. | §6.3 | VIS-001 (3087); §19.7 line 2948; CLS gate | Not Implemented |
-| RB-08 | **Uncatalogued files outside governance: 3 on 1 November, 5 paths on disk since 2 November** (the archive, its relocated manifest, and eleven quarantined-file duplicates the basename rule cannot see). | §6.5 | A.11 (no stage); §13.3 line 1891 | Blocked by Owner Input |
-| RB-09 | **No derivatives, no optimization, no usage mapping exist.** | 72 `Original (no derivatives produced)`; `Actual Usage` "None — no application code exists yet (src/ is empty)" | A.11 `Optimized`/`Integrated`/`Verified in Context` | Not Implemented; also gated by RB-01 |
+| RB-08 | **Uncatalogued files outside governance: 3 on 1 November, 5 paths on disk since 2 November, and a measured total of 15 file-paths with no distinct catalog row on 3 November** (`find Noujoude.photo -type f \| wc -l` → 97 against 82 catalog rows). The 15 = the 5 the audit names (the archive, the two Arabic manifests, `_pending_review_AI_generated/_manifest.json`, `logo_presentation_scene_16x9_v3.webp`) + **10** duplicates whose basename matches a catalogued row and which the basename rule therefore cannot see — each of the ten `world_*_hero_16x9.webp` / `collection_*_4x3.webp` now exists twice, once quarantined and once at the library root, left in place by the Owner on 2 November. | §6.5 | A.11 (no stage); §13.3 line 1891 | Blocked by Owner Input |
+| RB-09 | **No derivatives and no usage recorded in the register.** | 72 `Original (no derivatives produced)`; `Actual Usage` stores no usage on 82/82 and, since the 3 Nov 2026 regeneration, names `src/lib/media/usage-map.ts` as the resolver. The mapping exists **in code** and is tested; the register is not its source of truth, so "no usage mapping exists" is now false of the code and true of the record | A.11 `Optimized`/`Integrated`/`Verified in Context` | Optimized Not Implemented; usage mapping Implemented in code, register still records none; asset delivery gated by RB-01 |
 | RB-10 | **Rights-approval authority is not yet modelled** — the competent approver is an implied role: §17.2 H line 2724 requires "a qualified rights reviewer/Owner must approve relevant permission claims", yet §17.2 defines no such role. | `SECURITY_AND_PERMISSIONS.md` §2.4 finding 1 | §17.4 line 2780; IAM-002 (3102) | **Decision taken — ADR-020** (a scoped `Approve` grant with recorded delegation, not a twelfth role); the grant record and its screen are still Not Implemented, and the identity of any delegated approver is an Owner input |
 
 ### 7.1 The preservation-versus-rights distinction
@@ -494,7 +494,7 @@ Blocker identifiers in this section are **RB-nn** (media/rights). They are disti
 `preflight.mjs` proved that **82 of 82 checksums match the recorded baseline** — the originals under
 `Noujoude.photo/` are **provably unmodified**, and every file under `reference/` is fingerprinted in
 `docs/REFERENCE_INTEGRITY.json` so a future edit to an original is detected rather than assumed away
-(`ARCHITECTURE_DECISIONS.md` §7.1, lines 1258–1260). That sentence must be read exactly:
+(`ARCHITECTURE_DECISIONS.md` §7.1, lines 1502–1504). That sentence must be read exactly:
 
 - It **is** evidence of **preservation**: integrity, immutability, and correct handling by the tooling.
 - It **is not** evidence of **rights**, of authenticity, of approval, of suitability, or of clearance. A

@@ -21,6 +21,9 @@
  * decoration.
  */
 
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it } from "vitest";
@@ -44,11 +47,11 @@ import {
   altTextFor,
   derivativeManifest,
   servedSrcFor,
-  setDerivativeManifest,
   resetDerivativeManifestCache,
   slotInputFor,
 } from "@/lib/server/media/slot-facts";
 import {
+  DERIVATIVE_MANIFEST_PATH,
   DERIVATIVE_STORE_DIR,
   type DerivativeManifest,
   readDerivativeManifest,
@@ -181,8 +184,39 @@ function footerSentenceOf(html: string): string {
   return match[1];
 }
 
+/** Temp roots a case created, removed in `afterEach` so a red assertion cannot leave litter behind. */
+const tempRoots: string[] = [];
+
+/**
+ * A throwaway workspace whose private store holds a real `lineage.json`.
+ *
+ * This replaces `setDerivativeManifest`, removed under risk **SR-10**: that seam published a record into
+ * the process cache without ever meeting `validateManifest`, so a fixture could carry a shape production
+ * would refuse. A root on disk is read by `derivativeManifest` through the same door production uses, the
+ * validator included — which makes the assertions below about the shipped path rather than about a state
+ * only a test could reach. The repository is never written to; the tree lives under the OS temp directory
+ * and `afterEach` removes it.
+ */
+function rootWithLineage(
+  assetId: string,
+  width: number,
+  height: number,
+): string {
+  const root = mkdtempSync(path.join(tmpdir(), "ndm-slot-"));
+  tempRoots.push(root);
+  mkdirSync(path.join(root, DERIVATIVE_STORE_DIR), { recursive: true });
+  writeFileSync(
+    path.join(root, DERIVATIVE_MANIFEST_PATH),
+    JSON.stringify(manifestWith(assetId, width, height)),
+    "utf8",
+  );
+  return root;
+}
+
 afterEach(() => {
   resetDerivativeManifestCache();
+  for (const dir of tempRoots.splice(0))
+    rmSync(dir, { force: true, recursive: true });
 });
 
 describe("publicServingSummary", () => {
@@ -453,14 +487,14 @@ describe("the private store cannot open the gate", () => {
   });
 
   it("serves nothing to any of the 82 assets while the gate refuses them", () => {
-    setDerivativeManifest(manifestWith("NDM-AST-001", 640, 480));
+    const root = rootWithLineage("NDM-AST-001", 640, 480);
     for (const asset of assetRegister()) {
-      expect(servedSrcFor(asset)).toBeNull();
+      expect(servedSrcFor(asset, root)).toBeNull();
     }
   });
 
   it("keeps the masthead refused even when a lineage row exists for it", () => {
-    setDerivativeManifest(manifestWith("NDM-AST-001", 640, 480));
+    const root = rootWithLineage("NDM-AST-001", 640, 480);
     const outcome = slotOutcome(
       one(slotViewsFor("global", "en"), "the global masthead slot"),
     );
@@ -468,17 +502,17 @@ describe("the private store cannot open the gate", () => {
     // The lineage plumbing is live — the slot reports the derivative's pixels, not the original's —
     // and it still draws nothing. That is the difference between an unbuilt feature and a refused one.
     expect(need("NDM-AST-001").width).not.toBe(640);
-    const { record, facts } = slotInputFor(need("NDM-AST-001"), "en");
+    const { record, facts } = slotInputFor(need("NDM-AST-001"), "en", root);
     expect(record.width).toBe(640);
     expect(record.height).toBe(480);
     expect(facts.src).toBeNull();
   });
 
   it("hands a cleared asset a source and still refuses it for want of alt text", () => {
-    setDerivativeManifest(manifestWith("NDM-AST-001", 640, 480));
+    const root = rootWithLineage("NDM-AST-001", 640, 480);
     const asset = cleared(need("NDM-AST-001"));
-    expect(servedSrcFor(asset)).toBe("/api/media/NDM-AST-001");
-    const { record, facts } = slotInputFor(asset, "en");
+    expect(servedSrcFor(asset, root)).toBe("/api/media/NDM-AST-001");
+    const { record, facts } = slotInputFor(asset, "en", root);
     expect(facts.src).toBe("/api/media/NDM-AST-001");
     expect(altTextFor(asset, "en")).toBeNull();
     expect(

@@ -143,4 +143,99 @@ the ceiling §16 of SECURITY_AND_PERMISSIONS.md and CAP-10 place on the credit i
 Open consequence of the corrected line above: `next start` binds the wildcard address with no option
 set, so a local serve is reachable on the machine's other interfaces. That is not a production exposure
 (nothing is deployed and nothing is published), but it is a decision this project has never made
-explicitly, and it is registered for the Owner rather than silently hardened here.
+explicitly, and it is registered for the Owner rather than silently hardened here. Registered means named
+on a decision page, not answered: this sentence was written on 2 November when the finding lived only in
+this file, and `docs/PHASE1_DISCOVERY_AND_READINESS.md` §11 now carries it as **OD-19**, opened on
+3 November 2026 from the re-measurement in the section above.
+
+=== RIGHTS-GATED MEDIA RUN, 3 November 2026 (counter-reconciliation batch) =======================
+Why this section exists: the build's route table gained an entry after the 2 November transcript —
+`/api/media/[assetId]`, the first API route — and documents that cite this file for "16 routes" were
+therefore quoting a stale reading. This run re-measured the served behaviour of that route instead of
+inferring it from its handler tests. No secret value appears here; the local `.env` was not printed.
+
+How it ran   : `pnpm build` (exit 0) then `pnpm start -p 3133`, then HTTP probes with curl and with a
+               Node fetch burst, then the two processes were stopped by PID and the port re-checked.
+               Build transcript: Next.js 16.4.3 (Turbopack), `Environments: .env`, config load 207ms,
+               `Compiled successfully in 17.5s`, `Finished TypeScript in 20.3s`, static generation
+               `2/2` in 611ms, and 17 route entries — the 15 canonical `[locale]` trees, `/_not-found`,
+               and `/api/media/[assetId]`.
+               Server log, verbatim:
+                   $ next start "-p" "3133"
+                   ▲ Next.js 16.4.3
+                   - Local:         http://localhost:3133
+                   - Network:       http://192.168.192.1:3133
+                   ✓ Ready in 4.6s
+                   ✓ Running next.config.mjs took 217ms
+               The command shape is unchanged from 2 November: no `-H`/`--hostname`, and `package.json`'s
+               `start` script passes none. `Get-NetTCPConnection -LocalPort 3133 -State Listen` returned
+               `LocalAddress ::`, so the wildcard-binding finding of the closure re-run stands and is
+               re-measured here rather than fixed silently; it remains an Owner decision, not this
+               batch's to make.
+
+--- PAGES, as received ---------------------------------------------------------------------------
+/                        -> 307   `location: /en`
+/en                      -> 200   33,365 bytes
+/ar                      -> 200   `<html lang="ar" dir="rtl">` present in the served bytes
+/en/nope                 -> 404   no canonical route matches
+/ar/the-museum           -> 200   contains 0 occurrences of `/api/media` and 0 `<img>` elements
+
+The page bytes grew from the 2 November readings (16,981 for `/en`) to 33,365, and this run did not
+attribute the delta: the earlier HTML was never saved, so there is nothing to diff it against, and
+`/en` today carries no motion marker at all (`ndm-`, `motion`, `<style>` and `<template>` each occur 0
+times; the styling arrives as 2 `rel="stylesheet"` links over 24 `next/static` references, with 8
+`script src` tags). The claim recorded here is the size and the composition that was measured, not a
+cause. `/ar/the-museum` is the route whose catalogued surface declares the most slots, and it still
+asks for none of them: the slot builder refuses to emit a source URL for an asset that cannot pass the
+gate, which is SR-02's claim observed over the wire rather than asserted from the component.
+
+--- THE RIGHTS-GATED ENDPOINT ---------------------------------------------------------------------
+/api/media/NDM-AST-001   -> 404   0 bytes, `cache-control: no-store`
+/api/media/BOGUS-999     -> 404   0 bytes — a real-but-withheld id and an invented id are indistinguishable
+
+NDM-AST-001 is the first row of `docs/ASSET_INVENTORY_AUDIT.csv`: PRESENT on disk, `UNKNOWN — no rights
+statement supplied`. The register says 0 of 82 assets are cleared, so the endpoint refuses it, and the
+refusal is a 404 with no body — the shape the handler documents, observed from a running server instead
+of from a test process.
+
+Sequential burst  : 60 requests, one connection each -> 60 x 404, zero paced. This is the expected
+                    answer, not a limiter failure: at roughly one request per process-spawn the refill
+                    (10 tokens/second) outpaces the spend, so the bucket never empties.
+Concurrent burst  : 300 fetches issued together from one process completed in 2,801 ms ->
+                    61 granted (404) and 239 paced (429).
+Repeat burst      : 200 fetches issued together -> 55 granted (404), 145 paced (429).
+Both counts sit where the declared policy says they must: capacity 40 tokens plus refill at 10 per
+second over the window. The limiter is live in a production server, not only in `request-limits.test.ts`.
+
+A paced answer, verbatim headers (the withheld and the paced answer differ only in status and
+`retry-after`):
+    HTTP/1.1 429
+    retry-after: 1
+    cache-control: no-store
+    x-frame-options: DENY, x-content-type-options: nosniff, referrer-policy: no-referrer,
+    cross-origin-resource-policy: same-origin, cross-origin-opener-policy: same-origin,
+    x-dns-prefetch-control: off, origin-agent-cluster: ?1, permissions-policy: camera=(),
+    microphone=(), geolocation=(), payment=(), usb=(), clipboard-read=(), clipboard-write=(),
+    interest-cohort=(), browsing-topics=()
+    content-security-policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self'
+      'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self'; worker-src 'self';
+      object-src 'none'; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+No `X-RateLimit-Limit` or `X-RateLimit-Remaining` is sent, which is the documented choice: the headers
+would hand a caller a specification of its own allowance. `x-powered-by` is absent from every response
+above, and so is `Server`.
+
+--- WHAT THE SERVER SAID ABOUT ITSELF -------------------------------------------------------------
+During roughly 1,000 requests including the paced traffic, the server log gained zero lines matching
+`error`, `500`, `unhandled` or `throw` (case-insensitive count: 0). The fail-closed
+`RateLimitConfigurationError` path described in `src/lib/server/media/request-limits.ts` was not
+triggered, because this host's local `.env` carries the declaration; its existence is recorded and its
+value is not printed here.
+After the kill: a further request to 3133 returned curl exit 7 (connection refused) and
+`Get-CimInstance Win32_Process -Filter 'Name="node.exe"'` listed no surviving Node process.
+
+--- WHAT THIS RUN DOES NOT PROVE ------------------------------------------------------------------
+It does not serve a byte of heritage media, because no asset is rights-cleared and the gate is the
+point. It is a host-class run on one machine, loopback-probed, with nothing deployed, published or
+pushed, and CI has still never executed (blocker B-08). No accessibility audit, no performance
+measurement, no authenticated journey. A 429 observed here is a limiter working in-process; it is not
+evidence of a distributed limit, which `request-limits.ts` states it cannot provide.

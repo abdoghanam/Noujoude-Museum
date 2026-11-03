@@ -42,17 +42,6 @@ interface ManifestCacheEntry {
 let sourceCache: ManifestCacheEntry | null = null;
 
 /**
- * A record a caller supplied instead of the one on disk.
- *
- * `undefined` means "nothing was injected", which is why the variable is not simply the manifest type:
- * injecting `null` is a meaningful state (a page that must render the no-lineage refusal) and has to be
- * distinguishable from "not injected, go and look". Production code never sets it; `setDerivativeManifest`
- * is the seam a test or an in-memory build uses, and SR-10 is the open item that makes it throw under
- * `NODE_ENV=production`.
- */
-let injected: DerivativeManifest | null | undefined;
-
-/**
  * The lineage record, revalidated against the file on every call.
  *
  * It used to be read once per process, and that made the cache part of the trust decision: a lineage row
@@ -61,11 +50,19 @@ let injected: DerivativeManifest | null | undefined;
  * reuse the parsed manifest only when the digest did not move, and let a corrupt record throw on the read
  * rather than being answered from memory. Absent answers `null`, which is the state a page renders a
  * refusal from.
+ *
+ * Until 2 November 2026 this function also answered from a module-level `injected` variable that
+ * `setDerivativeManifest` set. That seam is removed (risk **SR-10**): it let any caller in the process
+ * publish a lineage record that had never passed `validateManifest`, and `validateManifest` is the check
+ * that rejects a `file` reaching outside the store, a malformed digest and an ambiguous asset id. Nothing
+ * in production ever called it, so its only users were tests — and a test that wants a record can write one
+ * into a temporary root, which is what every case in this repository's suites now does. A caller that needs
+ * a record from memory builds `createDerivativeServer({ readLineageManifest: () => mine })`: explicit
+ * dependency, one server, no ambient authority for the process to trip over later.
  */
 export function derivativeManifest(
   root = process.cwd(),
 ): DerivativeManifest | null {
-  if (injected !== undefined) return injected;
   return manifestSnapshot(root).manifest;
 }
 
@@ -80,17 +77,15 @@ function manifestSnapshot(root: string): ManifestCacheEntry {
   return entry;
 }
 
-/** Discard both the injected record and the disk cache, so the next call reads the file. */
+/**
+ * Discard the parsed record and the digest it was keyed on, so the next call reads the file.
+ *
+ * A cache drop, not a seam: it cannot put a record *in*, so it cannot bypass validation, and the freshness
+ * property in SR-08 does not depend on anyone remembering to call it — the digest key does that. It stays
+ * because a re-audit inside one process is a real operation.
+ */
 export function resetDerivativeManifestCache(): void {
-  injected = undefined;
   sourceCache = null;
-}
-
-/** Supply a manifest explicitly — for a test, or for a build that has the record in memory. */
-export function setDerivativeManifest(
-  manifest: DerivativeManifest | null,
-): void {
-  injected = manifest;
 }
 
 export function lineageFor(
