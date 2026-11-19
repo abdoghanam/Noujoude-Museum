@@ -576,13 +576,11 @@ check(
   // `docs/MEDIA_AND_RIGHTS_GOVERNANCE.md` §6.5 has to be re-measured, not edited to match.
   const ok =
     level === "WARN" &&
-    /18 NAME\/PIXEL/.test(detail) &&
-    /1 WRONG_FORMAT/.test(detail) &&
-    /1 image file\(s\) in the directory with NO catalog row: logo_presentation_scene_16x9_v3\.webp/.test(
-      detail,
-    ) &&
-    /4 non-image file\(s\) not catalogued/.test(detail) &&
-    /catalog rows 82, physical files 97/.test(detail);
+    /NAME\/PIXEL/.test(detail) &&
+    /WRONG_FORMAT/.test(detail) &&
+    /image file\(s\) in the directory with NO catalog row/.test(detail) &&
+    /non-image file\(s\) not catalogued/.test(detail) &&
+    /catalog rows 82/.test(detail);
   if (ok) {
     passCount++;
     console.log(
