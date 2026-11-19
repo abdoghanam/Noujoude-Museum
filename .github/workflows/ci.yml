@@ -231,9 +231,9 @@ jobs:
       - name: Enable corepack
         run: corepack enable
 
-      # npm ships with Node, so this needs no third-party setup action.
-      - name: Install pnpm at the declared packageManager version
-        run: npm install -g "pnpm@${PNPM_VERSION}"
+      # corepack provides pnpm at the declared version (packageManager field).
+      - name: Activate pnpm via corepack
+        run: corepack prepare "pnpm@${PNPM_VERSION}" --activate
 
       - name: Install dependencies
         # --frozen-lockfile requires a committed pnpm-lock.yaml (B-02). It is the
