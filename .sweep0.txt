@@ -1,0 +1,20 @@
+0: Asset ID
+1: Filename
+2: Expected Category
+3: Physical Status
+4: Actual Path
+5: MIME Type
+6: Width
+7: Height
+8: File Size
+9: SHA-256
+10: Source/Creator
+11: Rights Status
+12: Brand/Curatorial Approval
+13: Intended Usage
+14: Actual Usage
+15: Derivative Status
+16: Alt Text Status
+17: Notes
+18: Verified By
+19: Verified Date

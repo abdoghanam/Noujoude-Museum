@@ -1,0 +1,1073 @@
+{
+  "record": "noujoude.asset-governance.publication-register",
+  "version": 1,
+  "generatedBy": "scripts/build-publication-register.mjs",
+  "generatedOn": "2026-11-04",
+  "rule": "An asset is published on exactly the paths src/lib/media/usage-map.ts binds its own declared surfaces to, and only while docs/asset-governance/owner-authorization.json authorises the file for use. Permission to display is not evidence about the object depicted: DEC-INV-001 and blocker B-05 stand, and no published row may be read as a catalogue record.",
+  "authority": {
+    "instrument": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2",
+    "recordedIn": "docs/OWNER_ASSET_AUTHORIZATION_2026-11-04.md",
+    "declaration": "docs/asset-governance/owner-authorization.json"
+  },
+  "counts": {
+    "registerRows": 82,
+    "published": 46,
+    "notPublished": 36,
+    "boundSurfaces": 46
+  },
+  "entries": [
+    {
+      "assetId": "NDM-AST-001",
+      "filename": "brand_seal_monogram_1024.webp",
+      "surfaces": [
+        "Header"
+      ],
+      "paths": [
+        "every page (masthead band)"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-004",
+      "filename": "logo_wordmark_1024x768.webp",
+      "surfaces": [
+        "Homepage and identity"
+      ],
+      "paths": [
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-005",
+      "filename": "certificate_authenticity_1024.webp",
+      "surfaces": [
+        "Artifact documentation"
+      ],
+      "paths": [
+        "/en/artifacts/{artifact-slug}",
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-013",
+      "filename": "master_atmosphere_definitive.webp",
+      "surfaces": [
+        "Homepage hero"
+      ],
+      "paths": [
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-014",
+      "filename": "main_entrance_mobile_9x16.webp",
+      "surfaces": [
+        "Mobile homepage"
+      ],
+      "paths": [
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-015",
+      "filename": "grand_entrance_dusk.webp",
+      "surfaces": [
+        "Museum entrance"
+      ],
+      "paths": [
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-016",
+      "filename": "arrival_hall_morning.webp",
+      "surfaces": [
+        "The Museum"
+      ],
+      "paths": [
+        "/en/the-museum",
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-017",
+      "filename": "golden_hour_hall.webp",
+      "surfaces": [
+        "Museum architecture"
+      ],
+      "paths": [
+        "/en/the-museum",
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-018",
+      "filename": "grand_staircase.webp",
+      "surfaces": [
+        "Institutional spatial imagery"
+      ],
+      "paths": [
+        "/en/the-museum",
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-019",
+      "filename": "museum_building_1024.webp",
+      "surfaces": [
+        "About and Museum"
+      ],
+      "paths": [
+        "/en/about"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-020",
+      "filename": "glass_dome_looking_up.webp",
+      "surfaces": [
+        "Museum environments"
+      ],
+      "paths": [
+        "/en/the-museum",
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-021",
+      "filename": "marble_corridor.webp",
+      "surfaces": [
+        "Spatial transitions"
+      ],
+      "paths": [
+        "/en/the-museum",
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-022",
+      "filename": "rose_courtyard_golden_hour.webp",
+      "surfaces": [
+        "Editorial and country contexts where suitable"
+      ],
+      "paths": [
+        "/en/worlds",
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-023",
+      "filename": "luxury_night.webp",
+      "surfaces": [
+        "Museum background"
+      ],
+      "paths": [
+        "/en/the-museum",
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-024",
+      "filename": "luxury_library_night.webp",
+      "surfaces": [
+        "Stories and archives"
+      ],
+      "paths": [
+        "/en/stories",
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-025",
+      "filename": "morning_gallery.webp",
+      "surfaces": [
+        "Exhibition environments"
+      ],
+      "paths": [
+        "/en/the-museum",
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-026",
+      "filename": "main_gallery_burgundy.webp",
+      "surfaces": [
+        "Museum galleries"
+      ],
+      "paths": [
+        "/en/the-museum",
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-027",
+      "filename": "archive_chamber.webp",
+      "surfaces": [
+        "Archive experience"
+      ],
+      "paths": [
+        "/en/the-museum",
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-028",
+      "filename": "private_archive_room_16x9.webp",
+      "surfaces": [
+        "Collection and documentation pages"
+      ],
+      "paths": [
+        "/en/collections",
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-029",
+      "filename": "collector_lounge_night.webp",
+      "surfaces": [
+        "Institutional atmosphere"
+      ],
+      "paths": [
+        "/en/the-museum",
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-031",
+      "filename": "ai_curator_sanctum_16x9.jpg",
+      "surfaces": [
+        "AI Curator page"
+      ],
+      "paths": [
+        "/en/curator",
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-032",
+      "filename": "ai_curator_sparkle_1024.webp",
+      "surfaces": [
+        "AI Curator visual identity"
+      ],
+      "paths": [
+        "/en/curator",
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-033",
+      "filename": "curator_hands_emotional_moment_16x9.webp",
+      "surfaces": [
+        "Museum storytelling"
+      ],
+      "paths": [
+        "/en/stories",
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-034",
+      "filename": "collection_gallery_shelves_16x9.jpg",
+      "surfaces": [
+        "Collections"
+      ],
+      "paths": [
+        "/en/collections",
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-035",
+      "filename": "rare_stamp_1024.webp",
+      "surfaces": [
+        "Stamps"
+      ],
+      "paths": [
+        "/en/collections",
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-036",
+      "filename": "rare_stamps_glass_cabinet_4x3.jpg",
+      "surfaces": [
+        "Stamp exhibition"
+      ],
+      "paths": [
+        "/en/collections",
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-037",
+      "filename": "heritage_jewelry_1024.webp",
+      "surfaces": [
+        "Heritage objects"
+      ],
+      "paths": [
+        "/en/artifacts/{artifact-slug}",
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-038",
+      "filename": "historical_documents_atmosphere_4x3.jpg",
+      "surfaces": [
+        "Documents"
+      ],
+      "paths": [
+        "/en/collections",
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-039",
+      "filename": "family_letters_1024.webp",
+      "surfaces": [
+        "Letters and archives"
+      ],
+      "paths": [
+        "/en/collections",
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-040",
+      "filename": "family_letters_bundle_1x1.jpg",
+      "surfaces": [
+        "Letter collections"
+      ],
+      "paths": [
+        "/en/collections",
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-041",
+      "filename": "vintage_collector_desk_16x9.jpg",
+      "surfaces": [
+        "Collection storytelling"
+      ],
+      "paths": [
+        "/en/stories",
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-042",
+      "filename": "brand_muse_golden_hour.webp",
+      "surfaces": [
+        "Institutional storytelling"
+      ],
+      "paths": [
+        "/en/stories",
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-046",
+      "filename": "interface_collection_page_4x3.jpg",
+      "surfaces": [
+        "Collections UI"
+      ],
+      "paths": [
+        "/en/collections",
+        "/en"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-050",
+      "filename": "search_discovery_1024.webp",
+      "surfaces": [
+        "Search"
+      ],
+      "paths": [
+        "/en/search"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-051",
+      "filename": "contact_envelope_1024.webp",
+      "surfaces": [
+        "Contact"
+      ],
+      "paths": [
+        "/en/contact"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-052",
+      "filename": "telephone_1024.webp",
+      "surfaces": [
+        "Contact information"
+      ],
+      "paths": [
+        "/en/contact"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-073",
+      "filename": "world_morocco_hero_16x9.webp",
+      "surfaces": [
+        "Morocco World"
+      ],
+      "paths": [
+        "/en/worlds/morocco"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-074",
+      "filename": "world_egypt_hero_16x9.webp",
+      "surfaces": [
+        "Egypt World"
+      ],
+      "paths": [
+        "/en/worlds/egypt"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-075",
+      "filename": "world_syria_hero_16x9.webp",
+      "surfaces": [
+        "Syria World"
+      ],
+      "paths": [
+        "/en/worlds/syria"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-076",
+      "filename": "world_mauritania_hero_16x9.webp",
+      "surfaces": [
+        "Mauritania World"
+      ],
+      "paths": [
+        "/en/worlds/mauritania"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-077",
+      "filename": "world_libya_hero_16x9.webp",
+      "surfaces": [
+        "Libya World"
+      ],
+      "paths": [
+        "/en/worlds/libya"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-078",
+      "filename": "world_sudan_hero_16x9.webp",
+      "surfaces": [
+        "Sudan World"
+      ],
+      "paths": [
+        "/en/worlds/sudan"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-079",
+      "filename": "collection_first_day_covers_4x3.webp",
+      "surfaces": [
+        "First Day Covers"
+      ],
+      "paths": [
+        "/en/collections/first-day-covers"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-080",
+      "filename": "collection_coins_4x3.webp",
+      "surfaces": [
+        "Coins"
+      ],
+      "paths": [
+        "/en/collections/coins"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-081",
+      "filename": "collection_artifacts_4x3.webp",
+      "surfaces": [
+        "Artifacts"
+      ],
+      "paths": [
+        "/en/collections/artifacts"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    },
+    {
+      "assetId": "NDM-AST-082",
+      "filename": "collection_souvenirs_4x3.webp",
+      "surfaces": [
+        "Souvenirs"
+      ],
+      "paths": [
+        "/en/collections/souvenirs"
+      ],
+      "locales": [
+        "en",
+        "ar"
+      ],
+      "publishedAt": "2026-11-04",
+      "authority": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"
+    }
+  ],
+  "notPublished": [
+    {
+      "assetId": "NDM-AST-002",
+      "filename": "logo_badge_burgundy_1024.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Brand applications"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-003",
+      "filename": "logo_stacked_vertical_1024x1536.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Formal and vertical compositions"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-006",
+      "filename": "certificate_identity_scene_4x3.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Archive and certificate presentation"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-007",
+      "filename": "premium_packaging_identity_1x1.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Brand presentation"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-008",
+      "filename": "social_announcement_seal_1x1.jpg",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Approved communication visuals"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-009",
+      "filename": "watermark_system_16x9.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Approved image branding"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-010",
+      "filename": "wax_seal_texture_macro_1x1.jpg",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Certificates and archival details"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-011",
+      "filename": "launch_banner_16x9.jpg",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Institutional announcements"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-012",
+      "filename": "social_instagram_1024.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Approved social identity"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-030",
+      "filename": "museum_cafe_morning.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Optional visitor atmosphere reference"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-043",
+      "filename": "gift_boutique.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Reference only unless a museum gift area is approved"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-044",
+      "filename": "perfume_vanity_1024.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Reference only unless relevant to actual collection material"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-045",
+      "filename": "app_interface_showcase_16x9.jpg",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "UI design reference"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-047",
+      "filename": "control_center_desk_16x9.jpg",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Administrative environment"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-048",
+      "filename": "mobile_app_scene_9x16.jpg",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Mobile presentation"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-049",
+      "filename": "user_account_1024.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Restricted account-related interface if applicable"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-053",
+      "filename": "favorite_heart_1024.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Future visitor interaction only if approved"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-054",
+      "filename": "location_paris_1024.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Location presentation if applicable"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-055",
+      "filename": "bg_ivory_petals.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Selected editorial panels"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-056",
+      "filename": "bg_dark_museum_bokeh.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Dark page backgrounds"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-057",
+      "filename": "burgundy_velvet_texture.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Exhibition backgrounds"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-058",
+      "filename": "champagne_gold_marble_texture.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Luxury visual details"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-059",
+      "filename": "dark_museum_wood_texture.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Archival environments"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-060",
+      "filename": "floral_section_background_16x9.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Selected thematic sections"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-061",
+      "filename": "gold_embroidery_detail_1x1.jpg",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Detailed archival accents"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-062",
+      "filename": "gold_leaf_dark_texture.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Restrained luxury details"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-063",
+      "filename": "ivory_marble_texture.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Paper and architectural surfaces"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-064",
+      "filename": "ivory_silk_texture.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Soft backgrounds"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-065",
+      "filename": "old_paper_texture.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Document storytelling"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-066",
+      "filename": "rose_marble_texture.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Selected identity sections"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-067",
+      "filename": "section_transition_background_16x9.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Page transitions"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-068",
+      "filename": "light_rays_dust.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Museum lighting"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-069",
+      "filename": "loading_golden_rays.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Loading states"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-070",
+      "filename": "rose_petals_floating.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Selected transitions"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-071",
+      "filename": "warm_candlelight.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Museum atmosphere"
+      ]
+    },
+    {
+      "assetId": "NDM-AST-072",
+      "filename": "overlay_glass_reflections.webp",
+      "why": "the usage map binds none of its declared surfaces to a §4.2 route",
+      "surfaces": [
+        "Museum displays"
+      ]
+    }
+  ]
+}

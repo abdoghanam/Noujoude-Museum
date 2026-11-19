@@ -21,12 +21,16 @@ pgdata/
 *.log
 
 # Derivative renders written by scripts/build-media-derivatives.mjs. The bytes are reproducible from an
-# original plus an authorised profile and ledger, so they are output, not source — and while 0 of 82
-# assets are cleared the directory does not exist at all (the builder exits 3 and creates nothing, which
-# scripts/tests/build-media-derivatives.test.mjs asserts on every gate run). `lineage.json` is the one
-# exception: it is the provenance record that makes a derivative traceable to its original (O-09), and a
-# record is not a build artefact. The directory is deliberately outside `Noujoude.photo/` (originals are
-# never overwritten) and outside `public/` (nothing may be served without passing the gate, §20.4).
+# original plus an authorised profile and ledger, so they are output, not source. That is still true now that
+# the Owner's 4 November declaration cleared the library and the builder has run: `media-derivatives/` holds
+# 45 recorded renders plus its manifest, and the renders remain output. What the gate suite
+# (scripts/tests/build-media-derivatives.test.mjs) measures on every run is not the directory's absence but
+# its immutability under a refused build — a refusal must leave the store byte-identical here and create
+# nothing at all in a fresh workspace. `lineage.json` is the one exception below: it is the provenance record
+# that makes a derivative traceable to its original (O-09), and a record is not a build artefact, so it is the
+# one file in this directory that a clone is expected to carry. The directory is deliberately outside
+# `Noujoude.photo/` (originals are never overwritten) and outside `public/` (nothing may be served without
+# passing the gate, §20.4).
 media-derivatives/*
 !media-derivatives/lineage.json
 

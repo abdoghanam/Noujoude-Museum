@@ -418,16 +418,58 @@ if (!dockerReady) {
       "could not list containers to test the name collision",
       `exit ${listed.status}\n${listed.stderr || ""}`,
     );
-  else if (nameLine && !names.includes(nameLine))
+  else if (!nameLine)
+    logFail(
+      "no container_name was declared, so the collision check has no subject",
+    );
+  else if (!names.includes(nameLine))
     logPass(
       `the declared container name ${nameLine} is free on this host`,
       `(${names.length} existing containers, none named ${nameLine})`,
     );
-  else
-    logFail(
-      `the declared container name ${nameLine} is already taken on this host`,
-      `existing: ${names.join(", ")}`,
+  else {
+    /*
+     * The invariant this case protects is narrower than "no container bears our name", and saying so
+     * out loud is the honest repair. The name was chosen (docker-compose.yml's own comment, 1 Nov 2026)
+     * because three stopped `noujoude-postgres*` containers squatted the obvious names and made
+     * `pnpm db:up` fail on a conflict it could not resolve. What must be true is that *the project can
+     * start its own database* — not that the name sits empty forever, which would make the gate redder
+     * the further the project succeeds. Measured 4 Nov 2026: `pnpm db:up` created `ndm-postgres`, it came
+     * up healthy, and this case turned red on its own success.
+     *
+     * So the occupant is identified rather than merely counted. It is the same service the compose file
+     * declares when Compose's own project and service labels match, and the image matches too. Anything
+     * else wearing the name is still the foreign squatter this case was written to catch.
+     */
+    const declaredProject =
+      (committed.match(/^name:\s*(\S+)/m) || [])[1] ?? "noujoude";
+    const probe = spawnSync(
+      "docker",
+      [
+        "inspect",
+        "-f",
+        "{{ index .Config.Labels \"com.docker.compose.project\" }}|{{ index .Config.Labels \"com.docker.compose.service\" }}|{{ .Config.Image }}",
+        nameLine,
+      ],
+      { encoding: "utf8", cwd: ROOT, timeout: 60_000 },
     );
+    const [pLabel, sLabel, image] = (probe.stdout || "").trim().split("|");
+    const isOwnService =
+      probe.status === 0 &&
+      pLabel === declaredProject &&
+      sLabel === "postgres" &&
+      /postgres/.test(image);
+    if (isOwnService)
+      logPass(
+        `the declared container name ${nameLine} is held by this project's own compose service`,
+        `(project ${pLabel}, service ${sLabel}, image ${image}; \`pnpm db:up\` would reattach, not conflict)`,
+      );
+    else
+      logFail(
+        `the declared container name ${nameLine} is taken by a container that is not this project's database service`,
+        `occupant: ${[pLabel, sLabel, image].join(" / ") || "unidentifiable"}; existing: ${names.join(", ")}`,
+      );
+  }
 }
 
 console.log(

@@ -88,6 +88,10 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      # Enable corepack for pnpm (mandated package manager, Standard §2.2)
+      - name: Enable corepack
+        run: corepack enable
+
       # Read-only inputs must be byte-identical to their Phase 0 baseline.
       # NOTE: this assumes reference/ and Noujoude.photo/ are committed and present
       # in the checkout. Whether 82 binary assets belong in the repository is an
@@ -223,6 +227,10 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      # Enable corepack for pnpm (mandated package manager, Standard §2.2)
+      - name: Enable corepack
+        run: corepack enable
+
       # npm ships with Node, so this needs no third-party setup action.
       - name: Install pnpm at the declared packageManager version
         run: npm install -g "pnpm@${PNPM_VERSION}"
@@ -312,6 +320,10 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      # Enable corepack for pnpm (mandated package manager, Standard §2.2)
+      - name: Enable corepack
+        run: corepack enable
+
       - name: Install pnpm at the declared packageManager version
         run: npm install -g "pnpm@${PNPM_VERSION}"
 
@@ -352,6 +364,10 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: ${{ env.NODE_VERSION }}
+
+      # Enable corepack for pnpm (mandated package manager, Standard §2.2)
+      - name: Enable corepack
+        run: corepack enable
 
       - name: Install pnpm
         run: npm install -g "pnpm@${PNPM_VERSION}"
@@ -472,6 +488,10 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: ${{ env.NODE_VERSION }}
+
+      # Enable corepack for pnpm (mandated package manager, Standard §2.2)
+      - name: Enable corepack
+        run: corepack enable
 
       - name: Install pnpm
         run: npm install -g "pnpm@${PNPM_VERSION}"

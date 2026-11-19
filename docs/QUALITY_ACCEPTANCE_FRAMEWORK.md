@@ -279,7 +279,7 @@ The values below are recalculated under the corrected formula `c_r = min(S_r, I_
 | QA-08 Responsive | 6 | 10 | 0.35 | 0.00 | 0.00 | 0.0 | 0.0 | CAP-1/CAP-5 | Specification gap (nine device categories unfixed) and verification gap (no render) counted separately, per §2 |
 | QA-09 RTL and LTR | 6 | 10 | 0.80 | 0.00 | 0.00 | 0.0 | 0.0 | CAP-1/CAP-5 | Nine Arabic clauses fixed; no locale mechanism, no Arabic font file |
 | QA-10 Assurance | 8 | 20 | 0.65 | 0.20 | 0.20 | 1.6 | 6.4 | CAP-1 binds exactly (8 × 0.20 = 1.6) | 219-row register plus 146 executed gate assertions; 0 product rows — **both counts in that basis cell are the window this table was computed in, and the 3 November re-run moved them: the register measures 221 rows, and `pnpm test:gates` exits 0 over 8 suites and 178 assertions rather than 7 suites and 146. No `N`, `A_d`, cap or score in this row changed, and CAP-9 is the reason: a counter correction is not per-row product evidence, so `I` and `V` stay 0.20 and the row still describes documentation work** |
-| QA-11 Content and rights | 6 | 20 | 0.85 | 0.15 | 0.10 | 0.6 | 0.6 | CAP-2 binds exactly | Catalog, safeguards and audit exist and ran once; 0 of 82 cleared |
+| QA-11 Content and rights | 6 | 20 | 0.85 | 0.15 | 0.10 | 0.6 | 0.6 | CAP-2 binds exactly | Catalog, safeguards and audit exist and ran once; 0 of 82 cleared — **the 3 November basis for this row, kept because the score was computed on it; the 4 November reading is 82 of 82 carrying the Owner's cleared marker and 82 of 82 the approval marker, and `docs/OWNER_INPUT_REGISTER.md` §6F states why `I` and `V` did not move** |
 | QA-12 SEO | 4 | 12 | 0.75 | 0.00 | 0.00 | 0.0 | 0.0 | CAP-1 | Clauses fixed including G.9's 13; no page to optimise |
 | QA-13 Maintainability | 4 | 10 | 0.90 | 0.25 | 0.30 | 1.0 | 2.0 | CAP-1 binds | **36 ADRs** (ADR-001 … ADR-036, `grep -c '^### ADR-'` → 36, re-run 3 Nov 2026 after ADR-035 and ADR-036; the 2 Nov reading after ADR-034 was 34), running gates, a real lockfile, an initialized and documented `src/` layout. **The score does not move in this batch**: QA-13's ten rows have never been itemised into a §9.1-style ledger, and publishing a rise in the same breath as the rows that justify it is the game CAP-9 exists to stop. The batch that writes the ledger may re-derive it, upward or downward |
 | **Total / weighted mean** | **100** | **166** | **0.70** | **0.07** | **0.06** | **5.45** | — | — | `Σ A_d`; axes are `Σ(W_d·X_d)/100`. Aggregate CAP-1 holds: 5.45 ≤ 5.65 |
@@ -301,6 +301,21 @@ fail-closed serving rule now exists as tested code in `src/domain/rights.ts`, bu
 its ceiling while 0 of 82 rights are cleared, and a single cleared asset would move it honestly. The rights gate's
 unit test is credited once, in QA-07 row 3, as a unit test of domain logic — not a second time here, and not at all
 as an enforced control, because no running application consults it yet (CAP-9(d)).
+
+**Dated note, 4 November 2026 — this paragraph's own movement condition is now satisfied on paper, and the score
+does not move.** Two sentences above are superseded by measurement. `src/domain/rights.ts` is no longer code that
+nothing consults: the publication register, the derivative builder, the clearance ledger and the seven serving
+checks in `src/lib/server/media/serving.ts` all read its vocabulary, and `pnpm build` emits the route table that
+serves from it — so the CAP-9(d) credit that paragraph withholds is now a different question, not the same one.
+And the condition "a single cleared asset would move it honestly" is past: **82 of 82** rows carry the Owner's
+cleared marker and **82 of 82** the approval marker, against the **0 of 82** this table was computed on. What does
+not follow is a re-score. The Owner's mandate of this date forbids inflating a score to reach 100, CAP-9 forbids a
+batch that publishes no per-row product evidence from moving `A_d`, `N_d` or the total, and what arrived on
+4 November is a declaration of permission over files rather than evidence of an implemented museum: `Source/Creator`
+is still unrecorded on **72** rows, no object fact, caption, catalog record or Control Center surface exists, and
+**RB-12**'s provenance label is still absent from the rendered page. So QA-11 stays at `S 0.85 / I 0.15 / V 0.10 /
+0.6` in this window, its basis cell's `0 of 82 cleared` is the 3 November reading the row above corrects in place,
+and the honest statement about this framework is the narrow one: **its composite score is not re-scored here.**
 
 ### 9.1 Credit arithmetic — every number in §9 derived
 

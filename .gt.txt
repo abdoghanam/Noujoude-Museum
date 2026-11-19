@@ -1,0 +1,1 @@
+OK: 256 tables in 16 markdown files, each with a header, a delimiter row and a uniform column count

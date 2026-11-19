@@ -4,8 +4,9 @@
  * Two locations are forbidden and one is chosen. `Noujoude.photo/` is off limits because `.gitignore`
  * declares it the original asset library and "originals are never overwritten"; a derivative written
  * beside an original is a future re-audit reading the derivative as the asset. `public/` is off limits
- * because anything there is served without passing a gate, which is exactly what §20.4 bars while zero
- * of 82 assets are cleared. So derivatives live in a private directory at the repository root and reach
+ * because anything there is served without passing a gate — no rights check, no lineage check, no per-request
+ * re-verification — which is exactly what §20.4 bars, and what it would bar equally on a day when most
+ * assets are cleared. So derivatives live in a private directory at the repository root and reach
  * a browser only through the route in task O-08, which re-runs the rights decision on every request.
  *
  * The manifest is the lineage record: each derivative names its original's filename and SHA-256, so

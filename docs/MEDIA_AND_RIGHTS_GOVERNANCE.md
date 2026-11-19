@@ -8,6 +8,20 @@ are required rules with enforcement plans. **No asset in this project is product
 approved, optimized, integrated or verified.** The only affirmative physical claims in this document are the
 measured ones in §6, each traceable to `docs/ASSET_INVENTORY_AUDIT.csv`, `docs/asset-audit-summary.json` and
 `Noujoude.photo/_pending_review_AI_generated/_manifest.json`.
+**Re-read 4 November 2026** under the Owner's Master Autonomous Completion & Production Launch Mandate of that
+date. The status sentence above is the 31 October reading and is kept as written; three of its six words are now
+false for part of the library, and the falsification is measured, not asserted — `Rights Status` carries the
+Owner-declared cleared marker on **82 of 82** rows with `UNKNOWN` on **0**, `Brand/Curatorial Approval` carries
+the mandate marker on **82 of 82** with `Not Approved` on **0**, `docs/asset-governance/publication-register.json`
+names **46** of them, and sharp 0.35.5 has produced **45** optimised derivatives recorded in
+`media-derivatives/lineage.json` (2,422,790 bytes, largest 165,426). What still reads exactly as written is the
+other half of that sentence. No asset is *verified* in the sense §13.3 line 1891 uses the word — its `Verified By`
+cell names `scripts/audit-assets.mjs (automated physical verification)` on all 82 rows, which is one of the five
+classes and not the other four — and *integrated* is true only in the narrow sense that a governed gate can now
+serve a file: no CMS record, no caption, no provenance and no object fact stands behind any of the 82. The
+mandate's own distinction, between permission to use an image and verification of the historical object
+represented in it, is why this document's status line still reads CONTRACT. §7.2 and the RB-01…RB-12 table are
+where each half is now accounted for.
 **Sources:** Master Specification Appendix A (**lines 3316–3471**, esp. A.9 3449–3459, A.10 3461–3463,
 A.11 3465–3469), §13 Media/Asset Library & IP Governance (**lines 1829–1942**), §8.14 (1297–1321), §8.15
 (1323–1344), §8.17 (1358–1378), §8.18 (1380–1394), §11.8 (1599–1607), §6.7 (696–727), §16.8 (2492–2508),
@@ -149,7 +163,7 @@ Derivative Status, Alt Text Status, Notes, Verified By, Verified Date`.
 |---|---|---|---|
 | Asset ID | `Asset ID` | ✅ `NDM-AST-001` … `NDM-AST-082` (ADR-013; S-09 — the spec demands an ID and assigns none, so this project issues them deterministically in Appendix A catalog order and never re-uses or renumbers one) | stable primary key, never derived from a localized label (Standard §3.3 line 110) |
 | exact filename | `Filename` | ✅ | required |
-| original filename | — | ❌ absent (identical today for all 82; meaningful once derivatives exist) | add `originalFilename` |
+| original filename | `Derivative Status` cell + `media-derivatives/lineage.json` | ✅ since 4 November 2026, and in two places: each of the 45 lineage rows carries `originalFilename` **and** `originalSha256` beside the render's own `file`/`sha256`, and the register's `Derivative Status` cell names the render id (`optimised render NDM-AST-046--candlelight-1440-webp.webp … recorded in media-derivatives/lineage.json`). Before the store existed the column was ❌ and identical to `Filename` on all 82 rows | `source_asset_id` (§8.14 line 1318) — the record exists, the column is CMS work |
 | asset type / `media_role` | `Expected Category` (A.2–A.8) | ◐ category only, not role | add controlled `mediaRole` enum per §8.14 line 1321 |
 | MIME type | `MIME Type` | ✅ measured, not taken from the extension — see §6.2 | required |
 | dimensions | `Width` × `Height` | ✅ decoded from the file; **contradicts 18 filenames** (§6.3) | required; drives CLS reservation (Standard §9 line 224) |
@@ -157,12 +171,12 @@ Derivative Status, Alt Text Status, Notes, Verified By, Verified Date`.
 | color profile | — | ❌ not recorded | "when relevant" (A.10) — decide per asset |
 | source / creator | `Source/Creator` | ✅ recorded as evidence-state: 72 × "Not supplied in any reference document", 10 × "AI-generated (Qwen ImageGen tooling), generator recorded in `_manifest.json`" | **Blocked by Owner Input** for real provenance (Standard §13 line 301) |
 | creation/acquisition date | — | ❌ (quarantine manifest carries `generated_date` 2026-10-30 21:35:00 for the 10 only) | add, "where known" |
-| rights holder / license / permitted uses / restrictions / expiry-review date | `Rights Status` | ◐ one state value per row; **no holder, licence, scope, restriction or expiry recorded for any of the 82** | these are `RightsRecord` fields (§8.15 lines 1330–1339), not `MediaAsset` fields — see §4 |
+| rights holder / license / permitted uses / restrictions / expiry-review date | `Rights Status` | ◐ one state value per row, and since 4 November 2026 that value cites an instrument. The cells now carry a holder **by self-declaration** (`Owner-Declared Owned`), a scope (`docs/asset-governance/owner-authorization.json` `whatThisAuthorises`: display, optimise and serve *in this project's* surfaces) and explicit restrictions (`whatThisDoesNotAuthorise`: not evidence about the object, not a catalogue record, not third-party rights, not a font licence). **Still recorded nowhere: a licence document, a territory, a transfer of ownership, and any expiry or review date** — the declaration is open-ended and cites a dated mandate rather than a term | these are `RightsRecord` fields (§8.15 lines 1330–1339), not `MediaAsset` fields — see §4. A `RightsRecord` with no expiry is a review backlog, and RB-11 below names it |
 | original/derivative relationship | `Derivative Status` | ✅ 72 "Original (no derivatives produced)", 10 "DERIVATIVE (webp) from a PNG original that is not retained" | `source_asset_id` (§8.14 line 1318); 10 rows are **broken** (§6.4) |
-| alt text | `Alt Text Status` | ✅ recorded as a gap: **82 × "Not Recorded"** | §8.14 line 1311 makes `alt_text_en`/`alt_text_ar` **required** for meaningful public images; §19.8 line 2964 requires meaningful alt text with decorative images marked decorative |
+| alt text | `Alt Text Status` | ✅ recorded as text since 4 November 2026: **82 × "Recorded — EN and AR from docs/asset-governance/descriptive-labels.json"**, 82 label rows carrying `en`, `ar` and a `decorative` flag, `unlabelled.count` **0**. The 3 November reading — 82 × "Not Recorded" — is kept as history. `src/lib/media/slot.ts` withholds any image whose label is absent (`alt_text_not_recorded`), so the record is what makes the pixel drawable | §8.14 line 1311 makes `alt_text_en`/`alt_text_ar` **required** for meaningful public images; §19.8 line 2964 requires meaningful alt text with decorative images marked decorative — both are satisfied as data and un-migrated as columns |
 | caption / language | — | ❌ | `caption_en`/`caption_ar` optional (§8.14 line 1312); `language` required by A.10 |
 | focal point | — | ❌ | `focal_point` structured coordinates (§8.14 line 1314); §19.7 line 2954 |
-| responsive variants | — | ❌ none exist | A.10 "responsive variants"; §13.1 line 1844 "Mobile-specific variants and responsive derivatives" |
+| responsive variants | `media-derivatives/lineage.json` | ◐ one optimised profile exists, not a variant set: **45** assets have exactly one render each (`candlelight-1440-webp`). Measured across those 45: **34** keep their original longest side unchanged, **11** are capped to 1440, and **0** are enlarged — `withoutEnlargement` is what stops a 512px mark becoming a 1440px lie about its own detail. No `srcset`, no mobile-specific crop, no second breakpoint. The 3 November reading was ❌ with none at all | A.10 "responsive variants"; §13.1 line 1844 "Mobile-specific variants and responsive derivatives" — a second profile is a `derivative-profiles.json` entry plus one pipeline run, which is why the shape is ◐ rather than ❌ (ADR-038 names the one-render-per-asset limitation) |
 | checksum | `SHA-256` | ✅ all 82 baselined and re-verified 82/82 (`ARCHITECTURE_DECISIONS.md` §7.1 preflight run) | integrity + dedupe (§16.8 line 2508) |
 | associated page/entity | `Actual Usage` | ◐ the column records **no** usage for any row; since 3 Nov 2026 it names `src/lib/media/usage-map.ts` as the resolver (the delivered text used to assert "None — no application code exists yet (src/ is empty)" on 82/82, which no tool recomputed) | many-to-many usage (§8.17 line 1372) |
 | status | `Physical Status` + `Rights Status` + `Derivative Status` | ◐ three separate dimensions, correctly **not** merged (S-10) | three fields per §2 |
@@ -289,7 +303,11 @@ illustrative country/category visuals, not evidence of actual objects in the col
 **AST-003** (line 3091): "AI illustrations — Illustrative imagery is not represented as original collection
 photography." **AST-001** (3089): every used asset must have an identifiable source and intended role — for 72
 of 82 the recorded source is "Not supplied in any reference document", so AST-001 cannot close without Owner
-input. **AST-002** (3090): each public media use must be rights-cleared for that purpose — 0 of 82 qualify.
+input. **AST-002** (3090): each public media use must be rights-cleared for that purpose — as of 4 November 2026
+**46 of 82** rows pass the gate and **45** are served on the paths the publication register names, so the clause
+"for that purpose" is what still carries weight: the cleared purpose is *display in this project*, and no row is
+cleared for resale, sublicence, or representation as a catalogued object. The other 36 are not denied permission;
+they have no published use to clear.
 
 ---
 
@@ -478,23 +496,25 @@ Blocker identifiers in this section are **RB-nn** (media/rights). They are disti
 
 | # | Blocker | Measured evidence | Gate it blocks | Status |
 |---|---|---|---|---|
-| RB-01 | **Zero assets are rights-cleared.** | 72/82 `UNKNOWN — no rights statement supplied in reference/`; 10/82 `Awaiting Rights Review` | A.1 line 3319 (five gates); AST-002 (3090); §11.6 line 1593; STT-002 (3086); §20.5 line 3126 | **Blocked by Owner Input** (Standard §13 line 302 "Image/document rights and licenses") |
-| RB-02 | **Zero assets are approved.** | 82/82 `Not Approved — no approval record supplied` | A.11 `Curatorial/Brand Approved`; §13.2 line 1864 approval state and reviewer | Blocked by Owner Input |
-| RB-03 | **Zero assets carry alt text or captions.** | 82/82 `Not Recorded` | §8.14 line 1311 (required for meaningful public images); §19.8 line 2964; NFR-002 (3111) | Not Implemented |
+| RB-01 | **No asset carried a rights statement.** — *the permission half closed on 4 November 2026; the verification half is still open.* | The 3 November reading is kept as history: 72/82 `UNKNOWN — no rights statement supplied in reference/`, 10/82 `Awaiting Rights Review`. Re-read 4 November 2026: **82/82 evaluate `cleared`**, against the one marker `PRODUCTION_RIGHTS_VOCABULARY.clearedMarkers` accepts — `Owner-Declared Owned — authorisation:` — which quotes mandate §2 inside the cell itself. What no marker can supply is a fact about the object: `Source/Creator` is still `Not supplied in any reference document` on **72** rows (RB-04), and DEC-INV-001 / **B-05** stand | A.1 line 3319 (five gates) now blocks a *catalogued artifact's* image, not an illustration; AST-002 (3090), §11.6 line 1593, STT-002 (3086), §20.5 line 3126 are all satisfied for display permission and un-satisfied for provenance | **Permission: closed by an Owner instrument** (`docs/OWNER_ASSET_AUTHORIZATION_2026-11-04.md`, ADR-037) — recorded here as the Owner's declaration, not as a finding of this build. **Verification: still Blocked by Owner Input** (Standard §13 line 302) |
+| RB-02 | **No asset carried a curatorial approval.** | The 3 November reading: 82/82 `Not Approved — no approval record supplied`. Re-read 4 November 2026: **82/82 `approved`**, from the single granted marker `Approved — Owner mandate 2026-11-04`, whose full cell also states the limit ("presentation is illustrative and must not assert an inventory fact"). Brand *visual* approval is a different grant and did not move: `BA-001 … BA-007` are all `Pending` (OID-18, OD-16) | A.11 `Curatorial/Brand Approved` — approved for display; not approved as a brand decision | Permission: closed by the same instrument. Brand visual approval: Blocked by Owner Input |
+| RB-03 | **No asset carried alt text or captions.** | The 3 November reading: 82/82 `Not Recorded`. Re-read 4 November 2026: `Alt Text Status` is `Recorded — EN and AR` on **82/82**, from `docs/asset-governance/descriptive-labels.json` (`labels` 82 rows, `unlabelled.count` **0**), each string written to say what the picture shows and what it is not. `src/lib/media/slot.ts` refuses to draw a labelled-less image, so the field is load-bearing rather than decorative. What is *not* done: the two `Localized text` columns of §8.14 line 1311 live in a `media_asset` record that does not exist yet, and no caption pair has been authored — captions are curatorial writing, and curatorial writing about unverified objects is what DEC-INV-001 forbids | §8.14 line 1311 (required for meaningful public images); §19.8 line 2964; NFR-002 (3111) | **Alt text: implemented as governed data, awaiting the CMS column. Captions: Not Implemented** |
 | RB-04 | **No source/creator for 72 assets.** | `Source/Creator` = "Not supplied in any reference document" | AST-001 (3089); A.10 line 3463 "source; creator; creation/acquisition date when known" | Blocked by Owner Input |
 | RB-05 | **Lineage broken for 10 assets** (source PNGs absent). | §6.4 | Standard §6 line 193; §8.14 line 1318; §13.4 line 1895 | Blocked by Owner Input + Not Implemented |
-| RB-06 | **Format integrity defect on 1 asset** (`.jpg` holding WebP). | §6.2 | Standard §6 line 187; M-04/M-06 in `SECURITY_AND_PERMISSIONS.md` §10 | Not Implemented |
+| RB-06 | **Format integrity defect on 1 asset** (`.jpg` holding WebP). | Detailed at §6.2. `NDM-AST-041` / `vintage_collector_desk_16x9.jpg` — `Physical Status` `WRONG_FORMAT`, container `image/webp`. **This row became load-bearing on 4 November 2026.** The asset is cleared, approved and published like its 81 neighbours, and it is still the one register row that passes the gate and cannot be served: `scripts/build-clearance-ledger.mjs` refuses it on this physical status (`refused[0].why` = `physical status is "WRONG_FORMAT"`), no `lineage.json` row exists for it, and the endpoint fails closed at check 3 with the byteless 404 — indistinguishable, by design, from a withheld asset. Proven by `src/app/api/media/[assetId]/route.test.ts` | Standard §6 line 187; M-04/M-06 in `SECURITY_AND_PERMISSIONS.md` §10 | **Not Implemented** — the repair is a re-encoded original, which touches a protected library file and is therefore an Owner action, not a build action |
 | RB-07 | **Dimension claims false on 18 assets**, incl. two brand marks. | §6.3 | VIS-001 (3087); §19.7 line 2948; CLS gate | Not Implemented |
 | RB-08 | **Uncatalogued files outside governance: 3 on 1 November, 5 paths on disk since 2 November, and a measured total of 15 file-paths with no distinct catalog row on 3 November** (`find Noujoude.photo -type f \| wc -l` → 97 against 82 catalog rows). The 15 = the 5 the audit names (the archive, the two Arabic manifests, `_pending_review_AI_generated/_manifest.json`, `logo_presentation_scene_16x9_v3.webp`) + **10** duplicates whose basename matches a catalogued row and which the basename rule therefore cannot see — each of the ten `world_*_hero_16x9.webp` / `collection_*_4x3.webp` now exists twice, once quarantined and once at the library root, left in place by the Owner on 2 November. | §6.5 | A.11 (no stage); §13.3 line 1891 | Blocked by Owner Input |
-| RB-09 | **No derivatives and no usage recorded in the register.** | 72 `Original (no derivatives produced)`; `Actual Usage` stores no usage on 82/82 and, since the 3 Nov 2026 regeneration, names `src/lib/media/usage-map.ts` as the resolver. The mapping exists **in code** and is tested; the register is not its source of truth, so "no usage mapping exists" is now false of the code and true of the record | A.11 `Optimized`/`Integrated`/`Verified in Context` | Optimized Not Implemented; usage mapping Implemented in code, register still records none; asset delivery gated by RB-01 |
+| RB-09 | **No derivatives, and no usage recorded in the register.** — *both halves moved on 4 November 2026; the third did not.* | The 3 November reading: 72 rows `Original (no derivatives produced)`, and `Actual Usage` storing no usage on 82/82. Re-read 4 November 2026: **45** optimised renders exist under `media-derivatives/` (profile `candlelight-1440-webp`, 2,422,790 bytes total, largest 165,426) and are recorded one row per asset in `media-derivatives/lineage.json`, which is the tracked provenance record; **37** rows still carry no render — 36 because the publication register names no entry for them and 1 because of RB-06. `Actual Usage` now resolves through `src/lib/media/usage-map.ts` **into the register**: 46 cells quote `docs/asset-governance/publication-register.json` with a date and a path list, and the other 36 state which surface bars them | A.11 `Optimized`/`Integrated`/`Verified in Context` | **Optimized: implemented for the 45 produced rows.** **Integrated: partly real as of 4 November 2026** — `src/app/[locale]/layout.tsx` renders the masthead band through `<MediaSlot>` and the home page renders its four bound slots, and `slotOutcome` returns `image` for `NDM-AST-001`, `013`, `014`, `004` and `015` when the delivered register and the real manifest are read (probed 4 Nov), so the A.11 `Integrated` state is no longer empty as this row claimed on 3 November. **Verified in Context: Not Implemented** — nobody has looked at a rendered page, on a host that does not have a deployment, against a brand approval that has not arrived |
 | RB-10 | **Rights-approval authority is not yet modelled** — the competent approver is an implied role: §17.2 H line 2724 requires "a qualified rights reviewer/Owner must approve relevant permission claims", yet §17.2 defines no such role. | `SECURITY_AND_PERMISSIONS.md` §2.4 finding 1 | §17.4 line 2780; IAM-002 (3102) | **Decision taken — ADR-020** (a scoped `Approve` grant with recorded delegation, not a twelfth role); the grant record and its screen are still Not Implemented, and the identity of any delegated approver is an Owner input |
+| RB-11 | **Permission arrived without a term.** The 4 November declaration is open-ended: it cites a dated instrument and records no expiry, no review cadence and no withdrawal path. | `docs/asset-governance/owner-authorization.json` carries `recordedOn` `2026-11-04` and no expiry or review field, and the register's cells quote that date rather than a term. §8.15 lines 1339–1341 already provide `start_date`, `expiry_date`, `permission_document`, `reviewed_by` and `review_date`, all marked *Optional* — so **this is not a specification breach**, it is a governance gap the model is ready to carry. What withdrawal would cost is measured: the cleared state lives in 82 `Rights Status` cells, so removing it is a register edit plus `pnpm build:clearance-ledger`, `pnpm build:publication-register` and a re-run of the derivative gate, each of which re-derives from the cells rather than trusting the last output | §8.15 lines 1339–1341 (Optional fields that would carry a term); A.11 review states; Standard §13 line 302 | **Not Implemented, and not this build's decision to make** — a review cadence is an Owner governance choice. Recorded so that the choice is visible rather than inherited silently from a mandate that did not name one |
+| RB-12 | **The "illustrative" label is a rule in the record with no enforcement on the page.** All ten generated assets are published (`NDM-AST-073 … 082` are in `publication-register.json`), all ten have renders, and the usage map binds them to `/[locale]/worlds/[country]` and `/[locale]/collections/[category]` — the surfaces where a visitor is most likely to read a picture as evidence. Their approval cell reads `Approved — Owner mandate 2026-11-04 §2; generated imagery, labelled illustrative wherever shown` and their rights cell reads `…project-generated imagery; illustrative only`, and `descriptive-labels.json` opens each alt string with `Illustrative scene:` (6 rows) or `Illustrative display:` (4 rows) and with `مشهد توضيحي:` on the Arabic side of all ten, and marks all ten `decorative: false` — so they are labelled content images, not backgrounds — so the *record* carries the mandate's rule "Decorative generated material must be distinguishable from real museum artifacts". Nothing in `src/` draws that distinction: `src/ui/media-slot.tsx` renders `src`, `alt`, `width`, `height` and no provenance badge, and no route states that a picture is generated. | the three cells quoted above, all measured 4 November 2026; `grep -n` over `src/ui/media-slot.tsx` shows no provenance or generator field in `MediaSlotProps` | Mandate §"Assets and provenance" (generated material must be distinguishable); Asset Requirements §9 line 210 ("illustrative exhibition visuals unless independently verified"); §13.5 lines 1906–1914 labelling; A.9 safeguards | **Not Implemented, and this build owns it** — it is a presentation requirement, not an Owner input. It is the first task of the public-pages work, and until it lands the ten generated heroes must not reach a deployed page |
 
 ### 7.1 The preservation-versus-rights distinction
 
 `preflight.mjs` proved that **82 of 82 checksums match the recorded baseline** — the originals under
 `Noujoude.photo/` are **provably unmodified**, and every file under `reference/` is fingerprinted in
 `docs/REFERENCE_INTEGRITY.json` so a future edit to an original is detected rather than assumed away
-(`ARCHITECTURE_DECISIONS.md` §7.1, lines 1502–1504). That sentence must be read exactly:
+(`ARCHITECTURE_DECISIONS.md` §7.1, lines 1717–1719). That sentence must be read exactly:
 
 - It **is** evidence of **preservation**: integrity, immutability, and correct handling by the tooling.
 - It **is not** evidence of **rights**, of authenticity, of approval, of suitability, or of clearance. A
@@ -539,14 +559,59 @@ evidence is one record per asset in that shape.
 
 **The distinction that keeps this honest.** Preservation evidence is abundant and rights evidence is absent, and the
 two are not interchangeable: `preflight` proves 82/82 checksums match the baseline, which says the files are the
-files, and says nothing about whether any of them may be shown. `docs/ASSET_INVENTORY_AUDIT.csv` keeps its exact
-pending values — none was softened — and `RB-01` through `RB-09` in §7 stay as they were written, because a batch
-authorized to *reconcile* is not a batch authorized to *clear*.
+files, and says nothing about whether any of them may be shown. On 1 November 2026 the CSV carried that reading in
+every cell — `Rights Status` 72 `UNKNOWN` + 10 `Awaiting Rights Review`, approval **82 × not approved**, alt text **82
+× not recorded**, publication **82 × none** — and nothing in that batch was softened, because a batch authorized to
+*reconcile* is not a batch authorized to *clear*.
+
+**Re-read 4 November 2026, after the Owner's asset declaration.** The distinction did not survive unchanged, and the
+honest account names which half moved. `pnpm audit:assets` was re-run and all 82 rows × 20 columns now read as
+follows. Moved: `Rights Status` is **82 × `Owner-Declared Owned — authorisation: Owner mandate 2026-11-04 §2…`**,
+`Brand/Curatorial Approval` is **82 × `Approved — Owner mandate 2026-11-04 §2…`**, `Alt Text Status` is **82 ×
+`Recorded — EN and AR from docs/asset-governance/descriptive-labels.json`**, `Actual Usage` carries a publication cell
+for **46** rows and names the reason for not publishing the other 36, `Derivative Status` names a recorded render for
+**45** rows and says "no optimised render is recorded" for 37, and `Verified Date` is 2026-11-04 on all 82. Did not
+move: `Source/Creator` is still **72 × `Not supplied in any reference document`** (the other 10 are the generated files
+and record their generator), the physical state of `vintage_collector_desk_16x9.jpg` is still **`WRONG_FORMAT`**, the
+**18** `NAME/PIXEL MISMATCH` notes are still there, the 10 `source_png` originals are still absent from the
+filesystem, the 3 uncatalogued paths are still uncatalogued, and no row carries a licence document, a territory, an
+expiry, a named human approver or a statement of what any image depicts.
+
+So the sentence above is now narrower than it was, but it is not false: what arrived is *consent to display these
+files in this project*, cited to an Owner instrument, and what is still missing is *knowledge about the objects*.
+`RB-01` … `RB-11` in §7 each carry their own dated re-read now; the rows that did not move — `RB-04` (no
+source/creator for 72), `RB-05` (the 10 broken lineages), `RB-07` (the 18 false dimension claims), `RB-08` (the
+uncatalogued paths), `RB-10` (the approval authority is still not modelled) — still name exactly what is missing, and
+§7's table of what closure would require stands unchanged. ADR-037 records the mechanism by which consent entered; it
+does not claim the facts came with it.
 
 ---
 
-All **Contract — unimplemented**; `sharp` (Standard §2.2 line 53) is a candidate pin in
-`ARCHITECTURE_DECISIONS.md` §5 and is not installed.
+## 8. Optimization and derivative rules (O-01 … O-11) — status, measured 4 November 2026
+
+`sharp` (Standard §2.2 line 53) is no longer a candidate pin awaiting a clean install. Measured today:
+`node_modules/sharp/package.json` reports **0.35.5**, `require('sharp').versions.vips` reports **8.18.7**, the profile
+is recorded as data in `docs/asset-governance/derivative-profiles.json` (ADR-038), and `media-derivatives/` holds
+**45** WebP renders — 2,422,790 bytes, largest 165,426 — each with a lineage row. The blanket line this section used
+to carry ("All **Contract — unimplemented** … and is not installed") was true when written and is now replaced by a
+rule-by-rule reading, because some of these rules are implemented and *verified*, and one of them is implemented in a
+way that could not be verified even in principle yet.
+
+| Rule | Status, with the evidence that earns it |
+|---|---|
+| O-01 Preserve the original | **Implemented — verified.** The builder writes only into `media-derivatives/`, outside the library, and `pnpm test:gate:derivatives` (exit **0**, **27** assertions) proves every `Noujoude.photo/` file is byte-identical across a run. One caveat the verification does not cover: the Owner's 2 November relocation left the ten generated assets as **two byte-identical copies** — `docs/ASSET_INVENTORY_AUDIT.csv` now records the library-root path as the `Actual Path` for `NDM-AST-073 … 082`, and the `_pending_review_AI_generated/` twins are still on disk. Nothing overwrote anything, but "the original" for those ten is now a choice between two files, which is an Owner disposition question rather than an engineering one. |
+| O-02 Linkage, individually recorded | **Implemented — verified.** `media-derivatives/lineage.json` carries one row per render with `assetId`, `originalFilename`, `originalSha256`, `file`, `sha256`, `width`, `height`, `bytes`, `mime`, `profile`. The gate asserts a manifest row for an asset other than the one requested is refused, so the link is read, not inferred from the filename pattern. |
+| O-03 Digests for originals **and** derivatives | **Implemented on the write side; Contract on the read side.** Every render is hashed at creation and re-hashed against the manifest by the gate. `scripts/preflight.mjs` still verifies the 82 originals only — measured: the file names no derivative, so §9's last row stays open and is the honest place to look for this gap. |
+| O-04 Re-encode, never rename | **Implemented — verified both ways.** Renders are encoded through `sharp` to the declared container. The counter-example is still refused: `vintage_collector_desk_16x9.jpg` (`.jpg` holding `image/webp`) is refused by the ledger with its real container named, and the gate proves no derivative is minted from a mis-described file. |
+| O-05 Documentary fidelity constrains optimization | **Contract — and un-evidenceable as delivered.** A render now exists for 45 assets, and nothing has compared any of them to its original for lost inscriptions, marks, condition or detail. The gates prove digests and byte counts; they cannot prove that q80 preserved a stamp's perforations. Closing this needs a human look, which is BA-001…BA-007 in `docs/OWNER_INPUT_REGISTER.md` — pending, un-fabricable. |
+| O-06 Pipeline state tracking | **Contract — unimplemented.** The eleven states of §11.8 lines 1603–1605 are not modelled anywhere. What exists is a two-state record at build time (`approvals` / `refused`, 45 / 37 in the ledger) and a serving decision per request; that is not the state machine the rule asks for, and it has no `Ready for Review` or `Processing Failed` to move into. |
+| O-07 Serving formats and responsive variants | **Partly implemented, and the parts are not interchangeable.** Modern format: yes (WebP, declared set of one). No-enlargement and dimensions-from-decoded-content: yes, measured across the 45 renders as **34 at original longest side, 11 capped to 1440, 0 enlarged**. Reserved layout dimensions, lazy loading below the fold, hero prioritization, focal-point/crop metadata, and a responsive `srcset` ladder: **Contract** — the pages do not exist yet, and the manifest's `assetId` keying is what blocks the ladder (ADR-038 decision 6). |
+| O-08 Separate policies, signed URLs for private assets | **Contract — unimplemented.** One gate-driven route serves everything it is allowed to serve. `S3_ENDPOINT`/`S3_REGION` remain empty in `.env.example` lines 41–46, and no signed-URL issuer exists. |
+| O-09 Replacement and deletion with impact summary | **Contract — unimplemented.** No replacement path, no deletion path, no impact summary across pages, worlds, collections and derivatives. |
+| O-10 Duplicate detection | **Contract — unimplemented,** and the measurement here is recent: hashing all 97 library files by hand on 4 November returns **86 distinct digests**, i.e. **11 exact-hash duplicate files** — the ten generated assets duplicated between the library root and `_pending_review_AI_generated/`, plus that directory's Arabic manifest duplicated at root. Preflight reports the *count* difference ("catalog rows 82, physical files 97") but no delivered check names duplicate groups, and visual similarity review is not modelled at all. |
+| O-11 Versioning and protected deletion | **Contract — unimplemented.** `Noujoude.photo.rar` (6,143,950 bytes) is a delivery container sitting in the library, not a managed recoverable copy; no version history or deletion protection exists for any original. |
+
+---
 
 | ID | Rule | Verbatim source |
 |---|---|---|
@@ -571,40 +636,70 @@ All **Contract — unimplemented**; `sharp` (Standard §2.2 line 53) is a candid
 | `docs/ASSET_INVENTORY_AUDIT.csv` (delivered, 82 rows × 20 columns) | A.10 inventory coverage; S-09 ID issuance; S-11 cross-check | **Delivered as a measurement.** Not a `MediaAsset` record, not approval, not rights. |
 | `docs/asset-audit-summary.json` (delivered) | totals, mismatches, uncatalogued files, decode failures, traceability | Delivered measurement |
 | `scripts/audit-assets.mjs` → `pnpm audit:assets` (delivered, re-runnable) | Directive §10 re-runnable evidence requirement | Delivered; writes only into `docs/` |
-| `src/lib/media/dimension-from-content.test.ts` | O-07 / §6.3 — assert dimensions come from decoded content, fail on filename/actual disagreement | Not Implemented |
-| `src/lib/media/magic-bytes.test.ts` | §6.2 / Standard §6 line 187 — MIME + magic bytes + extension must agree | Not Implemented |
-| `src/lib/media/lineage.test.ts` | O-02/O-03 — every derivative resolves a live `source_asset_id` | Not Implemented |
-| `src/lib/media/rights-join.test.ts` | §4.1 — per-use resolution; a licence that clears one channel must not clear another | Not Implemented |
-| `src/lib/media/publish-gate.integration.ts` | §11.8 line 1607; §20.5 line 3126; STT-002 — publish blocked by rights/processing/approval | Not Implemented |
-| `tests/e2e/assets/interpretation.spec.ts` | S-A9-1 … S-A9-9; §13.5 lines 1906–1914 labelling; AST-003 (3091) | Not Implemented |
+| `src/lib/media/dimension-from-content.test.ts` | O-07 / §6.3 — assert dimensions come from decoded content, fail on filename/actual disagreement | **Rule covered under other names; this path was never created.** `src/lib/server/media/registry.test.ts` asserts the register's 18 defects in the audit's own words and that the *measured* 512×512 is the dimension of record for a file named `_1024`; `src/lib/server/media/slots.test.ts` asserts the view carries the lineage render's dimensions rather than the original's; `scripts/tests/build-media-derivatives.test.mjs` asserts the manifest records 256×144 for a 256×144 encode, and `scripts/preflight.mjs` re-derives both numbers from the bytes on every run. What is still missing is a test that fails when a *filename's* declared size disagrees with the decoded size at the library level rather than the register level |
+| `src/lib/media/magic-bytes.test.ts` | §6.2 / Standard §6 line 187 — MIME + magic bytes + extension must agree | **Rule covered at write time and audit time; this path was never created.** One implementation (`scripts/lib/image-signature.mjs`, moved out of the audit so a gate and the audit cannot disagree — H-7/H-9) is shared by `audit-assets.mjs`, `preflight.mjs` and the builder; the gate proves a register MIME cell contradicted by its container is refused *with the real container named*, and that no derivative is minted from a mis-described file. The serving path itself does not sniff: it verifies the manifest digest instead, so a byte that matches was, by construction, the byte the builder sniffed — defence in depth rather than a hole, and named here rather than claimed as a check |
+| `src/lib/media/lineage.test.ts` | O-02/O-03 — every derivative resolves a live `source_asset_id` | **Rule covered; this path was never created.** `media-derivatives/lineage.json` is read through `src/lib/server/media/derivative-store.ts`, and the 45 rows are asserted by `scripts/tests/build-media-derivatives.test.mjs` (row on disk hashes to the digest the manifest claims; originals unchanged; a row for another asset is refused) and by `src/app/api/media/[assetId]/route.test.ts`, which now derives served and refused sets from the register and the manifest on every run |
+| `src/lib/media/rights-join.test.ts` | §4.1 — per-use resolution; a licence that clears one channel must not clear another | **Not Implemented.** The three-cell gate is tested (`src/domain/rights.test.ts`, `src/lib/server/media/serving.test.ts`), but no per-use licence join exists to test: §2's three dimensions still collapse into one Owner-declared statement, and §4.1's six-field record is still B-05's empty inventory of facts |
+| `src/lib/media/publish-gate.integration.ts` | §11.8 line 1607; §20.5 line 3126; STT-002 — publish blocked by rights/processing/approval | **Partly covered, by unit and route tests rather than an integration file at this path.** The gate is the same evaluator on both sides (`PRODUCTION_SERVING_DEPENDENCIES`), and `src/lib/media/publication-register.test.ts` proves the publication cell is derived from the rule and re-checks the generator's own `--check` as a child process. Unimplemented: the *approval-invalidated* cascade of §4.3, because no per-asset approval record exists to invalidate |
+| `tests/e2e/assets/interpretation.spec.ts` | S-A9-1 … S-A9-9; §13.5 lines 1906–1914 labelling; AST-003 (3091) | Not Implemented — no spec directory content, and the pages it would visit do not exist yet |
 | `tests/e2e/assets/no-commerce.spec.ts` | S-A9-6; G.3 lines 3692–3702; §6.7 line 725; `playwright.config.ts` invariance assertion 1 | Not Implemented |
 | `tests/e2e/permissions/module-08-media-library.spec.ts` | Module 08 positive/negative cases (`SECURITY_AND_PERMISSIONS.md` §2.3) | Not Implemented |
-| derivative checksum + lineage re-verification in `scripts/preflight.mjs` | O-03 extended from originals-only to originals+derivatives | Not Implemented (current pass covers the 82 originals only) |
+| derivative checksum + lineage re-verification in `scripts/preflight.mjs` | O-03 extended from originals-only to originals+derivatives | **Still Not Implemented, and the cheapest open item in this table.** Measured 4 November 2026: `scripts/preflight.mjs` contains no reference to the store or the manifest (grepped), so a hand-edited `media-derivatives/lineage.json` is caught per request by the route and by the gate suite, but not by the pre-run gate |
 
-**Reproduction:** `node scripts/audit-assets.mjs` regenerates the two audit artifacts; `node
-scripts/preflight.mjs` re-verifies the 82 original checksums and the `reference/` fingerprint baseline. Both
-have been executed at least once (results quoted in §6 and `ARCHITECTURE_DECISIONS.md` §7.1). Nothing else in
-this table has been executed; the test runner itself cannot start (no `node_modules`; B-01 in
-`ARCHITECTURE_DECISIONS.md` §2).
+**Reproduction, re-measured 4 November 2026.** `pnpm audit:assets` regenerates the two audit artifacts; `node
+scripts/preflight.mjs` re-verifies the 82 original checksums and the `reference/` fingerprint baseline (exit **0**
+today; its reconciliation line reports the 1 uncatalogued image, the 4 non-image paths, the 1 `WRONG_FORMAT` and the 18
+mismatches, and it still says nothing about derivatives). `pnpm test:gate:derivatives` exits **0** with **27**
+assertions. `pnpm build:publication-register:check` and `pnpm build:clearance-ledger:check` both exit **0**. The test
+runner now runs: `pnpm test` → **16 files, 448 tests passed**, exit **0** — which supersedes this section's older
+sentence ("the test runner itself cannot start (no `node_modules`; B-01)"), a reading that was true when written and
+has been false since the install that closed B-01. What remains genuinely unexecuted in this table is the three e2e
+specs and the preflight derivative pass.
 
 ---
 
 ## 10. Register of non-selections and Owner dependencies
 
 **Not selected / not decided, and not to be inferred from this document:** the object storage provider, bucket
-provisioning and region (`S3_ENDPOINT`, `S3_REGION`, both keys empty in `.env.example` lines 41–46); any
-`sharp` output profile, quality setting, width ladder or format set; whether the ten quarantined WebPs become
+provisioning and region (`S3_ENDPOINT`, `S3_REGION`, both keys empty in `.env.example` lines 41–46); the **width
+ladder** — how many widths an asset eventually carries and at which breakpoints (ADR-038 decision 6 names the
+mechanical reason it is still open: the manifest is keyed by `assetId`); whether the ten quarantined WebPs become
 archival masters; whether `logo_presentation_scene_16x9_v3.webp` is adopted; whether the 18 dimension mismatches
 are remediated by regeneration or by renaming metadata; whether color profile is recorded as A.10's "when
 relevant" allows; malware-scanning tooling (Standard §6 line 188 is explicitly conditional — "where the selected
 infrastructure supports it"); retention rule for historical rights/audit/revision records (Standard §3.3 line
 115 requires "an approved retention rule" that has not been approved).
 
+**Amendment, 4 November 2026 — one item left this list, and it left under a decision, not by silence.** This
+section's entry *"any `sharp` output profile, quality setting, width ladder or format set"* recorded a deliberate
+refusal to let a tool pick silently. The profile, the quality value, the longest-side cap and the format set are no
+longer unselected: they are **ADR-038**, carried as data in `docs/asset-governance/derivative-profiles.json`
+(`candlelight-1440-webp`: WebP, q80, 1440, `withoutEnlargement`), read by both the ledger builder and the render
+builder, and exercised by the **45** renders in `media-derivatives/` (measured split: 34 unchanged, 11 capped, 0
+enlarged). The *width ladder* stays on the list above, with its reason attached. The ten generated files are also no
+longer described accurately by the phrase "quarantined": the Owner relocated them to the library root on 2 November
+(§6.4 records the event and the preflight FAIL it caused), the audit now records their `Actual Path` at root, and the
+`_pending_review_AI_generated/` twins remain on disk as byte-identical duplicates — their disposition as archival
+masters is still an Owner call, and the duplicate question is now an O-10 item (§8) as well as an §6.5 one.
+
 **Owner inputs, non-fabricable (Standard §13 lines 296–306):** real artifact inventory and factual data ·
 ownership, provenance and authenticity evidence · image/document rights and licenses · institutional legal
 identity and jurisdiction · approval of providers and operational costs. Standard §13 line 306 is the operating
 instruction while these remain open: *"Implement the required workflows and placeholders; keep unapproved facts
-out of public output."*
+out of public output."* The 4 November declaration supplied the *permission* term of the third bullet for all 82
+files; it did not supply a licence document, a territory, an expiry or a named licensor, and it says so in its own
+cells ("not evidence of a catalogued object"), so the bullet stays on this list.
 
-*End of NDM-MED-001. The measured facts are in §6; every rule in §1–§5 and §7–§9 is a contract awaiting
-implementation and verification. No asset is approved, cleared, optimized, integrated, or verified.*
+*End of NDM-MED-001. The measured facts are in §6, and every dated re-read in §7–§9 is labelled with the day it was
+taken. What the document said on 1 November — "every rule in §1–§5 and §7–§9 is a contract awaiting implementation
+and verification; no asset is approved, cleared, optimized, integrated, or verified" — was true then and is no longer
+true entire. As re-measured on 4 November 2026: **82** assets carry an Owner-declared rights statement and an Owner
+approval, **46** carry a publication cell and pass the serving gate, **45** have a recorded optimised render with
+lineage and digest, and **82** carry alt text in both locales. Still false, and the reason this document is not
+called a completion record: no render has been *verified in context*. The slots do resolve and the layout does place
+them — `slotOutcome` returns `image` for `NDM-AST-001` in the masthead band and for `NDM-AST-013`, `NDM-AST-014`,
+`NDM-AST-004` and `NDM-AST-015` on the home page, probed over the delivered register on 4 November 2026 — but no
+deployed page has been looked at, no curatorial or brand sign-off exists (BA-001…BA-007 pending, no font licence
+recorded), and nothing on the ten generated heroes marks them as generated rather than documentary. No asset has a
+per-use licence record, no source, creator or depicted-subject statement exists for **72** of them, no named human has
+signed a curatorial approval, and **18** dimension claims and **1** container contradiction remain unrepaired.*

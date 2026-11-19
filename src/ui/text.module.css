@@ -1,0 +1,20 @@
+.text {
+  margin-block: 0 var(--ndm-space-3);
+  max-inline-size: var(--ndm-measure-reading);
+  color: var(--ndm-text-primary);
+}
+
+.body {
+  font-family: var(--ndm-font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.secondary {
+  color: var(--ndm-text-secondary);
+}
+
+.caption {
+  font-size: 0.875rem;
+  color: var(--ndm-text-secondary);
+}

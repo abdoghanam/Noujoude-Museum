@@ -1,27 +1,42 @@
 /**
- * src/app/api/media/[assetId]/route.test.ts — what a visitor may learn from a media request: nothing.
+ * src/app/api/media/[assetId]/route.test.ts — what a visitor may learn from a media request.
  *
  * `src/lib/server/media/serving.ts` decides; this file tests the shape of the answer that decision is
- * allowed to have on the wire, because the decision itself is asserted there. Three claims hold the
- * endpoint together and each is checked here in its own block: a refusal is a `404` and never a `403`
- * (a `403` would confirm to anyone who can guess an id that the id is real, derived and withheld); it is
- * byte-for-byte indistinguishable from the refusal of an id that has never existed; and it carries no
- * reason, no digest, no filesystem path, no content type and no cache validator.
+ * allowed to have on the wire, because the decision itself is asserted there. The endpoint has two answers
+ * and each carries its own contract. A refusal is a `404` and never a `403` (a `403` would confirm to
+ * anyone who can guess an id that the id is real, derived and withheld); it is byte-for-byte
+ * indistinguishable from the refusal of an id that has never existed; and it carries no reason, no digest,
+ * no filesystem path, no content type, no cache validator and nothing a cache is allowed to keep. A served
+ * derivative is a `200` with the recorded bytes, the recorded mime type and the recorded digest as the
+ * validator, and it is marked revalidable rather than fresh — every later visit asks the gate again, so a
+ * withdrawal cannot survive in a cache that was populated while the asset was clear.
  *
- * The handler has two branches, and they are tested in two different ways because they answer two
+ * Which ids get which answer is neither assumed nor hard-coded. The register and the delivered lineage
+ * manifest are read and the partition is derived from them: `SERVED` below is the set of assets that pass
+ * `decidePublicServing` *and* have a row the shipped reader returns. Measured on 4 November 2026 that is 45
+ * served, 36 refused by the gate and 1 refused because its derivative was never produced — and the same
+ * loop that computes it asserts that `serveDerivative` agrees. Before the Owner's declaration of 4 November
+ * this file asserted "all 82 answer 404", which was a snapshot of the rights state written as though it
+ * were the wire contract: it would have gone red the moment an asset was cleared, and a suite that goes red
+ * because the governance facts improved is a suite that gets edited rather than read. What is pinned now is
+ * the mapping — every asset in the served partition answers exactly the served shape, every other id
+ * answers exactly the refusal shape, and neither answer is available to the other's ids. The fail-closed
+ * properties that made the old assertion worth making are all still here, and now run against a store that
+ * is reachable: the gate is consulted before the store is opened, a store row is never a capability, bytes
+ * are re-hashed per request, and a refusal discloses nothing.
+ *
+ * The handler has two entry points, and they are tested in two different ways because they answer two
  * different questions. `mediaRoute.GET` is the production binding — `serveDerivative`, the real register,
- * the real gate, the real limiter — and every case above it asserts that it answers `404` for all 82
- * catalogued assets, which is measured, not assumed. `createMediaRouteHandler(serve, limits)` is the seam
- * STEP 9 added and SR-04 widened: the same response logic over an explicit serving service *and* an
- * explicit guard, so the `200`/`304` branch can be asserted for what it is — a mapping from an outcome to a
- * status, headers and bytes — and so a paced client can be tested against a manual clock instead of against
- * a sleep. Two services are handed to it here. The controlled one answers the served branch for a synthetic
- * id, so the response rules are read in isolation; the other is `serveDerivative` itself, pointed at a
- * temporary root, so the store cases below run the shipped reader and gate rather than a stand-in. The
- * seven checks and the synthetic cleared record that gets a `served` outcome at all are tested in
- * `src/lib/server/media/serving.test.ts`. Nothing in this file is evidence that a catalogued asset can
- * receive a `200`: the last block asserts the opposite, that the production handler answers `404` for the
- * same synthetic id the fixture clears.
+ * the real gate, the real limiter — and the partition blocks run against it.
+ * `createMediaRouteHandler(serve, limits)` is the seam STEP 9 added and SR-04 widened: the same response
+ * logic over an explicit serving service *and* an explicit guard. Two services are handed to it here. The
+ * controlled one answers the served branch for a synthetic id outside the register, so the response rules
+ * are read in isolation from the six checks; the other is `serveDerivative` itself, pointed at a temporary
+ * root, so the store cases below exercise containment and the missing-file branch through the shipped
+ * reader rather than against a stand-in. The seven checks and the record that clears them are tested in
+ * `src/lib/server/media/serving.test.ts`. The synthetic id is not a register row, so `GET` answers
+ * `unknown_asset` for it; the last block measures that, and measures that no id outside the served
+ * partition reaches the `200` branch through the shipped binding either.
  *
  * The handler is called directly with the `params` promise Next.js hands it, the way `slots.test.ts`
  * calls the layout. No server is started, no socket is used, and nothing is written to the repository:
@@ -38,22 +53,31 @@
  * denied caller is paced, and that the denial costs the application no work at all.
  *
  * One case the file deliberately does not cover: a corrupt `lineage.json` sitting in the repository's own
- * git-ignored private store. Creating it would write into the tree and would falsify the measured pin in
- * `slots.test.ts` that the pipeline has never run, and the refusal path never reaches the manifest anyway
- * — check 2 runs first — so the covered claim is the one that matters for the wire: no reachable input
- * makes the production handler answer anything but 404. What a *throwing* decision answers with is asserted
+ * git-ignored private store. Creating it would write into the tree and would falsify the delivered manifest
+ * every other block in this file reads, and the refusal paths in `serving.test.ts` and the store blocks
+ * below already cover both ways a bad record can fail — rejected by the shipped validator on the way in,
+ * and refused by check 4 on the way to the bytes. What a *throwing* decision answers with is asserted
  * separately, against a service that throws, because the handler must not depend on that ordering staying
  * put in another module.
  */
 
 import { createHash } from "node:crypto";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
 import * as mediaRoute from "@/app/api/media/[assetId]/route";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { decidePublicServing } from "@/domain/rights";
+import type { AssetRecord } from "@/lib/media/asset-record";
 import {
   DERIVATIVE_MANIFEST_PATH,
   DERIVATIVE_STORE_DIR,
@@ -64,6 +88,7 @@ import {
 import { assetRegister } from "@/lib/server/media/registry";
 import {
   derivativeManifest,
+  lineageFor,
   resetDerivativeManifestCache,
 } from "@/lib/server/media/slot-facts";
 import {
@@ -78,9 +103,74 @@ import {
 } from "@/lib/server/media/request-limits";
 import { createManualClock } from "../../../../../tests/helpers/fake-clock";
 
+/**
+ * The delivered register and the delivered derivative store, read once, and the partition they imply.
+ *
+ * `mayServe` is the endpoint's own rule, not a test-local invention: an asset answers with bytes when the
+ * gate passes it *and* the shipped reader returns a lineage row for it, and with a 404 otherwise. Deriving
+ * the two lists from it is what lets every block below say "each partition answers its shape" instead of
+ * "every id answers 404" — the latter was true only while no asset was cleared, and a wire contract cannot
+ * be a photograph of a rights state.
+ */
 const register = assetRegister();
-const FIRST_ASSET_ID = "NDM-AST-001";
+const LINEAGE_ROWS = new Map(
+  (derivativeManifest()?.derivatives ?? []).map((row) => [row.assetId, row]),
+);
+
+function mayServe(asset: AssetRecord): boolean {
+  return decidePublicServing(asset).serve && LINEAGE_ROWS.has(asset.assetId);
+}
+
+const SERVED: AssetRecord[] = register.filter(mayServe);
+const REFUSED: AssetRecord[] = register.filter((asset) => !mayServe(asset));
+/** Gate-cleared but with no derivative on record: the third state, which is a refusal and not a 404-by-accident. */
+const CLEARED_WITHOUT_BYTES: AssetRecord[] = register.filter(
+  (asset) =>
+    decidePublicServing(asset).serve && !LINEAGE_ROWS.has(asset.assetId),
+);
+const SERVED_IDS: string[] = SERVED.map((asset) => asset.assetId);
+const REFUSED_IDS: string[] = REFUSED.map((asset) => asset.assetId);
+
+function one(rows: AssetRecord[], what: string): AssetRecord {
+  const [first] = rows;
+  if (!first) throw new Error(`the delivered register holds no ${what}`);
+  return first;
+}
+
+/** A real register id the endpoint refuses: the withheld half of every indistinguishability claim below. */
+const WITHHELD_ID = one(
+  REFUSED.filter((asset) => !decidePublicServing(asset).serve),
+  "asset the gate denies",
+).assetId;
+/** A real register id the endpoint serves, and a second one, so a row can be shown not to answer for its neighbour. */
+const CLEARED_ID = one(
+  SERVED,
+  "asset the gate clears and the store carries",
+).assetId;
+const OTHER_CLEARED_ID = one(
+  SERVED.filter((asset) => asset.assetId !== CLEARED_ID),
+  "second served asset",
+).assetId;
 const ENTITY_TAG = `"${"a".repeat(64)}"`;
+
+/** The complete header set of a refusal, sorted the way a client can read it. */
+const REFUSAL_HEADERS =
+  '[["cache-control","no-store"],["x-content-type-options","nosniff"]]';
+
+/** The four headers a served derivative is allowed to emit, and nothing else. */
+const SERVED_HEADER_NAMES = [
+  "cache-control",
+  "content-type",
+  "etag",
+  "x-content-type-options",
+];
+
+function rowFor(assetId: string): DerivativeLineage {
+  const row = LINEAGE_ROWS.get(assetId);
+  if (!row)
+    throw new Error(`${assetId} has no lineage row in the delivered store`);
+  return row;
+}
 
 /**
  * The synthetic derivative the served branch answers with.
@@ -119,6 +209,12 @@ const serveSynthetic: mediaRoute.DerivativeServer = async (assetId) =>
 /**
  * Everything the handler is permitted to say about a refusal, in the vocabulary of the wire rather than
  * the code. A single header appearing anywhere in this set is a disclosure.
+ *
+ * The first ten entries are the whole of the decision's vocabulary — the four `ServingDecision` denials and
+ * the six `ServingRefusal` reasons in `src/lib/server/media/serving.ts`, listing the two resource limits
+ * alongside the rest rather than trusting them never to fire on the wire. Keeping the list complete is the
+ * point: a refusal that answers `404` while naming *which* check stopped it is still a disclosure, and the
+ * `ServedDerivative` branch is now reachable, so the wire has to be read against every reason at once.
  */
 const FORBIDDEN_STRINGS = [
   "rights_not_cleared",
@@ -129,6 +225,8 @@ const FORBIDDEN_STRINGS = [
   "unknown_asset",
   "no_lineage",
   "path_escapes_store",
+  "too_large",
+  "size_mismatch",
   "file_unreadable",
   "digest_mismatch",
   DERIVATIVE_STORE_DIR,
@@ -138,6 +236,21 @@ const FORBIDDEN_STRINGS = [
   "lineage.json",
   ".env",
 ];
+
+/**
+ * What must stay off a *served* response.
+ *
+ * A `200` legitimately carries the mime type — so `webp` is not a disclosure here, it is the `Content-Type`,
+ * and it is also the RIFF marker inside the bytes — and legitimately carries the digest as the validator.
+ * Everything else the decision knows about is not the client's business: the reason a neighbour was refused,
+ * the store's directory, the manifest's filename, the library the original came from, or the word "sha256"
+ * that would name the algorithm the tag is built with. This is the same list with the one entry the served
+ * branch is allowed to say, and it is asserted against status and headers rather than the body, because the
+ * body is the artwork and a byte-level string scan of it would only measure the encoder's choices.
+ */
+const SERVED_FORBIDDEN = FORBIDDEN_STRINGS.filter(
+  (forbidden) => forbidden !== "webp",
+);
 
 interface RouteContext {
   readonly params: Promise<{ assetId?: string }>;
@@ -149,7 +262,7 @@ function context(assetId?: string): RouteContext {
 
 function requestFor(
   headers: HeadersInit = {},
-  assetId: string = FIRST_ASSET_ID,
+  assetId: string = WITHHELD_ID,
 ): Request {
   const merged = new Headers(headers);
   if (!merged.has("x-forwarded-for")) {
@@ -210,6 +323,13 @@ async function fingerprint(response: Response): Promise<string> {
   });
 }
 
+/**
+ * A well-formed lineage record for one asset, naming a file this fixture does not create.
+ *
+ * `readableRowFor` below is the version with bytes behind it; this one exists for the cases that need the
+ * manifest to be valid and the store to be empty, which is what a fresh checkout of a git-ignored store
+ * looks like.
+ */
 function lineageRow(assetId: string): DerivativeLineage {
   return {
     assetId,
@@ -225,11 +345,13 @@ function lineageRow(assetId: string): DerivativeLineage {
   };
 }
 
-/** A well-formed lineage record for one asset, for the cases that must prove the store is not the gate. */
-function manifestFor(assetId: string): DerivativeManifest {
+/** A manifest shell the shipped validator accepts, holding exactly these rows. */
+function manifestWith(
+  derivatives: readonly DerivativeLineage[],
+): DerivativeManifest {
   return {
-    derivatives: [lineageRow(assetId)],
-    generatedAt: "2026-11-02T00:00:00.000Z",
+    derivatives,
+    generatedAt: "2026-11-04T00:00:00.000Z",
     originalsUnchanged: true,
     storeDirectory: DERIVATIVE_STORE_DIR,
   };
@@ -257,6 +379,59 @@ function rootWithManifestText(text: string): string {
 
 function rootWithManifest(manifest: DerivativeManifest): string {
   return rootWithManifestText(JSON.stringify(manifest));
+}
+
+/**
+ * Real derivative bytes, taken from the delivered store, so a fixture row can be backed by a file that
+ * actually hashes to what the row says.
+ *
+ * Every check after the gate — containment, the size ceiling, the read, the digest — is only reachable for
+ * an asset the gate passes, which was not true when this file was written. Testing them therefore needs a
+ * store a cleared asset can be refused *for the right reason*, and an all-zeros placeholder would trip
+ * check 7 instead of isolating the variable a case is about. Copying a delivered derivative gives the
+ * fixture genuine bytes of the right mime type; the rows below record their real digest and length.
+ */
+const DELIVERED_BYTES = readFileSync(
+  path.join(process.cwd(), DERIVATIVE_STORE_DIR, rowFor(CLEARED_ID).file),
+);
+const DELIVERED_DIGEST = createHash("sha256")
+  .update(DELIVERED_BYTES)
+  .digest("hex");
+
+/** A register row, or a failure that names what is missing. */
+function need(assetId: string): AssetRecord {
+  const asset = register.find((row) => row.assetId === assetId);
+  if (!asset) throw new Error(`${assetId} is not in the delivered register`);
+  return asset;
+}
+
+/**
+ * A lineage row that describes those bytes, under `assetId`.
+ *
+ * The lineage *join* fields come from the asset's own register row, not from the asset the bytes were
+ * lifted off, so a fixture can never be refused for a reason this case is not about. The derivative's
+ * pixel dimensions stay the real ones, because they describe the file that is on disk.
+ */
+function readableRowFor(assetId: string): DerivativeLineage {
+  const asset = need(assetId);
+  return {
+    ...rowFor(CLEARED_ID),
+    assetId,
+    bytes: DELIVERED_BYTES.byteLength,
+    file: `${assetId}.webp`,
+    originalFilename: asset.filename,
+    originalSha256: asset.checksum,
+    sha256: DELIVERED_DIGEST,
+  };
+}
+
+/** A temp store holding `lineage.json` *and* the files its rows name. */
+function rootWithReadableRows(rows: readonly DerivativeLineage[]): string {
+  const root = rootWithManifest(manifestWith(rows));
+  const store = path.join(root, DERIVATIVE_STORE_DIR);
+  for (const row of rows)
+    writeFileSync(path.join(store, row.file), DELIVERED_BYTES);
+  return root;
 }
 
 /**
@@ -314,71 +489,202 @@ describe("the handler's surface", () => {
 
   it("binds GET to the production service, measured as the same answers", async () => {
     // The equivalence this file depends on: `GET` is this response logic over `serveDerivative`, so the
-    // served-branch cases below describe the shipped handler's behaviour once a real record clears, not
-    // the behaviour of a stand-in. Four inputs, one refused-by-register, one unknown, one malformed, one
-    // withheld real id, compared as full fingerprints.
+    // served-branch cases below describe the shipped handler's behaviour on real bytes and not the
+    // behaviour of a stand-in. Five inputs — one asset the partition serves, one the gate denies, one
+    // cleared but never derived, one unknown, one malformed — compared as full fingerprints, body bytes
+    // included.
     const production = mediaRoute.createMediaRouteHandler(
       serveDerivative,
       openGuard(),
     );
-    for (const assetId of [FIRST_ASSET_ID, "NDM-AST-083", "../../.env", ""]) {
+    const clearedWithoutDerivative = CLEARED_WITHOUT_BYTES[0]?.assetId;
+    for (const assetId of [
+      CLEARED_ID,
+      WITHHELD_ID,
+      ...(clearedWithoutDerivative ? [clearedWithoutDerivative] : []),
+      "NDM-AST-083",
+      "../../.env",
+      "",
+    ]) {
       const left = await fingerprint(
-        await mediaRoute.GET(requestFor(), context(assetId)),
+        await mediaRoute.GET(requestFor({}, assetId), context(assetId)),
       );
       const right = await fingerprint(
-        await production(requestFor(), context(assetId)),
+        await production(requestFor({}, assetId), context(assetId)),
       );
       expect(right, assetId).toBe(left);
     }
   });
 });
 
-describe("every catalogued asset is withheld", () => {
-  it("refuses all 82 register ids with 404, an empty body and no validator", async () => {
+describe("the served partition answers with the recorded bytes", () => {
+  it("derives the partition from the gate and the store, and agrees with the shipped service", async () => {
+    /*
+     * The precondition the rest of this file rests on. If `SERVED` and `serveDerivative` ever disagree,
+     * every partition assertion below is measuring a list this file invented rather than the endpoint's
+     * behaviour, so the agreement is measured per request rather than assumed from the filter above. The
+     * structural claims are checked first: the two lists must be the register, neither empty (an empty
+     * served partition would make the blocks above vacuous, which is how the old universal-404 assertion
+     * hid nothing at all), and the refused half must split exactly into the gate's denials and the cleared
+     * rows with no derivative.
+     */
+    expect(SERVED_IDS.length + REFUSED_IDS.length).toBe(register.length);
+    expect(SERVED_IDS.length).toBeGreaterThan(0);
+    expect(REFUSED_IDS.length).toBeGreaterThan(0);
+    expect(
+      REFUSED.filter((asset) => decidePublicServing(asset).serve)
+        .map((asset) => asset.assetId)
+        .sort(),
+    ).toEqual(CLEARED_WITHOUT_BYTES.map((asset) => asset.assetId).sort());
     for (const asset of register) {
+      const outcome = await serveDerivative(asset.assetId);
+      expect(
+        outcome.kind,
+        `${asset.assetId}: gate ${decidePublicServing(asset).serve}, lineage ${
+          LINEAGE_ROWS.has(asset.assetId) ? "recorded" : "absent"
+        }`,
+      ).toBe(mayServe(asset) ? "served" : "refused");
+    }
+  });
+
+  it("answers 200 with bytes that hash to the recorded digest, for every served id", async () => {
+    for (const asset of SERVED) {
+      const row = rowFor(asset.assetId);
       const response = await mediaRoute.GET(
-        requestFor(),
+        requestFor({}, asset.assetId),
+        context(asset.assetId),
+      );
+      expect(response.status, asset.assetId).toBe(200);
+      expect(response.ok, asset.assetId).toBe(true);
+      const body = new Uint8Array(await response.arrayBuffer());
+      // Bytes, not a promise of bytes: the length is the recorded one and the sha256 is the recorded one,
+      // recomputed here from what the client actually received.
+      expect(body.byteLength, asset.assetId).toBe(row.bytes);
+      expect(
+        createHash("sha256").update(body).digest("hex"),
+        asset.assetId,
+      ).toBe(row.sha256);
+      expect(response.headers.get("content-type"), asset.assetId).toBe(
+        row.mime,
+      );
+      expect(response.headers.get("etag"), asset.assetId).toBe(
+        `"${row.sha256}"`,
+      );
+      expect(response.headers.get("cache-control"), asset.assetId).toBe(
+        "public, max-age=0, must-revalidate",
+      );
+      expect(
+        response.headers.get("x-content-type-options"),
+        asset.assetId,
+      ).toBe("nosniff");
+      expect([...response.headers.keys()].sort(), asset.assetId).toEqual(
+        SERVED_HEADER_NAMES,
+      );
+    }
+  });
+
+  it("says nothing about rights, lineage or the store in a served response", async () => {
+    // A `200` is a disclosure only of what the gate already authorised: the id, the digest and the mime
+    // type. The reason a *neighbour* was refused, the store's path and the manifest's filename are not in
+    // it, so a cleared response cannot be turned into a map of the withheld ones.
+    for (const asset of SERVED.slice(0, 6)) {
+      const response = await mediaRoute.GET(
+        requestFor({}, asset.assetId),
+        context(asset.assetId),
+      );
+      const wire = [
+        String(response.status),
+        ...response.headers.keys(),
+        ...response.headers.values(),
+      ].join(" ");
+      for (const forbidden of SERVED_FORBIDDEN) {
+        expect(
+          wire.toLowerCase(),
+          `${asset.assetId}: ${forbidden}`,
+        ).not.toContain(forbidden.toLowerCase());
+      }
+      await response.body?.cancel();
+    }
+  });
+
+  it("marks every served derivative revalidable, so a withdrawal cannot survive in a cache", async () => {
+    // `max-age=0, must-revalidate` is what keeps the per-request gate honest: a shared cache may hold the
+    // bytes because they are public, but it may not answer from them. `no-store` appearing here would mean
+    // the served branch had inherited the refusal policy; `max-age=31536000` would mean a revoked asset
+    // stays readable for a year.
+    for (const asset of SERVED.slice(0, 8)) {
+      const response = await mediaRoute.GET(
+        requestFor({}, asset.assetId),
+        context(asset.assetId),
+      );
+      const cacheControl = response.headers.get("cache-control");
+      expect(cacheControl, asset.assetId).toBe(
+        "public, max-age=0, must-revalidate",
+      );
+      expect(cacheControl, asset.assetId).not.toContain("no-store");
+      await response.body?.cancel();
+    }
+  });
+});
+
+describe("the refused partition answers with the byteless 404", () => {
+  it("refuses every id outside the served partition with 404, an empty body and no validator", async () => {
+    for (const asset of REFUSED) {
+      const response = await mediaRoute.GET(
+        requestFor({}, asset.assetId),
         context(asset.assetId),
       );
       expect(response.status, asset.assetId).toBe(404);
-      expect(response.ok).toBe(false);
+      expect(response.ok, asset.assetId).toBe(false);
       expect(await response.text(), asset.assetId).toBe("");
       expect(response.headers.get("etag"), asset.assetId).toBeNull();
       expect(response.headers.get("content-type"), asset.assetId).toBeNull();
     }
   });
 
-  it("sends exactly the two refusal headers on all 82", async () => {
+  it("sends exactly the two refusal headers on every refused id", async () => {
     const shapes = new Set<string>();
-    for (const asset of register) {
+    for (const asset of REFUSED) {
       const response = await mediaRoute.GET(
-        requestFor(),
+        requestFor({}, asset.assetId),
         context(asset.assetId),
       );
       shapes.add(JSON.stringify([...response.headers.entries()].sort()));
+      await response.body?.cancel();
     }
-    expect([...shapes]).toEqual([
-      '[["cache-control","no-store"],["x-content-type-options","nosniff"]]',
-    ]);
+    expect([...shapes]).toEqual([REFUSAL_HEADERS]);
+    // And the two answers are not interchangeable: no served response can be mistaken for a refusal, which
+    // is what makes "the served set is exactly these 45" a claim about the wire rather than about a filter.
+    const served = await mediaRoute.GET(
+      requestFor({}, CLEARED_ID),
+      context(CLEARED_ID),
+    );
+    expect(
+      JSON.stringify([...served.headers.entries()].sort()),
+      CLEARED_ID,
+    ).not.toBe(REFUSAL_HEADERS);
+    await served.body?.cancel();
   });
 
   it("never answers 403 for a real id it is withholding", async () => {
     // The distinction is the disclosure rule: 403 means "you are not allowed this known thing", 404 means
-    // "there is nothing here". Only the second is safe to say to an anonymous caller.
-    for (const asset of register.slice(0, 12)) {
+    // "there is nothing here". Only the second is safe to say to an anonymous caller. Every refused id is
+    // read, not a sample: the set is the whole point.
+    for (const asset of REFUSED) {
       const response = await mediaRoute.GET(
-        requestFor(),
+        requestFor({}, asset.assetId),
         context(asset.assetId),
       );
-      expect([401, 403]).not.toContain(response.status);
-      expect(response.status).toBe(404);
+      expect([401, 403], asset.assetId).not.toContain(response.status);
+      expect(response.status, asset.assetId).toBe(404);
+      await response.body?.cancel();
     }
   });
 
   it("leaks no reason, no path and no digest into status, headers or body", async () => {
     const response = await mediaRoute.GET(
-      requestFor(),
-      context(FIRST_ASSET_ID),
+      requestFor({}, WITHHELD_ID),
+      context(WITHHELD_ID),
     );
     const body = await response.text();
     const wire = [
@@ -393,21 +699,50 @@ describe("every catalogued asset is withheld", () => {
       );
     }
   });
+
+  it("leaks nothing on the asset cleared but never derived, either", async () => {
+    /*
+     * `NDM-AST-041`-shaped states are the newest risk in this file. The gate passes this asset, so its id
+     * appears in a page's slot list and in the publication register; the only reason it is refused is that
+     * no derivative exists. That is a *technical* fact, and a response that said "no lineage" would
+     * distinguish it from a rights refusal — which is precisely the enumeration the 404-not-403 rule exists
+     * to deny. Asserted as identity with the ordinary refusal rather than as an absence of strings.
+     */
+    const unproduced = CLEARED_WITHOUT_BYTES[0];
+    if (!unproduced)
+      throw new Error(
+        "no cleared asset is missing its derivative; case is vacuous",
+      );
+    const fingerprintOfRefusal = await fingerprint(
+      await mediaRoute.GET(requestFor(), context(WITHHELD_ID)),
+    );
+    const response = await mediaRoute.GET(
+      requestFor({}, unproduced.assetId),
+      context(unproduced.assetId),
+    );
+    expect(await fingerprint(response), unproduced.assetId).toBe(
+      fingerprintOfRefusal,
+    );
+    expect(decidePublicServing(unproduced).serve, unproduced.assetId).toBe(
+      true,
+    );
+    expect(lineageFor(unproduced.assetId), unproduced.assetId).toBeNull();
+  });
 });
 
 describe("a withheld asset and an imaginary one cannot be told apart", () => {
   it("fingerprint-matches a real withheld id, an unregistered id and a malformed id", async () => {
     const withheld = await fingerprint(
-      await mediaRoute.GET(requestFor(), context(FIRST_ASSET_ID)),
+      await mediaRoute.GET(requestFor(), context(WITHHELD_ID)),
     );
     for (const id of [
       "NDM-AST-083",
-      "ndm-ast-001",
-      `${FIRST_ASSET_ID}.webp`,
+      WITHHELD_ID.toLowerCase(),
+      `${WITHHELD_ID}.webp`,
       "../../.env",
       "",
     ]) {
-      const response = await mediaRoute.GET(requestFor(), context(id));
+      const response = await mediaRoute.GET(requestFor({}, id), context(id));
       expect(await fingerprint(response), id).toBe(withheld);
     }
   });
@@ -417,13 +752,51 @@ describe("a withheld asset and an imaginary one cannot be told apart", () => {
       await fingerprint(await mediaRoute.GET(requestFor(), context())),
     ).toBe(
       await fingerprint(
-        await mediaRoute.GET(requestFor(), context(FIRST_ASSET_ID)),
+        await mediaRoute.GET(requestFor(), context(WITHHELD_ID)),
       ),
     );
+  });
+
+  it("gives every refused register id the one refusal fingerprint", async () => {
+    // The claim in its full form rather than as a sample: not one of the refused assets — including the
+    // one the gate clears but the store cannot produce — can be told from any other by status, headers or
+    // body. Enumeration needs a difference, and there is none.
+    const reference = await fingerprint(
+      await mediaRoute.GET(requestFor(), context(WITHHELD_ID)),
+    );
+    const distinct = new Set<string>();
+    for (const assetId of REFUSED_IDS) {
+      const response = await mediaRoute.GET(
+        requestFor({}, assetId),
+        context(assetId),
+      );
+      distinct.add(await fingerprint(response));
+    }
+    expect([...distinct]).toEqual([reference]);
+  });
+
+  it("does not give a served asset the refusal fingerprint, which is the point of clearing it", async () => {
+    // The mirror image, so the block above cannot be satisfied by an endpoint that answers 404 to
+    // everything: the cleared bytes are distinguishable precisely because publishing them is the decision
+    // the Owner's instrument made.
+    const refusal = await fingerprint(
+      await mediaRoute.GET(requestFor(), context(WITHHELD_ID)),
+    );
+    const response = await mediaRoute.GET(
+      requestFor({}, CLEARED_ID),
+      context(CLEARED_ID),
+    );
+    expect(await fingerprint(response), CLEARED_ID).not.toBe(refusal);
   });
 });
 
 describe("malformed and missing path parameters", () => {
+  /*
+   * The mutated base is deliberately an asset the endpoint serves. A neighbour of a cleared id — the same
+   * id lower-cased, suffixed, given a filename, or reached through the store's own directory — must still
+   * be refused, because the register lookup is an exact match and not a prefix search. Mutating a withheld
+   * id would pass for the wrong reason.
+   */
   it.each([
     ["no assetId key at all", undefined],
     ["an empty string", ""],
@@ -431,15 +804,18 @@ describe("malformed and missing path parameters", () => {
     ["a tab and newline", "\t\n"],
     ["a traversal-shaped id", "../../.env"],
     ["a percent-encoded traversal", "%2e%2e%2f%2eenv"],
-    ["a filename rather than an id", `${FIRST_ASSET_ID}.webp`],
-    ["a register id in lower case", FIRST_ASSET_ID.toLowerCase()],
-    ["a register id with a suffix", `${FIRST_ASSET_ID}-copy`],
+    ["a filename rather than an id", `${CLEARED_ID}.webp`],
+    ["a register id in lower case", CLEARED_ID.toLowerCase()],
+    ["a register id with a suffix", `${CLEARED_ID}-copy`],
     [
       "a path prefix that lands in the store",
-      `../media-derivatives/${FIRST_ASSET_ID}.webp`,
+      `../${DERIVATIVE_STORE_DIR}/${CLEARED_ID}.webp`,
     ],
   ])("refuses %s without throwing or reading", async (_label, assetId) => {
-    const response = await mediaRoute.GET(requestFor(), context(assetId));
+    const response = await mediaRoute.GET(
+      requestFor({}, assetId ?? ""),
+      context(assetId),
+    );
     expect(response.status).toBe(404);
     expect(await response.text()).toBe("");
   });
@@ -465,131 +841,437 @@ describe("a conditional request cannot turn a refusal into a cached copy", () =>
       "a modification date",
       { "if-modified-since": "Sun, 02 Nov 2026 00:00:00 GMT" },
     ],
+    [
+      "the real validator of a cleared derivative",
+      { "if-none-match": `"${rowFor(CLEARED_ID).sha256}"` },
+    ],
   ];
   it.each(conditionals)(
     "still answers 404 when the client sends %s",
     async (_label, headers) => {
-      // A `304` asserts that the client already holds a representation of this resource. For a withheld
-      // derivative that is false, and it would also let a cache keep bytes the gate has not authorised.
+      /*
+       * A `304` asserts that the client already holds a representation of this resource. For a withheld
+       * derivative that is false, and it would also let a cache keep bytes the gate has not authorised. The
+       * fifth case is the one that only exists now that some assets *are* served: a validator copied from a
+       * cleared derivative is offered for a refused id, and the answer must not change. The service runs
+       * before the handler looks at a validator, so a borrowed tag cannot reach the comparison at all.
+       */
       const response = await mediaRoute.GET(
         requestFor(headers),
-        context(FIRST_ASSET_ID),
+        context(WITHHELD_ID),
       );
       expect(response.status).toBe(404);
       expect(response.headers.get("etag")).toBeNull();
       expect(await response.text()).toBe("");
     },
   );
+
+  it("answers 404 to a conditional for every refused id, never a 304", async () => {
+    // The same rule as a measured property of the whole partition rather than of one id: `304` is the only
+    // status a conditional could possibly produce, and it does not appear for any refused asset.
+    const tag = `"${rowFor(CLEARED_ID).sha256}"`;
+    for (const assetId of REFUSED_IDS) {
+      const response = await mediaRoute.GET(
+        requestFor({ "if-none-match": tag }, assetId),
+        context(assetId),
+      );
+      expect(response.status, assetId).toBe(404);
+      expect(response.headers.get("etag"), assetId).toBeNull();
+      await response.body?.cancel();
+    }
+  });
+});
+
+describe("a served derivative answers conditionals with its own validator", () => {
+  it("gives 304 with no body to the client holding that derivative's digest", async () => {
+    // RFC 9110 §13.1.2 for an asset the gate has cleared, on the production binding rather than through the
+    // synthetic service: the client's copy *is* current, so the representation is not transferred again, and
+    // the 304 repeats the validators so the stored copy stays refreshable.
+    for (const asset of SERVED.slice(0, 5)) {
+      const row = rowFor(asset.assetId);
+      const response = await mediaRoute.GET(
+        requestFor({ "if-none-match": `"${row.sha256}"` }, asset.assetId),
+        context(asset.assetId),
+      );
+      expect(response.status, asset.assetId).toBe(304);
+      expect(response.body, asset.assetId).toBeNull();
+      expect(response.headers.get("etag"), asset.assetId).toBe(
+        `"${row.sha256}"`,
+      );
+      expect(response.headers.get("cache-control"), asset.assetId).toBe(
+        "public, max-age=0, must-revalidate",
+      );
+      // No `Content-Type` on a response that carries no representation to describe.
+      expect(response.headers.get("content-type"), asset.assetId).toBeNull();
+    }
+  });
+
+  it("transfers the bytes again when the validator is not this derivative's", async () => {
+    // Including another cleared derivative's digest: a validator is per-resource, and presenting asset A's
+    // tag must not claim a current copy of asset B.
+    const other = rowFor(OTHER_CLEARED_ID).sha256;
+    const cases: Array<[string, string]> = [
+      ["a digest of different bytes", `"${"f".repeat(64)}"`],
+      ["the unquoted digest", rowFor(CLEARED_ID).sha256],
+      ["a stale tag from an earlier build", ENTITY_TAG],
+      ["an empty validator", ""],
+      ["the tag of a different cleared asset", `"${other}"`],
+    ];
+    for (const [label, tag] of cases) {
+      const response = await mediaRoute.GET(
+        requestFor({ "if-none-match": tag }, CLEARED_ID),
+        context(CLEARED_ID),
+      );
+      const body = new Uint8Array(await response.arrayBuffer());
+      expect(response.status, `${label}: ${CLEARED_ID}`).toBe(200);
+      expect(body.byteLength, label).toBe(rowFor(CLEARED_ID).bytes);
+    }
+  });
+
+  it("follows RFC 9110's wildcard and weak forms for a cleared asset", async () => {
+    // The SR-07 rules, measured through the production binding against real bytes rather than only through
+    // the synthetic service: a current representation exists, so `*` is a false condition, and the weak
+    // comparison function ignores strength on either side.
+    const row = rowFor(CLEARED_ID);
+    for (const tag of [
+      "*",
+      `W/"${row.sha256}"`,
+      `"${row.sha256}"`,
+      `"${"f".repeat(64)}", "${row.sha256}"`,
+    ]) {
+      const response = await mediaRoute.GET(
+        requestFor({ "if-none-match": tag }, CLEARED_ID),
+        context(CLEARED_ID),
+      );
+      expect([response.status, response.headers.get("etag")], tag).toEqual([
+        304,
+        `"${row.sha256}"`,
+      ]);
+    }
+  });
+
+  it("ignores If-Modified-Since, because it emits no date validator", async () => {
+    /*
+     * The endpoint has one validator — the digest — and RFC 9111 §4.3.7 makes a date conditional
+     * meaningless when the representation carries no `Last-Modified`. Answering 304 to a date here would be
+     * inventing a validator the store does not record, so the honest answer is the transfer. Recorded as a
+     * deliberate choice rather than as a silence: the divergence register carries the RFC 9110 row.
+     */
+    const response = await mediaRoute.GET(
+      requestFor(
+        { "if-modified-since": "Sun, 02 Nov 2026 00:00:00 GMT" },
+        CLEARED_ID,
+      ),
+      context(CLEARED_ID),
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get("last-modified")).toBeNull();
+    await response.body?.cancel();
+  });
 });
 
 describe("the private store is not a capability", () => {
-  it("refuses the URL the lineage record would answer on, with the lineage present", async () => {
-    const root = rootWithManifest(manifestFor(FIRST_ASSET_ID));
+  /*
+   * These cases used to be provable only in the negative: with nothing cleared, a 404 from a store fixture
+   * could not tell "the gate stopped it" from "the store was never reached". Both readings are now
+   * separated by a control run in the same fixture — the same root, the same reader, the same bytes, and an
+   * asset the gate does pass. Where the control answers 200, a 404 next to it is the gate's doing.
+   */
+  it("answers 200 for a cleared asset and 404 for a denied one out of the same readable store", async () => {
+    const root = rootWithReadableRows([
+      readableRowFor(CLEARED_ID),
+      readableRowFor(WITHHELD_ID),
+    ]);
     const handler = productionHandlerOver(root);
-    // The preconditions, so the assertions below cannot pass on an empty cache or a made-up path: the
-    // manifest really does describe this asset *on disk and through the shipped reader*, and the segment
-    // requested is the one `derivativeUrl` builds — the exact URL a slot would have shipped if the gate had
-    // let it get that far.
-    expect(
-      derivativeManifest(root)?.derivatives.map((row) => row.assetId),
-    ).toEqual([FIRST_ASSET_ID]);
-    expect(derivativeUrl(FIRST_ASSET_ID)).toBe(`/api/media/${FIRST_ASSET_ID}`);
+    // Preconditions, so neither half can pass on an empty cache or a made-up path: both rows really are on
+    // disk and readable through the shipped reader, and the only fact that separates the two assets is the
+    // gate. `derivativeUrl` is the URL a slot would have built, which is the URL being tested.
+    expect(lineageFor(CLEARED_ID, root)?.sha256, CLEARED_ID).toBe(
+      DELIVERED_DIGEST,
+    );
+    expect(lineageFor(WITHHELD_ID, root)?.sha256, WITHHELD_ID).toBe(
+      DELIVERED_DIGEST,
+    );
+    expect(derivativeUrl(WITHHELD_ID)).toBe(`/api/media/${WITHHELD_ID}`);
+    expect(decidePublicServing(need(WITHHELD_ID)).serve, WITHHELD_ID).toBe(
+      false,
+    );
+    expect(decidePublicServing(need(CLEARED_ID)).serve, CLEARED_ID).toBe(true);
 
-    const response = await handler(requestFor(), context(FIRST_ASSET_ID));
-    expect(response.status).toBe(404);
-    expect([...response.headers.keys()].sort()).toEqual([
+    const granted = await handler(
+      requestFor({}, CLEARED_ID),
+      context(CLEARED_ID),
+    );
+    expect(granted.status).toBe(200);
+    expect(
+      createHash("sha256")
+        .update(new Uint8Array(await granted.arrayBuffer()))
+        .digest("hex"),
+    ).toBe(DELIVERED_DIGEST);
+
+    const refused = await handler(
+      requestFor({}, WITHHELD_ID),
+      context(WITHHELD_ID),
+    );
+    expect(refused.status).toBe(404);
+    expect([...refused.headers.keys()].sort()).toEqual([
       "cache-control",
       "x-content-type-options",
     ]);
-    expect(response.headers.get("cache-control")).toBe("no-store");
-    expect(response.headers.get("x-content-type-options")).toBe("nosniff");
-    expect(response.headers.get("etag")).toBeNull();
-    expect(response.headers.get("content-type")).toBeNull();
-    expect(await response.text()).toBe("");
+    expect(refused.headers.get("cache-control")).toBe("no-store");
+    expect(refused.headers.get("x-content-type-options")).toBe("nosniff");
+    expect(refused.headers.get("etag")).toBeNull();
+    expect(refused.headers.get("content-type")).toBeNull();
+    expect(await refused.text()).toBe("");
+  });
+
+  it("serves an asset the store was merely missing, once its row and bytes are there", async () => {
+    /*
+     * The third partition, pinned to its cause. `NDM-AST-041` is gate-cleared and has no derivative in the
+     * delivered store, so today it answers 404 — a *storage* state, not a rights state, and the distinction
+     * is what the register's "authorised but not yet produced" row means. Drop a valid row and real bytes
+     * for it into a store and the very same id answers 200, which is the evidence that the 404 the public
+     * sees is not a hidden denial.
+     */
+    const unproduced = CLEARED_WITHOUT_BYTES[0];
+    if (!unproduced)
+      throw new Error("every cleared asset has a derivative; case is vacuous");
+    expect(lineageFor(unproduced.assetId), unproduced.assetId).toBeNull();
+    const root = rootWithReadableRows([readableRowFor(unproduced.assetId)]);
+    expect(
+      lineageFor(unproduced.assetId, root),
+      unproduced.assetId,
+    ).not.toBeNull();
+    const response = await productionHandlerOver(root)(
+      requestFor({}, unproduced.assetId),
+      context(unproduced.assetId),
+    );
+    expect(response.status, unproduced.assetId).toBe(200);
+    expect(response.headers.get("etag"), unproduced.assetId).toBe(
+      `"${DELIVERED_DIGEST}"`,
+    );
+    await response.body?.cancel();
   });
 
   it("refuses a lineage row whose file escapes the store, and does not throw on the wire", async () => {
+    // A cleared asset, so the gate lets the request reach the record: containment is the only thing between
+    // this row and an arbitrary file read.
     const escaping = rootWithManifestText(
       JSON.stringify({
-        ...manifestFor(FIRST_ASSET_ID),
+        ...manifestWith([]),
         derivatives: [
-          { ...lineageRow(FIRST_ASSET_ID), file: "../../../../.env" },
+          { ...readableRowFor(CLEARED_ID), file: "../../../../.env" },
         ],
       }),
     );
     const response = await productionHandlerOver(escaping)(
-      requestFor(),
-      context(FIRST_ASSET_ID),
+      requestFor({}, CLEARED_ID),
+      context(CLEARED_ID),
     );
     expect(response.status).toBe(404);
     expect(response.headers.get("etag")).toBeNull();
     expect(await response.text()).toBe("");
     /*
-     * Where the refusal comes from is the part that changed with SR-10, and it is asserted rather than
-     * assumed: `src/lib/server/media/derivative-store.ts` rejects a `file` that climbs out of the store
-     * when the record is *read*, so through the shipped path the throw happens before check 4 is reached
-     * and the handler's catch is what turns it into the 404 above. `serving.test.ts` pins the validator's
-     * own rejection and, over the dependency seam, the `path_escapes_store` check that still guards a
-     * record that reached the checks. Both halves refuse; neither serves.
+     * Where the refusal comes from is asserted rather than assumed: `src/lib/server/media/derivative-store.ts`
+     * rejects a `file` that climbs out of the store when the record is *read*, so through the shipped path
+     * the throw happens before check 4 is reached and the handler's catch is what turns it into the 404
+     * above. `serving.test.ts` pins the validator's own rejection and, over the dependency seam, the
+     * `path_escapes_store` check that still guards a record that reached the checks. Both halves refuse;
+     * neither serves — and the control two cases above shows the same asset does serve from a store whose
+     * row stays inside.
      */
     expect(() => derivativeManifest(escaping)).toThrow();
+    expect(existsSync(path.join(escaping, DERIVATIVE_STORE_DIR, ".env"))).toBe(
+      false,
+    );
   });
 
   it("refuses an id that is a lineage row for another asset", async () => {
-    const root = rootWithManifest(manifestFor(FIRST_ASSET_ID));
-    const response = await productionHandlerOver(root)(
-      requestFor(),
-      context("NDM-AST-002"),
+    const root = rootWithReadableRows([readableRowFor(CLEARED_ID)]);
+    const handler = productionHandlerOver(root);
+    // Both assets are in the served partition, so this is not the gate speaking: the row is for
+    // `CLEARED_ID`, and a cleared neighbour asking for those bytes gets nothing.
+    expect(mayServe(need(OTHER_CLEARED_ID)), OTHER_CLEARED_ID).toBe(true);
+    expect(lineageFor(OTHER_CLEARED_ID, root), OTHER_CLEARED_ID).toBeNull();
+    const response = await handler(
+      requestFor({}, OTHER_CLEARED_ID),
+      context(OTHER_CLEARED_ID),
     );
-    expect(response.status).toBe(404);
-    expect(response.headers.get("etag")).toBeNull();
+    expect(response.status, OTHER_CLEARED_ID).toBe(404);
+    expect(response.headers.get("etag"), OTHER_CLEARED_ID).toBeNull();
+    expect(response.headers.get("cache-control"), OTHER_CLEARED_ID).toBe(
+      "no-store",
+    );
+    await response.body?.cancel();
+    // The control: the very same id, served by the delivered store through the production binding.
+    const delivered = await mediaRoute.GET(
+      requestFor({}, OTHER_CLEARED_ID),
+      context(OTHER_CLEARED_ID),
+    );
+    expect(delivered.status, OTHER_CLEARED_ID).toBe(200);
+    await delivered.body?.cancel();
   });
 
-  it("emits no served-branch header for any store record", async () => {
-    // `must-revalidate` and a quoted digest are what the `200` branch sends. Their absence across the whole
-    // register, with a well-formed lineage row on disk for every one of the 82 ids, is the measured form of
-    // "no bytes served".
-    const root = rootWithManifest({
-      ...manifestFor(FIRST_ASSET_ID),
-      derivatives: register.map((asset) => lineageRow(asset.assetId)),
-    });
+  it("emits no served-branch header where the row exists but the bytes do not", async () => {
+    /*
+     * `must-revalidate` and a quoted digest are what the `200` branch sends, and a manifest is not a file.
+     * The store is git-ignored, so "row present, bytes absent" is the state every fresh checkout is in for
+     * every asset — which makes this the branch that decides whether a deployment that forgot to build
+     * derivatives leaks bytes or refuses. Rows for all 82 ids, no `.webp` beside them: nothing is served,
+     * and the cleared ids are refused exactly as the denied ones are.
+     */
+    const root = rootWithManifest(
+      manifestWith(register.map((asset) => lineageRow(asset.assetId))),
+    );
     const handler = productionHandlerOver(root);
     for (const asset of register) {
-      const response = await handler(requestFor(), context(asset.assetId));
+      const response = await handler(
+        requestFor({}, asset.assetId),
+        context(asset.assetId),
+      );
       expect(response.status, asset.assetId).toBe(404);
       expect(
         response.headers.get("cache-control"),
         asset.assetId,
       ).not.toContain("must-revalidate");
+      expect(response.headers.get("cache-control"), asset.assetId).toBe(
+        "no-store",
+      );
       expect(response.headers.get("etag"), asset.assetId).toBeNull();
+      expect(
+        existsSync(
+          path.join(root, DERIVATIVE_STORE_DIR, `${asset.assetId}.webp`),
+        ),
+        asset.assetId,
+      ).toBe(false);
+      await response.body?.cancel();
     }
   });
 });
 
-describe("the refusal cache policy", () => {
-  it("forbids storing the response, in every input shape", async () => {
-    for (const assetId of [FIRST_ASSET_ID, "NDM-AST-083", "", "../../.env"]) {
-      const response = await mediaRoute.GET(requestFor(), context(assetId));
-      expect(response.headers.get("cache-control")).toBe("no-store");
-      expect(response.headers.get("cache-control")).not.toContain("public");
-      expect(response.headers.get("cache-control")).not.toContain("max-age");
+describe("the bytes a visitor receives are the bytes the manifest recorded", () => {
+  /*
+   * Check 7 is the one the whole design rests on: the URL is not a capability, and the file behind it is not
+   * trusted because a previous request hashed it. Until 4 November the branch could not be reached with real
+   * assets, so the wire never showed the verification running — `serving.test.ts` proved it over the
+   * dependency seam. These two cases read it at the HTTP level, through the shipped reader, against a store
+   * this file creates and destroys.
+   */
+  it("refuses a derivative whose bytes were substituted after the manifest was written", async () => {
+    const row = readableRowFor(CLEARED_ID);
+    const root = rootWithReadableRows([row]);
+    const handler = productionHandlerOver(root);
+    const target = path.join(root, DERIVATIVE_STORE_DIR, row.file);
+    // The control, on the same root and the same row: before the substitution the asset serves.
+    const before = await handler(
+      requestFor({}, CLEARED_ID),
+      context(CLEARED_ID),
+    );
+    expect(before.status).toBe(200);
+    await before.body?.cancel();
+
+    // Same length, different content, so the size probe cannot be what stops it: only the digest can.
+    const substitute = Buffer.from(DELIVERED_BYTES);
+    substitute[0] = (substitute[0] ?? 0) ^ 0xff;
+    expect(substitute.byteLength).toBe(DELIVERED_BYTES.byteLength);
+    expect(existsSync(target)).toBe(true);
+    writeFileSync(target, substitute);
+
+    const after = await handler(
+      requestFor({}, CLEARED_ID),
+      context(CLEARED_ID),
+    );
+    expect(after.status).toBe(404);
+    expect(after.headers.get("etag")).toBeNull();
+    expect(after.headers.get("cache-control")).toBe("no-store");
+    expect(await after.text()).toBe("");
+  });
+
+  it("refuses a derivative that is not the size the record says it is", async () => {
+    // The sibling failure, measured rather than assumed: `bytes` is checked against the filesystem before
+    // the file is read at all, so a lying record cannot make the endpoint pull an arbitrarily large file
+    // into memory (SR-09). The substitute here is *smaller*, which is the direction that would otherwise be
+    // caught only by the digest.
+    const row = readableRowFor(CLEARED_ID);
+    const root = rootWithReadableRows([row]);
+    const handler = productionHandlerOver(root);
+    writeFileSync(
+      path.join(root, DERIVATIVE_STORE_DIR, row.file),
+      Buffer.from(DELIVERED_BYTES.subarray(0, 512)),
+    );
+    const response = await handler(
+      requestFor({}, CLEARED_ID),
+      context(CLEARED_ID),
+    );
+    expect(response.status).toBe(404);
+    expect(response.headers.get("etag")).toBeNull();
+    expect(await response.text()).toBe("");
+  });
+});
+
+describe("the cache policy follows the decision, not the request", () => {
+  it("forbids storing a refusal, in every input shape", async () => {
+    for (const assetId of [WITHHELD_ID, "NDM-AST-083", "", "../../.env"]) {
+      const response = await mediaRoute.GET(
+        requestFor({}, assetId),
+        context(assetId),
+      );
+      expect(response.headers.get("cache-control"), assetId).toBe("no-store");
+      expect(response.headers.get("cache-control"), assetId).not.toContain(
+        "public",
+      );
+      expect(response.headers.get("cache-control"), assetId).not.toContain(
+        "max-age",
+      );
+      await response.body?.cancel();
+    }
+  });
+
+  it("forbids storing every refused register id, and only those", async () => {
+    /*
+     * The two directions of one rule, measured over the whole register. A refusal must never be cached,
+     * because a cached refusal would keep saying "there is nothing here" after the Owner cleared the
+     * asset. A served derivative must never be told `no-store` either — that would be a correctness
+     * argument backwards: `no-store` protects bytes the gate has not authorised, and these have been.
+     */
+    for (const asset of REFUSED) {
+      const response = await mediaRoute.GET(
+        requestFor({}, asset.assetId),
+        context(asset.assetId),
+      );
+      expect(response.headers.get("cache-control"), asset.assetId).toBe(
+        "no-store",
+      );
+      await response.body?.cancel();
+    }
+    for (const asset of SERVED.slice(0, 10)) {
+      const response = await mediaRoute.GET(
+        requestFor({}, asset.assetId),
+        context(asset.assetId),
+      );
+      expect(
+        response.headers.get("cache-control"),
+        asset.assetId,
+      ).not.toContain("no-store");
+      await response.body?.cancel();
     }
   });
 
   it("declares no sniffing on a body-less response", async () => {
-    const response = await mediaRoute.GET(
-      requestFor(),
-      context(FIRST_ASSET_ID),
-    );
+    const response = await mediaRoute.GET(requestFor(), context(WITHHELD_ID));
     expect(response.headers.get("x-content-type-options")).toBe("nosniff");
   });
 });
 
 describe("the served branch, through the handler factory", () => {
-  // A controlled service, because instruction 9 asks for the response rules in isolation: the six checks
-  // and the record that clears them are `serving.test.ts`'s subject, and re-running them here would only
-  // couple two files that answer different questions. Nothing in this block is evidence that a catalogued
-  // asset can receive a `200` — the block after it measures that none can.
+  /*
+   * A controlled service, because instruction 9 asks for the response rules in isolation: the seven checks
+   * and the record that clears them are `serving.test.ts`'s subject, and re-running them here would only
+   * couple two files that answer different questions. This is no longer the only place a `200` is described
+   * — the served partition above reads the same rules off the production binding and real bytes — but the
+   * synthetic branch still earns its place: it is the only one that can be pointed at a validator this file
+   * chooses, which is what the RFC 9110 table below needs.
+   */
   const handler = mediaRoute.createMediaRouteHandler(
     serveSynthetic,
     openGuard(),
@@ -778,15 +1460,25 @@ describe("the served branch, through the handler factory", () => {
   });
 
   it("emits no served-branch header for a refusal, through the same handler", async () => {
+    /*
+     * `serveSynthetic` knows nothing about the register, so a cleared asset is a refusal here — and that is
+     * the point being pinned: the handler does not read rights, the service does. Whatever the service
+     * answers, a refusal gets exactly the two refusal headers and nothing else, for a withheld id, a cleared
+     * id, an unregistered id and a malformed one alike.
+     */
     const shapes = new Set<string>();
-    for (const assetId of [FIRST_ASSET_ID, "NDM-AST-083", "", "../../.env"]) {
+    for (const assetId of [
+      WITHHELD_ID,
+      CLEARED_ID,
+      "NDM-AST-083",
+      "",
+      "../../.env",
+    ]) {
       const response = await handler(requestFor({}, assetId), context(assetId));
       expect(response.status, assetId).toBe(404);
       shapes.add(JSON.stringify([...response.headers.entries()].sort()));
     }
-    expect([...shapes]).toEqual([
-      '[["cache-control","no-store"],["x-content-type-options","nosniff"]]',
-    ]);
+    expect([...shapes]).toEqual([REFUSAL_HEADERS]);
   });
 });
 
@@ -888,12 +1580,14 @@ describe("a serving decision that throws is withheld, not answered (6.8)", () =>
   /**
    * A service that fails the way a corrupt private store fails: after the register and the gate.
    *
-   * No input reaches this state through production today — `src/lib/server/media/serving.test.ts` pins that
-   * check 2 refuses every register asset before `lineage.json` is opened — so the mapping is asserted
-   * against the seam rather than against the delivered store. It is asserted because the route's contract
-   * ("a request that does not get authorised bytes gets the byteless 404") must not depend on an ordering
-   * that lives in another module, and because §6.8's row lists "any handler mapping for the API routes" as
-   * owed: this is the first API route, and the detail goes to the log while the client learns nothing.
+   * This state is reachable in production now, and it was not when this file was written: 45 assets clear
+   * the gate, so `lineage.json` is opened and its rows are read on their requests, and a record the shipped
+   * validator rejects makes `serveDerivative` throw rather than refuse. The store block above measures that
+   * real path end to end through the shipped reader; this block measures the handler's half of it — that a
+   * throw, from any cause, is mapped to the byteless `404` and not to a `500` — against the seam, because
+   * the route's contract must not depend on an ordering that lives in another module. §6.8's row lists "any
+   * handler mapping for the API routes" as owed: this is the first API route, and the detail goes to the log
+   * while the client learns nothing.
    */
   function throwingServer(cause: Error): mediaRoute.DerivativeServer {
     return async (assetId: string): Promise<ServingOutcome> => {
@@ -904,6 +1598,8 @@ describe("a serving decision that throws is withheld, not answered (6.8)", () =>
   it("answers the refusal shape, not a 500, and echoes none of the cause", async () => {
     // Captured as strings rather than read back off the spy's call array: `console.error` is typed
     // `(...data: any[])`, and a test that destructured `any` to make its point would be asserting nothing.
+    // The id is one the endpoint normally serves: a cleared asset whose decision fails is withheld, exactly
+    // as an uncleared one is, and the client cannot tell a failure from a refusal.
     const lines: string[] = [];
     const logged = vi
       .spyOn(console, "error")
@@ -918,8 +1614,8 @@ describe("a serving decision that throws is withheld, not answered (6.8)", () =>
         openGuard(),
       );
       const response = await handler(
-        requestFor({}, FIRST_ASSET_ID),
-        context(FIRST_ASSET_ID),
+        requestFor({}, CLEARED_ID),
+        context(CLEARED_ID),
       );
       expect(response.status).toBe(404);
       expect([...response.headers.keys()].sort()).toEqual([
@@ -938,9 +1634,13 @@ describe("a serving decision that throws is withheld, not answered (6.8)", () =>
   });
 
   it("is indistinguishable from an ordinary refusal, even against a conditional", async () => {
-    // The stronger form of "no partial answer": the same fingerprint a withheld asset produces, header set
-    // and body included, for the same id — with a conditional attached that a `served` outcome would have
-    // turned into a 304. A throw must not become a second, distinguishable answer on the wire.
+    /*
+     * The stronger form of "no partial answer", and the one that matters now that some assets serve: a
+     * decision that fails for a *cleared* asset must look exactly like a policy refusal for a denied one —
+     * same status, header set and body — with a conditional attached that a `served` outcome would have
+     * turned into a 304. A throw must not become a second, distinguishable answer on the wire, because an
+     * operator's outage would otherwise be readable by anyone as a signal about which assets are clear.
+     */
     const logged = vi
       .spyOn(console, "error")
       .mockImplementation(() => undefined);
@@ -954,16 +1654,27 @@ describe("a serving decision that throws is withheld, not answered (6.8)", () =>
         openGuard(),
       );
       const broken = await throwing(
-        requestFor({ "if-none-match": "*" }, FIRST_ASSET_ID),
-        context(FIRST_ASSET_ID),
+        requestFor({ "if-none-match": "*" }, CLEARED_ID),
+        context(CLEARED_ID),
       );
       const withheldByPolicy = await refusing(
-        requestFor({ "if-none-match": "*" }, FIRST_ASSET_ID),
-        context(FIRST_ASSET_ID),
+        requestFor({ "if-none-match": "*" }, CLEARED_ID),
+        context(CLEARED_ID),
       );
       expect(await fingerprint(broken)).toBe(
         await fingerprint(withheldByPolicy),
       );
+      const productionRefusal = await fingerprint(
+        await mediaRoute.GET(
+          requestFor({ "if-none-match": "*" }, WITHHELD_ID),
+          context(WITHHELD_ID),
+        ),
+      );
+      const brokenAgainstRegister = await throwing(
+        requestFor({ "if-none-match": "*" }, WITHHELD_ID),
+        context(WITHHELD_ID),
+      );
+      expect(await fingerprint(brokenAgainstRegister)).toBe(productionRefusal);
     } finally {
       logged.mockRestore();
     }
@@ -1219,10 +1930,47 @@ describe("the request limit is enforced before the endpoint does any work (SR-04
   });
 });
 
-describe("no catalogued asset can reach the served branch", () => {
-  // The boundary instruction 9 asks for. The block above shows what the handler does with bytes; this one
-  // shows that no shipped service produces bytes for any real id. Read together they are evidence about
-  // the response rules and about today's rights state — not a claim that any asset is clearable.
+describe("nothing outside the served partition reaches the served branch", () => {
+  /*
+   * The closure instruction 9 asks for, stated as the boundary it really is. The blocks above describe each
+   * answer; this one describes the *exhaustive mapping*: for the production binding, an id is answered with
+   * bytes if and only if it is in the partition derived from the gate and the delivered store, and every
+   * other id — cleared but unproduced, denied, unregistered, malformed — gets the byteless 404. A fixture
+   * outside the register still cannot get a `200` through the seam built for testing the served branch,
+   * because the seam is bound to the same `serveDerivative` the route uses.
+   */
+  it("answers with bytes for exactly the served partition, and the refusal for everything else", async () => {
+    const servedByWire: string[] = [];
+    const refusalShapes = new Set<string>();
+    for (const asset of register) {
+      const response = await mediaRoute.GET(
+        requestFor({}, asset.assetId),
+        context(asset.assetId),
+      );
+      if (response.status === 200) {
+        servedByWire.push(asset.assetId);
+        const row = rowFor(asset.assetId);
+        expect(response.headers.get("etag"), asset.assetId).toBe(
+          `"${row.sha256}"`,
+        );
+        await response.body?.cancel();
+      } else {
+        expect(response.status, asset.assetId).toBe(404);
+        expect(response.headers.get("cache-control"), asset.assetId).toBe(
+          "no-store",
+        );
+        expect(response.headers.get("etag"), asset.assetId).toBeNull();
+        expect(response.headers.get("content-type"), asset.assetId).toBeNull();
+        refusalShapes.add(
+          JSON.stringify([...response.headers.entries()].sort()),
+        );
+        await response.body?.cancel();
+      }
+    }
+    expect(servedByWire.sort()).toEqual([...SERVED_IDS].sort());
+    expect([...refusalShapes]).toEqual([REFUSAL_HEADERS]);
+  });
+
   it("answers 404 through the production GET for the id the controlled service serves", async () => {
     const response = await mediaRoute.GET(
       requestFor({}, SYNTHETIC_ID),
@@ -1249,38 +1997,28 @@ describe("no catalogued asset can reach the served branch", () => {
     expect(response.headers.get("cache-control")).toBe("no-store");
   });
 
-  it("answers 404 for all 82 through the production GET, with the served headers absent", async () => {
-    for (const asset of register) {
-      const response = await mediaRoute.GET(
-        requestFor({}, asset.assetId),
-        context(asset.assetId),
-      );
-      expect(response.status, asset.assetId).toBe(404);
-      expect(response.headers.get("cache-control"), asset.assetId).toBe(
-        "no-store",
-      );
-      expect(response.headers.get("etag"), asset.assetId).toBeNull();
-      expect(response.headers.get("content-type"), asset.assetId).toBeNull();
-    }
-  });
-
-  it("keeps a complete on-disk lineage from producing a served answer for any real asset", async () => {
-    // The strongest input available short of editing the register: a validator-accepted lineage row for all
-    // 82 ids, sitting in the store the production service reads. Check 2 still runs first, and nothing
-    // reaches the served branch. Since SR-10 this is a file rather than an injected object, which makes the
-    // case stronger, not weaker: the record has passed the shipped `validateManifest` on its way in.
-    const root = rootWithManifest({
-      ...manifestFor(FIRST_ASSET_ID),
-      derivatives: register.map((asset) => lineageRow(asset.assetId)),
-    });
+  it("keeps a complete on-disk lineage from producing a served answer for a denied asset", async () => {
+    /*
+     * The strongest input available short of editing the register: a validator-accepted lineage row for all
+     * 82 ids, sitting in a store the shipped reader accepts. Since SR-10 this is a file rather than an
+     * injected object, which makes the case stronger, not weaker. Before the 4 November declaration this
+     * case proved "nothing is served"; it now proves the narrower and still load-bearing thing — that the
+     * 37 ids outside the served partition stay outside it however complete the store looks. Check 2 runs
+     * first for the denied ones, and the missing file stops the cleared ones, so the store alone never
+     * produces bytes.
+     */
+    const root = rootWithManifest(
+      manifestWith(register.map((asset) => lineageRow(asset.assetId))),
+    );
     const handler = productionHandlerOver(root);
-    for (const asset of register.slice(0, 20)) {
+    for (const asset of REFUSED) {
       const response = await handler(
         requestFor({}, asset.assetId),
         context(asset.assetId),
       );
       expect(response.status, asset.assetId).toBe(404);
       expect(response.headers.get("etag"), asset.assetId).toBeNull();
+      await response.body?.cancel();
     }
   });
 });

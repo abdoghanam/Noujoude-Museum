@@ -1097,12 +1097,12 @@ exists, the correct statement of this row is *deferred*, and no test may be cite
 
 ### ADR-031 — Rare Pieces is an editorial treatment applied within Collections, not a new route
 **Status:** Accepted by Owner directive dated 2 November 2026, recorded there as the Rare Pieces decision and
-written up as closed at `docs/QUALITY_ACCEPTANCE_FRAMEWORK.md` line 352.
+written up as closed at `docs/QUALITY_ACCEPTANCE_FRAMEWORK.md` line 406.
 
 **Context.** The route table is `reference/Noujoude_Master_Specification_EN.md` §4.2 (lines 406–428) and the
 primary navigation list is §4.1 (lines 391–404). Neither carries a Rare Pieces route, while the mandate names
 Rare Pieces as a surface — a real gap between a named surface and a closed navigation contract, which is why
-a decision was owed. `docs/QUALITY_ACCEPTANCE_FRAMEWORK.md` line 352 records the decided form: no new route,
+a decision was owed. `docs/QUALITY_ACCEPTANCE_FRAMEWORK.md` line 406 records the decided form: no new route,
 an editorial collection treatment resolved out of the existing specification and canonical routes.
 
 **Decision and its consequence, measured in the code.** Rare Pieces is a curatorial treatment of Collection
@@ -1138,7 +1138,7 @@ scripts (five in `brand/_tools/`, fifty-three in `brand/_trace/`); the remainder
 manifests, notes and one Python script. `git ls-files brand` returns nothing and `git status --porcelain`
 reports the directory untracked, so nothing in it is this project's committed code and its provenance is
 unknown. The brand supply itself stays with the Owner: OD-16 at `docs/PHASE1_DISCOVERY_AND_READINESS.md`
-line 231 and `docs/QUALITY_ACCEPTANCE_FRAMEWORK.md` line 340, against the seven brand and asset approvals in
+line 231 and `docs/QUALITY_ACCEPTANCE_FRAMEWORK.md` line 394, against the seven brand and asset approvals in
 `reference/Noujoude_Master_Specification_EN.md` §21.3 (lines 3207–3218).
 
 **Decision.** Preserve and quarantine. The tree stays on disk byte-unchanged, and it is excluded from every
@@ -1319,11 +1319,11 @@ committed, pushed or deployed between the code and this row.
 | Fact | Measurement |
 |---|---|
 | The defect as recorded | `serving.ts` read a derivative into memory and hashed it on every request with no bound on how large the file could be — an unbounded read dressed as a verification |
-| Why it was Medium and not High | **0 of 82** catalogued assets pass the gate, so the read is unreachable in the register's delivered state. A control that only matters once the gate opens is still a control |
+| Why it was Medium and not High | **0 of 82** catalogued assets pass the gate, so the read is unreachable in the register's delivered state. A control that only matters once the gate opens is still a control. **Re-measured 4 November 2026: 46 of 82 rows now pass `decidePublicServing()`, 45 of them have a recorded derivative, and the ceiling branch is no longer a branch nobody can reach.** The severity did not move — it moved the other way, from *unreachable* to *load-bearing*, which is why this row was written as Medium rather than as a formality — and the ceiling itself is still not exercised at its bound, because the largest delivered render is 165,426 bytes against a 4,194,304-byte limit. What changed is the evidence: `src/app/api/media/[assetId]/route.test.ts` now proves the size checks with real files, including a same-length substitution and a truncation that a delivered byte cannot survive |
 | The largest thing the register could name | **398,236 bytes** — `Noujoude.photo/gold_embroidery_detail_1x1.jpg`, found by `statSync` over each of the 82 rows' `libraryPath`; all 82 resolve to a file that exists (14 JPG + 68 WebP) |
 | The largest thing in that same directory | **6,143,950 bytes** — `Noujoude.photo.rar`, the delivery container. Bigger than the ceiling, not an asset, unreachable from the register. The test measures it rather than trusting this sentence |
 | What the builder bounds | `scripts/build-media-derivatives.mjs` line 127 bounds `quality` to 1–100 and lines 133–141 bound `resize.width`/`resize.height` only to *positive integers* — no upper edge, so a pipeline can legitimately produce a file larger than anything the register has ever held |
-| Who owns the pipeline's choices | `docs/MEDIA_AND_RIGHTS_GOVERNANCE.md` §10 records the sharp profile, width ladder and format set as an explicit Owner **non-selection** |
+| Who owns the pipeline's choices | `docs/MEDIA_AND_RIGHTS_GOVERNANCE.md` §10 records the sharp profile, width ladder and format set as an explicit Owner **non-selection**. **Re-read 4 November 2026:** the profile, quality, cap and format set are no longer a non-selection — they are ADR-038, carried as data in `docs/asset-governance/derivative-profiles.json` and exercised by the 45 renders in `media-derivatives/`; the **width ladder is still a non-selection**, for the mechanical reason ADR-038 decision 6 names (the manifest is keyed by `assetId`, so a second width overwrites the first). That half-lives the row it bars: `scripts/build-media-derivatives.mjs` line 127 bounds `quality` to 1–100 and lines 133–141 bound `resize.width`/`resize.height` only to positive integers, so the recorded profile (1440) sits inside the bound while the bound itself still admits a 100,000-px request |
 
 **Decision.** Five parts, four of them enforced by code and one by a named test.
 
@@ -1439,16 +1439,231 @@ serving suite was re-run over the restored file at **100** passed, exit **0**.
 package itself, and the behaviour of a populated store under the ceiling — `media-derivatives/` does not exist on this
 machine, measured.
 
+**Re-measured 4 November 2026, and the last clause of the paragraph above no longer holds.** The authorised pipeline
+ran under ADR-037's ledger and produced a store: `media-derivatives/lineage.json` carries **45** lineage rows, the
+directory holds **46** files (45 webp renders plus the manifest), those renders total **2,422,790** bytes and the
+largest is **165,426** — an order of magnitude inside ADR-035's four-MiB ceiling, so *that* ceiling is still not exercised at
+its bound, and the ceiling tests in `src/lib/server/media/serving.test.ts` continue to synthesise a large row rather
+than meet it with a delivered file. What the store does prove is the other half of this row's claim: the four
+`turbopackIgnore` annotations were restored, the build still exits **0** with **0** warnings, and a populated store is
+read through the same four dynamic sites that carried the warning. `docs/asset-audit-summary.json` and the trace shape
+are the artefacts to re-read if this claim is ever questioned.
+
+---
+
+### ADR-037 — Permission enters as a cited Owner instrument, and publication is a document generated from it
+
+**Status:** Accepted as the decision this build implements, dated 4 November 2026. It records the Owner's asset
+declaration — Master Autonomous Completion & Production Launch Mandate §1 and §2, transcribed in
+`docs/OWNER_ASSET_AUTHORIZATION_2026-11-04.md` and carried as data in
+`docs/asset-governance/owner-authorization.json` — as the instrument that armed the production rights vocabulary, and
+it makes `docs/asset-governance/publication-register.json` the single derived record of what that permission places
+where. It does **not** close **DEC-INV-001** or **B-05**: those are about the object in the picture, and nothing here
+speaks to them. Standards traced: Master Spec **§13.3** (the enumerated asset states, which no tool may collapse),
+**A.9** (technical and legal status tracked separately), **AST-002** (each public media use must be cleared for that
+purpose), NIST SP 800-53 **CM-3**/*controlled changes* and **AC-3**/*access enforcement*, ASVS V14.2.
+
+**Context.** Until 4 November the vocabulary in `src/lib/media/asset-record.ts` was three empty whitelists and an
+unarmed publication list, so every register row evaluated to `unknown`/`pending`/not-published and the media endpoint
+answered 404 for all 82. That was the correct answer to the evidence, and it was also a build in which the security
+property could not be distinguished from an accident: a suite that asserted "refuses all 82" was asserting the state of
+the world, not the behaviour of the gate. The Owner's §2 clause changed the world, not the rule:
+
+> The Owner authorizes the use of photographs, images, graphics, logos, design materials, and fonts that the Owner has
+> supplied or explicitly identified as owned by the Owner. Treat the Owner's explicit ownership declaration as
+> authorization to use those identified materials in this project.
+
+The engineering question was therefore where permission enters. Measured on the tree this decision landed on, 4
+November 2026:
+
+| Dimension | Reading |
+|---|---|
+| Register rows | **82** |
+| `Rights Status` evaluating to `cleared` | **82** — one marker prefix, `Owner-Declared Owned — authorisation:`, which quotes the mandate section in the cell itself |
+| `Brand/Curatorial Approval` evaluating to `approved` | **82** — one marker, `Approved — Owner mandate 2026-11-04` |
+| `Actual Usage` evaluating to published | **46** — one marker, `Published — register:`, whose full cell names `docs/asset-governance/publication-register.json`, the date and the paths |
+| Rows passing `decidePublicServing()` | **46** = cleared ∧ approved ∧ published |
+| Rows with a recorded derivative | **45**, so **45** served |
+| Gate-passing rows with no derivative | **1** — `NDM-AST-041`, `vintage_collector_desk_16x9.jpg`, whose container is `image/webp`. Permission cleared it; the ledger refused it on physical status; the endpoint fails it closed at check 3 (`no_lineage`) and answers the same byteless 404 as a withheld asset |
+| Gate-denied rows | **36** — the publication register names no entry for them, because the usage map binds none of their declared surfaces to a §4.2 route |
+| Alt text | **82** rows `Recorded — EN and AR`, from `docs/asset-governance/descriptive-labels.json` (unlabelled count **0**) |
+
+**Decision.** Four parts, each with its own fail-closed property.
+
+1. **Permission is a vocabulary value, armed by a citation and nothing else.** The four evaluators in
+   `src/lib/media/asset-record.ts` take a `RightsVocabulary` argument whose production default is
+   `PRODUCTION_RIGHTS_VOCABULARY`, and each marker is a *prefix that quotes an instrument*: a row cannot become cleared
+   by rewording itself plausibly, only by carrying wording a human wrote in advance in a named list. Arming the lists
+   was a visible edit to one constant, pinned by name in `src/lib/server/media/serving.test.ts`, so a change there
+   fails a test and has to be explained. The vocabulary argument exists so a test can arm a *synthetic* policy and
+   prove the evaluation works on wording production does not accept — no production caller ever supplies one, which is
+   the boundary that keeps a fixture from becoming an approval.
+2. **Publication is generated, never typed.** `scripts/build-publication-register.mjs` applies one rule — an asset is
+   published on exactly the paths `src/lib/media/usage-map.ts` binds its own declared surfaces to, and only while the
+   declaration names its file — and writes the dated document. `scripts/audit-assets.mjs` then writes each row's
+   `Actual Usage` cell *from that document*, so the `published` third of the triple is a citation of a reviewable
+   artefact rather than a hand-edited CSV cell. The same generator runs as a CI-shaped check:
+   `pnpm build:publication-register:check` exits **1** when the file on disk is not what the rule produces.
+3. **Derivative production is gated on the register's digest.** `scripts/build-clearance-ledger.mjs` quotes each
+   approved row's rights and approval cells byte-for-byte beside the SHA-256 of the register it read
+   (`register.sha256`, `86fb73b39ea8…` on 4 November), and `scripts/build-media-derivatives.mjs` re-reads the register
+   and refuses any row whose cell has moved. An edit to the register therefore invalidates the matching ledger row
+   instead of quietly authorising a derivative from stale evidence — the permission and the bytes it permits are bound
+   to the same snapshot.
+4. **The refusal path did not change, and is now tested on both sides of itself.** The seven checks, the byteless 404,
+   the single refusal fingerprint, the rate limiter and the conditional contract are the same code that denied all 82;
+   what changed is that the suites stopped asserting the world and started asserting the partition. `route.test.ts`
+   derives served and refused from the register and the manifest on every run and proves the wire contract per side,
+   including the branch that only a served asset can reach.
+
+**Rejected alternatives, with the reason each was rejected.** *Set a boolean on the record, or treat "the file is in
+`Noujoude.photo/`" as clearance* — refused twice over: mandate §2 says in its own words not to assume a file is owned
+merely because it exists, and three excluded paths (the uncatalogued `logo_presentation_scene_16x9_v3.webp`, the
+`_pending_review_AI_generated/` duplicates, `Noujoude.photo.rar`) are the counterexample sitting in the library today.
+*Hand-edit the CSV's publication cells* — refused: a cell typed by a tool-free human is a claim nobody can re-derive,
+and the register would then disagree with the route table it is supposed to describe. *Derive publication from the
+serving gate* — refused: §13.3 enumerates `Approved but Unused` as a distinct state, and a gate-derived flag would
+erase the **36** rows that are cleared, approved and have nowhere to go. *Let a test arm the production vocabulary* —
+refused as the exact hazard the mandate names ("synthetic test fixtures must never become production approvals"): tests
+pass a vocabulary explicitly, production never does. *Regenerate the register inside the build or on every CI run* —
+refused: a build step that rewrites governance is an approval nobody signed; regeneration is an explicit command whose
+diff is reviewed. *Invent provenance so the pages have something to say* — refused absolutely; DEC-INV-001 and B-05
+stand, and the register's own cells say "not evidence of a catalogued object".
+
+**Consequences.** Two of the three cells are now satisfied for every row, so publication — a fact about routes, not
+about consent — is the only thing keeping **36** assets off the wire, and the honest reading is that the remaining
+asset gap is *placement and facts*, not permission. The `Actual Usage` cell got longer (it now carries a date and a
+path list), which is what a citation costs; the audit's `Not published` cells distinguish "no route" from "not named
+by the declaration" in their own words. Every future widening or narrowing of the declaration is a data edit, one
+regeneration command, and a reviewed diff — never a code change. And because the served branch became reachable,
+branches that existed but had never run are now load-bearing under test, which is where the four attacks in
+`src/app/api/media/[assetId]/route.test.ts` (borrowed validator, same-length substitution, truncation, a row for
+another asset) could be written at all.
+
+**Verification.** `src/lib/media/publication-register.test.ts` — **28** tests, exit **0** — re-derives the document
+from the register, the bindings and the declaration, checks the CSV-cell chain, and runs the generator's own `--check`
+as a child process. A drift was injected to prove the tests bite: setting one entry's path to an address no binding
+produced failed exactly **4** tests (the derivation, the address check, the CSV-cell chain, the generator's `--check`),
+and the file was restored byte-for-byte (`sha256sum` identical before and after). `pnpm build:clearance-ledger:check`
+and `pnpm build:publication-register:check` both exit **0**. Suite-wide numbers for this window are recorded in
+`docs/CHANGELOG.md` beside the commit that carries them, not here, so this line cannot quote a run that has not
+happened yet.
+
+**Not** covered by that evidence: that any served image is a photograph of an inventoried object (it is not claimed to
+be); the **10** generated files' status as *generated* material on the page, which is a presentation requirement the
+public routes do not implement yet; the Control Center's review queues, which cannot show a pending state now that no
+row is pending; a real deployment; and a populated store at the four-MiB ceiling.
+
+---
+
+### ADR-038 — One recorded render profile per asset: the non-selection becomes a decision on the record, and the width ladder stays a non-selection
+
+**Status:** Accepted as the decision the delivered derivative store implements, dated 4 November 2026. It amends one
+entry of the non-selection register in `docs/MEDIA_AND_RIGHTS_GOVERNANCE.md` §10 — the `sharp` profile, quality, width
+and format entry — and supersedes nothing else. ADR-037's ledger is the document that binds it to the rights state;
+this record is the one that ledger cites.
+
+**Context.** §10 of the governance spec recorded, verbatim, that the project had not selected *"any `sharp` output
+profile, quality setting, width ladder or format set"*, and recorded why: the baseline never picks them and a built-in
+default would pick them silently. That was honest on 1 November, when no asset was cleared and the builder had nothing
+lawful to render. ADR-037 moved permission: **82 of 82** rows now carry an Owner-declared rights statement and an
+Owner approval, **46** carry a publication cell, and `scripts/build-media-derivatives.mjs` can therefore be run for
+real. At that point the non-selection stops being a defence and becomes an obstacle — a builder that refuses to choose
+until someone chooses needs a chosen thing, and the Owner's mandate of 4 November 2026 §1 puts asset organisation and
+integration inside the decisions delegated to this build, with the instruction *"Do not repeatedly ask the Owner to
+approve ordinary technical, visual, or architectural decisions."* The mandate's companion rule — record the selected
+decision and its rationale in the authoritative register — is what this ADR is.
+
+The numbers the choice had to be made against, measured from `docs/ASSET_INVENTORY_AUDIT.csv` on 4 November 2026
+(longest decoded side, all 82 rows): **512 px × 59**, 1024 × 4, 1440 × 4, 1536 × 2, 1600 × 1, 1792 × 6, 1920 × 6.
+Containers: **69 `image/webp`** and 13 `image/jpeg`. Library size 14,300,868 bytes across 97 files. This last
+distribution is the reason the profile is not merely a quality dial: 59 of the 82 assets are already smaller than any
+reasonable render width, so a resize rule that enlarges them would write dimensions the file does not hold — the same
+defect class §6.3 measures in the filenames.
+
+**Decision.**
+
+1. **The profile is data, in a governed file, read by both halves of the pipeline.**
+   `docs/asset-governance/derivative-profiles.json` carries exactly one profile: `id`
+   `candlelight-1440-webp`, `mime` `image/webp`, `quality` **80**, `resize` `{width: 1440, fit: "cover",
+   withoutEnlargement: true}`. `scripts/build-clearance-ledger.mjs` reads it to decide what may be authorised, and
+   `scripts/build-media-derivatives.mjs` reads it to render. A profile change is therefore a reviewed diff plus one
+   regeneration command — not a code change, and not a value living inside the tool that consumes it.
+2. **WebP, and only WebP.** The delivered originals are already 69 WebP / 13 JPEG, every browser this project claims
+   to support decodes WebP, and the serving path's declared-set check is a set of one. Encoding time is real and
+   byte-verifiable lineage is more real: an AVIF second format would double the store and the manifest rows before a
+   single curatorial fact about an object exists.
+3. **Quality 80, stated as a judgement about these pictures.** Below it the burgundy-and-gold gradient band in the
+   atmosphere set is where the artefacts appear; well above it the payload grows for a gain those gradients do not show.
+   It is written down so that it can be argued with, which is the difference between a parameter and a decision.
+4. **A 1440 px longest-side cap with `withoutEnlargement`.** Measured across the 45 renders actually produced: **34
+   came out at their original width, 11 were capped to 1440, 0 were enlarged**. A cap above the largest original
+   (1920) would have rendered nothing differently; a cap below the 512-px majority would have destroyed detail nobody
+   asked to lose.
+5. **Dimensions are read from the encoded output, never from the request.** This is O-07 and §6.3's rule applied to the
+   write side: the manifest records the decoded size of what was written, so a capped render says "512x384" and does not
+   inherit the 1024 in the filename or the 1440 in the profile.
+6. **The width ladder is *not* selected, and the reason is mechanical.** The manifest is keyed by `assetId` and
+   `src/lib/server/media/slot-facts.ts` takes the first row it finds for an asset, so a second width for the same asset
+   would overwrite the first rather than sit beside it. Responsive `srcset` therefore remains an open item and §10
+   keeps that half of its entry. `docs/asset-governance/derivative-profiles.json` states the same limitation in its own
+   `knownLimitation` field, so a reader of the data cannot miss what a reader of this ADR might.
+
+**Rejected alternatives, with the reason each was rejected.** *Ship the originals and render nothing* — refused: 59 of
+82 originals are 512 px, but the whole library is 14.3 MB and the served path reads from the store, so "nothing
+rendered" means either no image or the original at full weight. *AVIF as the primary, WebP as fallback* — refused for
+this window: two stores, two lineage rows per asset, and a set-of-one declared check becomes a set-of-two before any
+real deployment exists to measure the gain. *JPEG q85 for compatibility* — refused: it is larger than WebP at equal
+perceptual quality on exactly the gradient-heavy images this library holds, and the compatibility argument names no
+browser this project supports. *A 640/1080/1440/1920 ladder* — refused **as unimplementable today**, not as undesired;
+the keying constraint in decision 6 is the blocker, and the fix is a structural change to the manifest (composite key,
+or a per-profile row list), which is a larger decision than a profile. *Per-asset profiles* — refused: quality and
+crop taste on a heritage image are curatorial judgement, and curatorial input is an Owner instrument (§10's
+non-fabricable list), not something a build step may invent per file. *Enlarge the 512-px assets to 1440 so every
+render is uniform* — refused as the direct cause of the defect class §6.3 documents: an upscaled file whose recorded
+dimensions claim more detail than it holds. *Leave the profile as a non-selection and let the builder pick a default* —
+refused twice: it is the silent choice §10 was written to prevent, and it would make the ledger's authorisations quote
+a parameter nobody recorded.
+
+**Consequences.** The derivative store now has a documented reason for every byte it holds, and the two failure modes
+the non-selection was guarding against — a silent default and an unaudited parameter — are closed by a file the gates
+re-read. The cost is stated in `knownLimitation` and repeated here: **one render per asset**, so O-07 is *partly*
+evidenced (modern format, no-enlargement, reserved dimensions via the decoded read) and *not* evidenced on responsive
+variants. What the ledger records about the profile set is its path and its ids
+(`profileSet: { path, ids }` in `docs/asset-governance/clearance-ledger.json`), and the builder checks that the id it
+was handed exists in the file it was handed — so a *renamed* profile breaks the chain. It does not yet check the
+profile's *parameters*: editing `quality` or the width in `docs/asset-governance/derivative-profiles.json` changes what
+the next run writes without invalidating the ledger that authorised it. That asymmetry with the register binding (where
+a reworded cell does break it, byte-for-byte) is recorded here as the known weakness of this decision, not glossed over.
+37 rows are refused today: **36** because the publication register names no entry for them,
+and **1** (`NDM-AST-041`, `vintage_collector_desk_16x9.jpg`) because its container contradicts its extension. Neither
+number is a profile question, and the record says so where the refusal is stored.
+
+**Verification.** Measured on 4 November 2026, this window: `pnpm test:gate:derivatives` → exit **0**, **27 passed, 0
+failed** (it asserts the recorded non-selection is cited when the profile file is absent, that a profile id outside the
+declared ids is a usage error naming the defined ids, that a profile asking for a format outside the declared set is
+refused with the set named, that a quality value that is a word rather than a bounded integer is refused, and that every
+manifest byte hashes to what the manifest claims while the library stays byte-identical across the run). The store: 46
+files — 45 `image/webp` renders totalling **2,422,790** bytes, largest **165,426**, plus the tracked
+`lineage.json`. `pnpm build:clearance-ledger:check` and `pnpm build:publication-register:check` → exit **0**. Ledger
+counts **45 authorised / 37 refused**. `pnpm test` → **16 files, 448 tests passed**, exit **0**. The width-cap
+split (34 / 11 / 0) and the 59-of-82 512-px figure are re-derived from the delivered artifacts, not asserted here.
+
+**Not** covered by that evidence: any real deployment; whether q80 is the right quality *as perceived* (no visual
+sign-off exists — BA-001…BA-007 in `docs/OWNER_INPUT_REGISTER.md` are still pending, and no font licence is recorded);
+responsive `srcset`, which decision 6 keeps open; the four-MiB serving ceiling at its bound; and whether these renders
+should depict catalogued objects at all, which is B-05 and stands unchanged.
+
 ---
 
 ## 7. Phase 1 exit criteria
 
 | # | Criterion | State |
 |---|---|---|
-| 1 | ADRs recorded with rationale and rejected alternatives | ✅ this document — **36 ADRs** (ADR-001 … ADR-036). Measurement method: `grep -c '^### ADR-' docs/ARCHITECTURE_DECISIONS.md` → `36`, and the ID list printed by `grep -o '^### ADR-[0-9]*'` is contiguous with no gaps and no duplicates. Re-measured 2 November 2026: **ADR-026 … ADR-033** were added in this window to record the Owner-approved defaults granted in the final Directive §1 — the token layer and CSS Modules, the two-part motion-engine ownership (GSAP for cinematic timelines and scroll scenes, Motion for React for component interaction) with plain CSS for simple transitions and no element carrying two motion owners, Lenis deferred rather than rejected, Rare Pieces as an editorial treatment inside Collections, the untracked `brand/` tree preserved and quarantined, and security documentation extended in place. **ADR-034** was added the same day, in the SR-04 remediation batch, and is of a different kind: it is the store-and-failure-mode decision that `docs/IMPLEMENTATION_PLAN.md` item 2.9 required *before* rate-limit code, and it records in its own text that the code arrived first in the same uncommitted batch. Re-measured 3 November 2026: **ADR-035** (the serving byte ceiling, risk SR-09) and **ADR-036** (the store declared to the bundler as runtime data, risks SR-37 and SR-21's build half) joined in the same remediation sequence, both of them recording code that was already in the tree — the deviation ADR-034 states about itself now applies to two more rows, and each row says so. **Every one is a decision with a written rationale, not a transcription of the directive**, and each names what it excludes |
+| 1 | ADRs recorded with rationale and rejected alternatives | ✅ this document — **36 ADRs** (ADR-001 … ADR-036). Measurement method: `grep -c '^### ADR-' docs/ARCHITECTURE_DECISIONS.md` → `36`, and the ID list printed by `grep -o '^### ADR-[0-9]*'` is contiguous with no gaps and no duplicates. Re-measured 2 November 2026: **ADR-026 … ADR-033** were added in this window to record the Owner-approved defaults granted in the final Directive §1 — the token layer and CSS Modules, the two-part motion-engine ownership (GSAP for cinematic timelines and scroll scenes, Motion for React for component interaction) with plain CSS for simple transitions and no element carrying two motion owners, Lenis deferred rather than rejected, Rare Pieces as an editorial treatment inside Collections, the untracked `brand/` tree preserved and quarantined, and security documentation extended in place. **ADR-034** was added the same day, in the SR-04 remediation batch, and is of a different kind: it is the store-and-failure-mode decision that `docs/IMPLEMENTATION_PLAN.md` item 2.9 required *before* rate-limit code, and it records in its own text that the code arrived first in the same uncommitted batch. Re-measured 3 November 2026: **ADR-035** (the serving byte ceiling, risk SR-09) and **ADR-036** (the store declared to the bundler as runtime data, risks SR-37 and SR-21's build half) joined in the same remediation sequence, both of them recording code that was already in the tree — the deviation ADR-034 states about itself now applies to two more rows, and each row says so. Re-measured 4 November 2026: **ADR-037** (permission enters as a cited Owner instrument; publication is a generated document; the derivative pipeline is bound to the register's digest) brings the count to **37**, verified by the same two commands — `grep -c '^### ADR-'` → `37`, a contiguous `ADR-001 … ADR-037` list, and `uniq -d` over the printed IDs → **0** duplicates. It is a different kind of row again: it records an Owner decision that the code had already been written to receive, and its verification paragraph deliberately quotes no suite-wide number that had not been measured when it was written. **ADR-038** (one recorded render profile per asset: the `sharp` profile/quality/cap/format non-selection becomes a decision on the record, the width ladder stays a non-selection with a mechanical reason) was added the same day, bringing the count to **38** — verified the same way: `grep -c '^### ADR-' docs/ARCHITECTURE_DECISIONS.md` → `38`, the printed ID list is contiguous `ADR-001 … ADR-038`, and `uniq -d` over it → **0** duplicates. Unlike ADR-037 it records a decision this build made under the mandate's ordinary-technical-delegation, and it is the first row in this document to name a weakness of its own mechanism (the profile *parameters* are not digest-bound the way the register cells are) inside its Consequences. **Every one is a decision with a written rationale, not a transcription of the directive**, and each names what it excludes |
 | 2 | Compatibility matrix verified against official sources, not inherited | ⚠️ §3 is verified for every package row. §3.2's three assumptions moved on 1 November 2026: **A-C2 (Zod) and A-C3 (the `graphql` patch) are closed empirically** by the authorized install — `zod` resolves to the pinned 4.6.7 and `graphql` to 16.14.2, with 17.0.2 not pulled — while **A-C1 (PostgreSQL 18.6 against the pinned adapter) stays open**, because closing it is empirical and needs `pnpm db:up` → `pnpm migrate` → `pnpm db:verify-privileges`, none of which is this window's scope. Counted by `grep -c '^\*\*A-C[0-9]'` → `3` (three rows recorded, one still unresolved) |
 | 3 | Version-selection gate of Standard §2.3 executed | ✅ with **four** documented discrepancies (D-01 … D-04 in §4; counted by `grep -c '^\*\*D-0'` → `4`). D-03 was itself corrected in this batch: its original "resolved" verdict was a stale measurement, now superseded by §7.2. |
-| 4 | Application initialized in `src/` | ✅ **met 2 November 2026.** The 1 November reading is kept as history: `src/` held `README.md` only, because initializing the application was outside that batch's authorized scope. It now holds **31 code and style files / 1,752 lines** — the locale contract, the canonical route registry, the fail-closed media-rights gate, 15 canonical routes across both locales plus the generated not-found, and the design tokens as CSS custom properties consumed through CSS Modules. `next.config.mjs` exists and is loaded by the build. **This is initialization, not a product:** no Payload configuration, no collection, no migration, no database access, no image pipeline, no Control Center, no editorial sentence. Per Directive §15 the shell is not evidence of a feature, and `src/README.md` states which claims it can and cannot support. **Re-measured 3 November 2026: 60 code and style files / 11,194 lines under `src/` (61 counting `src/README.md`), the same 15 canonical routes plus the generated not-found and, since the media work, the rights-gated `src/app/api/media/[assetId]` endpoint — 17 entries in the emitted route table. Two clauses of the list above moved and are named rather than quietly dropped: an image pipeline now exists as tooling (`scripts/build-media-derivatives.mjs`, tracked, with a 25-assertion suite in `pnpm test:gates`) that refuses to run without a mandatory `--profile` file and a clearance ledger quoting the register byte-for-byte, and Control Center is still only a phase description in the governing documents (`docs/IMPLEMENTATION_PLAN.md` §Phase 6 owns it; there is no `docs/CONTROL_CENTER.md` and no Control Center code) — both remain unauthorized-by-content, since 0 of 82 assets are cleared and no profile file or ledger exists in the repository. Still exactly as written: no Payload configuration, no collection, no migration, no database access, no editorial sentence** |
+| 4 | Application initialized in `src/` | ✅ **met 2 November 2026.** The 1 November reading is kept as history: `src/` held `README.md` only, because initializing the application was outside that batch's authorized scope. It now holds **31 code and style files / 1,752 lines** — the locale contract, the canonical route registry, the fail-closed media-rights gate, 15 canonical routes across both locales plus the generated not-found, and the design tokens as CSS custom properties consumed through CSS Modules. `next.config.mjs` exists and is loaded by the build. **This is initialization, not a product:** no Payload configuration, no collection, no migration, no database access, no image pipeline, no Control Center, no editorial sentence. Per Directive §15 the shell is not evidence of a feature, and `src/README.md` states which claims it can and cannot support. **Re-measured 3 November 2026: 60 code and style files / 11,194 lines under `src/` (61 counting `src/README.md`), the same 15 canonical routes plus the generated not-found and, since the media work, the rights-gated `src/app/api/media/[assetId]` endpoint — 17 entries in the emitted route table. Two clauses of the list above moved and are named rather than quietly dropped: an image pipeline now exists as tooling (`scripts/build-media-derivatives.mjs`, tracked, with a 25-assertion suite in `pnpm test:gates`) that refuses to run without a mandatory `--profile` file and a clearance ledger quoting the register byte-for-byte, and Control Center is still only a phase description in the governing documents (`docs/IMPLEMENTATION_PLAN.md` §Phase 6 owns it; there is no `docs/CONTROL_CENTER.md` and no Control Center code) — both remain unauthorized-by-content, since 0 of 82 assets are cleared and no profile file or ledger exists in the repository. Still exactly as written: no Payload configuration, no collection, no migration, no database access, no editorial sentence. **Re-measured 4 November 2026 with the file's own method (`find src -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.css" \)`, then the same line count over the same set): 62 code and style files / 13,445 lines, `src/README.md` making 63. Two clauses of the sentence just quoted are now false and are corrected rather than dropped. An image pipeline exists beyond tooling: `docs/asset-governance/derivative-profiles.json` and `clearance-ledger.json` are both in the repository, and `media-derivatives/` holds 46 files — 45 recorded renders and their manifest — so the gate's served branch is reachable and is tested with delivered bytes. The rights claim inverted: 82 rows are cleared and approved by the Owner's §2 declaration, 46 are published by the generated register, and 45 are served; what still bars the rest is route placement, not permission, and what is still unverified is the object in each picture (DEC-INV-001, B-05). The derivatives gate suite in `pnpm test:gates` is 27 assertions, not 25. Unchanged by any of that: no Payload configuration, no collection, no migration, no database access, no Control Center, no editorial sentence** |
 | 5 | Scripts, types, linting, tests, environment examples | ✅ **met, with one red leg reported rather than removed.** Re-measured 2 November 2026: `pnpm typecheck` exits **0** over **51** project files (13 `.ts` + 18 `.tsx`, 26 under `src/`) and exits 2 when a probe makes a type error; `pnpm lint` exits **0** with each configured guard proved to fire; `pnpm test` exits **0** with 4 files and 34 assertions, red-green proved on the rights gate; the seven gate regression suites run under `pnpm test:gates` at exit **0** (146 assertions); `.env` has existed since 1 November under OD-3. **`pnpm format:check` exits 1 over 25 pre-existing tooling and configuration files** and stays red on purpose: the Owner authorized only the justified `.prettierignore` correction and forbade broad reformatting, and a whole-tree reformat would shift `scripts/preflight.mjs` line 112, which `docs/` cites by number. The CI workflow file remains authored and unexecuted (B-08). **Re-measured 3 November 2026, and the red leg of this row is gone: `pnpm typecheck` exits 0 over 84 project files (53 under `src/`), `pnpm test` exits 0 over 15 files and 397 tests, `pnpm test:gates` exits 0 over eight suites and 178 assertions, and `pnpm format:check` exits 0 — the format leg closed by reformat batch `2ae97b3` under OID-25, whose own citation-repair pass ran after it. The line-number hazard this row named **did materialise**: the reformat moved `scripts/preflight.mjs` from 362 lines at `2ae97b3^` to **578** at that commit, which is where HEAD still is, and the citation that row forbade breaking now points at unrelated code while `node scripts/verify-citations.mjs` still exits **0** with `LINE_OFF 0` — the gate validates a bare line reference against the file's length and the presence of text there, not against the identifier the prose names. The pointer, the removed message and the gate's blind spot are recorded with their measured numbers in `docs/TEST_AND_RELEASE_REPORT.md` §1. Row 6 of this checklist is the only leg that stays as written: the workflow file is still authored and unexecuted** |
 | 6 | Coherent Git checkpoint | ✅ **met 1 November 2026 under OD-4, and re-met at each milestone since.** `git init` ran on a tree with no repository in `E:\no` or any parent — no existing history was found, so none was overwritten — and commit `aedeee0` on branch `main` records 150 files / 49,699 insertions. A second checkpoint, `9522379`, records the Owner authorization window and its measured results; the closure checkpoint for this window is named by ID in `docs/PHASE01_CLOSURE.json`. `git remote -v` is empty: no remote was created and nothing was pushed, and the untracked `brand/` tree remains untracked and uncommitted (ADR-032). **Re-measured 3 November 2026: `git rev-list --count HEAD` → 14 local checkpoints, `git remote -v` → empty, nothing pushed, `git ls-files -- brand` → 0 files (untracked and not ignored, still OD-18's to decide). Three code files added by the remediation window are still untracked and are named for the next checkpoint: `src/lib/server/media/request-limits.ts`, its test beside it, and `tests/helpers/fake-clock.ts`** |
 | 7 | Clean install → typecheck → test → production build (Standard §2.3 step 9) | ✅ **all four legs exit 0, measured 2 November 2026 on this host.** `pnpm install` exit 0 (against the committed lockfile, with the supply-chain guard armed under OD-7 so no `pnpm run` silently installs); `pnpm typecheck` exit 0 over real typed code, not over a JavaScript-only tree; `pnpm test` exit 0 with 34 assertions; `pnpm build` exit 0 emitting **16** routes, which `pnpm start` then serves. **The chain is satisfied; what it satisfies is a shell** — there is no migration step in it, because no schema exists, and Standard §12's remaining nine checks (integration, E2E, accessibility, security, scanning, restore, SEO, performance) belong to Phases 2–8. One leg outside this chain is red: `pnpm audit --audit-level=high` exits 1 (**B-11**), and `format:check` exits 1 as explained in row 5. **Both legs were re-measured 3 November 2026 and are green: `pnpm audit --audit-level=high` exits 0 over 3 sub-threshold advisories — B-11 closed by `fb3ca90`, the unfiltered audit still exiting 1 over those same three — and `pnpm format:check` exits 0 after `2ae97b3`. The chain itself was re-run the same day: typecheck 0 over 84 project files, test 0 over 15 files and 397 tests, build 0 over 17 route entries. What the row still refuses to claim is unchanged: no migration step in the chain, no schema behind it, and neither of the two closed legs has ever executed in CI** |

@@ -16,8 +16,10 @@
  * deferral. `src/lib/media/usage-map.test.ts` proves the two lists meet exactly once per surface.
  *
  * Binding is *not* permission. This file answers "which surface does the catalog place this asset on";
- * `src/domain/rights.ts` answers "may it be served there", and 0 of 82 pass today. A bound asset whose
- * rights state is uncleared renders a refusal through `src/ui/media-slot.tsx`, never a pixel.
+ * `src/domain/rights.ts` answers "may it be served there". Before 4 November 2026 the answer was no for all
+ * 82 rows; the Owner's asset declaration armed the production vocabulary, so a bound asset now renders a
+ * pixel when its register row clears *and* a derivative exists *and* alt text is recorded — and still renders
+ * a refusal through `src/ui/media-slot.tsx` when any of the three is missing.
  */
 
 import { type RouteKey, buildPath, routeDefinition } from "@/domain/routes";
@@ -608,6 +610,35 @@ function pathOf(binding: SurfaceBinding): string {
 }
 
 /**
+ * The canonical paths one set of declared surfaces resolves to, deduplicated, in binding order.
+ *
+ * Exported because the publication register has to answer the same question the register's `Actual Usage`
+ * column answers — "where would this asset live?" — and a second implementation of `pathOf` outside this
+ * file is how the two drift apart. `describeUsage` reads it, `scripts/build-publication-register.mjs` reads
+ * it, and the agreement test asserts a published asset's paths *are* these.
+ *
+ * Surfaces the map does not bind contribute nothing here: a path list is a statement about routes, and an
+ * unbound surface has none.
+ */
+export function boundPathsFor(surfaces: readonly string[]): readonly string[] {
+  const paths: string[] = [];
+  for (const surface of surfaces) {
+    const binding = bindingForSurface(surface);
+    if (binding === null) continue;
+    paths.push(pathOf(binding));
+    // The entrance renders this route's imagery as one of its §6.1 sections, so the asset is
+    // referenced from the entrance too. Saying only the owning route would understate the usage.
+    if (
+      binding.route !== "global" &&
+      SECTION_TARGETED_ROUTES.has(binding.route)
+    ) {
+      paths.push("/en");
+    }
+  }
+  return [...new Set(paths)];
+}
+
+/**
  * The usage sentence for one asset, from its own declared surfaces.
  *
  * This is what `docs/ASSET_INVENTORY_AUDIT.csv`'s `Actual Usage` column should say. It is derived from
@@ -618,6 +649,12 @@ function pathOf(binding: SurfaceBinding): string {
  * Three states, kept distinct per Master Spec A.9: bound (a route references it), unbound (the baseline
  * gives it no route), and unrecognised (the catalog named a surface this map has never seen — a defect
  * in one of the two, and it must read as one rather than silently as "no usage").
+ *
+ * The sentence names paths and nothing else. Until 4 November 2026 it also ended "; served nowhere while
+ * the rights gate denies", which was true when the production vocabulary had no cleared marker and became
+ * false the day the Owner's declaration armed one. This module answers "which route is this placed on";
+ * whether a placed asset may be served is `src/domain/rights.ts` plus the register row, and a binding table
+ * that asserted the serving outcome would be asserting a fact it cannot see.
  */
 export function describeUsage(surfaces: readonly string[]): {
   readonly state: "bound" | "unbound" | "unrecognised" | "none";
@@ -628,23 +665,10 @@ export function describeUsage(surfaces: readonly string[]): {
       state: "none",
       text: "None — the register declares no surface for this asset",
     };
-  const bound: string[] = [];
   const unbound: string[] = [];
   const unknown: string[] = [];
   for (const surface of surfaces) {
-    const binding = bindingForSurface(surface);
-    if (binding !== null) {
-      bound.push(pathOf(binding));
-      // The entrance renders this route's imagery as one of its §6.1 sections, so the asset is
-      // referenced from the entrance too. Saying only the owning route would understate the usage.
-      if (
-        binding.route !== "global" &&
-        SECTION_TARGETED_ROUTES.has(binding.route)
-      ) {
-        bound.push("/en");
-      }
-      continue;
-    }
+    if (bindingForSurface(surface) !== null) continue;
     if (unboundReasonFor(surface) !== null) {
       unbound.push(surface);
       continue;
@@ -656,11 +680,9 @@ export function describeUsage(surfaces: readonly string[]): {
       state: "unrecognised",
       text: `Unmapped surface(s): ${unknown.join(", ")} — the register and the usage map disagree`,
     };
-  if (bound.length > 0)
-    return {
-      state: "bound",
-      text: `Referenced by ${[...new Set(bound)].join(", ")}; served nowhere while the rights gate denies`,
-    };
+  const paths = boundPathsFor(surfaces);
+  if (paths.length > 0)
+    return { state: "bound", text: `Referenced by ${paths.join(", ")}` };
   return {
     state: "unbound",
     text: `None — bound to no route: ${unbound.join(", ")}`,

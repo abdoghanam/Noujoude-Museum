@@ -25,6 +25,31 @@
   text-transform: uppercase;
 }
 
+/*
+  The masthead when the catalogued `Header` asset clears its slot (§6.1 item 1): the mark, then the name.
+  The image is sized from the band rather than from its own intrinsic pixels, so a taller derivative cannot
+  stretch the header — the slot supplies width/height attributes for the aspect ratio, and this caps the box.
+*/
+.markBand {
+  align-items: center;
+  display: flex;
+  gap: var(--ndm-space-2);
+  margin: 0;
+}
+
+.markBand img {
+  block-size: 2.75rem;
+  inline-size: auto;
+  max-block-size: 2.75rem;
+}
+
+.markName {
+  font-family: var(--ndm-font-display);
+  font-size: 1.5rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
 .primaryNav {
   flex: 1 1 auto;
 }

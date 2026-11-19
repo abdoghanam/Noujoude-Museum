@@ -5,7 +5,7 @@
 **Phase:** 2 input (design contract authored after Phase 0 audit + Phase 1 architecture)
 **Status:** **Design contract; no schema deployed — there is no database and no migration yet.**
 **Date:** 31 October 2026
-**Governing decisions:** `docs/ARCHITECTURE_DECISIONS.md` (ADR-001 … ADR-036 as counted on 3 November 2026 — the two newest rows are the serving-ceiling and build-tracing decisions, neither of which changes this model; ADR-001 … ADR-034 was this line's 2 November reading; §3 compatibility matrix, §4 discrepancies D-01…D-04)
+**Governing decisions:** `docs/ARCHITECTURE_DECISIONS.md` (ADR-001 … ADR-038 as re-counted on 4 November 2026 — the four newest rows are the serving-ceiling, build-tracing, permission-instrument and render-profile decisions, and none of the four changes a column, type or constraint in this model; ADR-001 … ADR-036 was this line's 3 November reading, ADR-001 … ADR-034 its 2 November reading; §3 compatibility matrix, §4 discrepancies D-01…D-04)
 **Governing requirements:** `reference/Noujoude_Master_Specification_EN.md` §8–§11 (cited by original line number),
 `reference/Noujoude_Technology_and_Security_Standard_EN.md` §3, §15
 **Working copy of the product spec:** `docs/MASTER_SPECIFICATION.md` (discrepancy log S-01…S-15 in its §2)
@@ -270,7 +270,7 @@ imply more certainty than the reviewed claims support" — a validation/derivati
 | `width`, `height` | Integer | no | System where image | DC·SPEC-VERBATIM |
 | `aspect_ratio` | Numeric | no | System where image | DC·SPEC-VERBATIM |
 | `checksum` | String | no | System | DC — matches the SHA-256 already recorded for all 82 assets (`docs/ASSET_INVENTORY_AUDIT.csv`) |
-| `alt_text_en`, `alt_text_ar` | Localized text | yes | Required for meaningful public images | DC·SPEC-VERBATIM; currently `Not Recorded` for all 82 audited files |
+| `alt_text_en`, `alt_text_ar` | Localized text | yes | Required for meaningful public images | DC·SPEC-VERBATIM. The delivered files' state moved on 4 November 2026: `Alt Text Status` is `Recorded — EN and AR` for **82 of 82** audited files, from `docs/asset-governance/descriptive-labels.json` (its `unlabelled.count` is **0**), and each string is written to describe what the picture shows while denying the inventory fact it cannot support. Before that date all 82 read `Not Recorded`. The migration into these two columns is still Phase 2 work — no collection exists to receive them |
 | `caption_en`, `caption_ar` | Localized text | yes | Optional | DC·SPEC-VERBATIM |
 | `media_role` | Controlled enum | no | Required | DC; roles named at line 1321 (logo, entrance, country hero, collection cover, artifact primary/secondary, story cover, AI Curator visual, decorative background, texture, …) |
 | `focal_point` | Structured coordinates | no | Optional | DC·SPEC-VERBATIM |

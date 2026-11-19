@@ -1,0 +1,6 @@
+scanned 16 docs/ markdown files, 582 quoted fragments carrying a line reference (skipped 23 quoted strings shorter than 3 tokens)
+VERIFIED 436 | LINE_OFF 0 | LINE_OFF_OTHER_SOURCE 0 | SELF_RECORDING 8 | PROJECT_RECORD 17 | DEFINED_TERM 6 | NOT_FOUND 0 | NO_LINE_REF 121 (of which 0 are verbatim requirement text with no citation)
+BARE REFERENCES (no quotation on the line): 1583 checked, 0 defect(s) [1583 resolve]
+
+wrote docs/CITATION_VERIFICATION.json
+CITATION GATE PASSED: every quotation is where its line reference says, and every bare reference resolves

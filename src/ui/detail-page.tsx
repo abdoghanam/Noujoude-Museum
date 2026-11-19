@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import type { Locale } from "@/domain/locale";
 import { type RouteKey, isValidSlug } from "@/domain/routes";
 import { PageShell } from "@/ui/page-shell";
+import { State } from "@/ui/state";
 import styles from "@/ui/detail-page.module.css";
 
 /**
@@ -46,15 +47,16 @@ export function DetailPage({
 
   return (
     <PageShell route={route} locale={locale}>
-      <p className={styles.identity}>
-        No <span className={styles.kind}>{kind}</span> records have been
-        published, so the identifier{" "}
-        <code>
-          {/* Rendered as text: React escapes it, and it never reaches a query, a path or markup. */}
-          {candidate}
-        </code>{" "}
-        resolves to nothing. This is an empty state, not a missing asset.
-      </p>
+      <State
+        kind="empty"
+        title={`No ${kind} records published`}
+        description={`The identifier ${candidate ?? ""} resolves to nothing; this is an empty state, not a missing asset.`}
+      >
+        <p className={styles.withheld} lang="en">
+          Owner-supplied records, rights and approvals are required before any
+          {` ${kind} `} may be published. Until then this page renders structure only.
+        </p>
+      </State>
       {children}
     </PageShell>
   );

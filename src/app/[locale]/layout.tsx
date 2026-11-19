@@ -13,7 +13,10 @@ import { SITE_NAME } from "@/domain/site";
 import {
   publicServingSummary,
   servingFooterSentence,
+  slotOutcome,
+  slotViewsFor,
 } from "@/lib/server/media/slots";
+import { MediaSlot } from "@/ui/media-slot";
 import styles from "@/ui/layout.module.css";
 import "@/ui/styles/global.css";
 
@@ -39,10 +42,12 @@ export const metadata: Metadata = {
   description:
     "Noujoude Digital Heritage Museum — bilingual English and Arabic heritage museum. Pre-publication structural shell.",
   /**
-   * No public record of this build has been approved: 0 of 82 assets are cleared (B-06), brand
-   * adoption is pending (BA-001, OD-16), and the pages carry no editorial content. Indexing a
-   * shell would publish claims the Owner has not made, so the shell is explicitly non-indexable
-   * and the flag flips when approved content replaces it.
+   * No public record of this build has been approved. Asset *use* was authorised by the Owner on 4 November
+   * 2026 (see `docs/OWNER_ASSET_AUTHORIZATION_2026-11-04.md`), which is a different axis from what this flag
+   * is about: the pages still carry no editorial records, no inventory and no institution facts — RB-04,
+   * DEC-INV-001 and the Owner-input register are open on exactly those — and indexing a shell would publish
+   * claims the Owner has not made. The flag flips when approved content replaces the shell, not when imagery
+   * starts rendering.
    */
   robots: { index: false, follow: false },
 };
@@ -65,6 +70,18 @@ export default async function LocaleLayout({
     if the sentence and the register can ever disagree.
   */
   const serving = publicServingSummary();
+  /*
+    §6.1 required-content item 1 is an "approved monogram or wordmark", and the usage map binds the catalog's
+    `Header` surface to this band. Whether the band shows the mark or the name in text is the slot's answer, not
+    a constant: `slotOutcome` returns "image" only when the rights gate, the served copy, the alt text and the
+    measured pixels all agree, and anything else falls back to the text wordmark. The band still does not print
+    a refusal sentence or name the asset that would have filled it (SR-02) — the same hook below carries the
+    state, and `src/lib/server/media/slots.test.ts` asserts the reason where it belongs.
+  */
+  const headerViews = slotViewsFor("global", locale);
+  const headerMark = headerViews.find(
+    (view) => slotOutcome(view) === "image",
+  );
 
   return (
     <html lang={locale} dir={directionOf(locale)}>
@@ -73,19 +90,16 @@ export default async function LocaleLayout({
           Skip to content
         </a>
         <header className={styles.siteHeader}>
-          {/*
-            §6.1 required-content item 1 is an "approved monogram or wordmark". The usage map binds the
-            catalog's `Header` surface to this band, the slot for it resolves to a refusal, and the mark is
-            therefore shown as the name in text. The band says *that* it is pending, through the structural
-            hook below and the footer's measured counts; it does not publish which gate stopped it or which
-            catalogued asset would have filled it (SR-02) — the route's own refusals answer 404 with no
-            reason for exactly that reason, and a page that named the reason and the id would undo it in
-            markup. The reason is still computed and asserted where it belongs:
-            `src/lib/server/media/slots.test.ts` calls `slotOutcome` directly.
-          */}
-          <p className={styles.wordmark} data-slot="approved-mark-pending">
-            {SITE_NAME}
-          </p>
+          {headerMark === undefined ? (
+            <p className={styles.wordmark} data-slot="approved-mark-pending">
+              {SITE_NAME}
+            </p>
+          ) : (
+            <p className={styles.markBand} data-slot="approved-mark">
+              <MediaSlot facts={headerMark.facts} record={headerMark.record} />
+              <span className={styles.markName}>{SITE_NAME}</span>
+            </p>
+          )}
           <nav aria-label="Primary" className={styles.primaryNav}>
             <ul className={styles.navList}>
               {navigation.map((item) => {

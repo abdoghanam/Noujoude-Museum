@@ -1,0 +1,17 @@
+$ node scripts/tests/verify-tables.test.mjs
+PASS  valid GFM table passes  (exit 0)
+PASS  rows without a trailing pipe still pass (same 3 columns)  (exit 0)
+PASS  escaped pipe inside a cell is content, not a separator  (exit 0)
+PASS  alignment colons in the delimiter row are valid  (exit 0)
+PASS  pipe-led lines inside a code fence are not tables  (exit 0)
+PASS  two valid tables in one file  (exit 0)
+PASS  SPLIT TABLE: orphan data rows without header or delimiter must fail  (exit 1)   [regression proven: the pre-H-9 pipe-count rule would have exited 0 on this fixture]
+PASS  run that begins with a delimiter row has no header  (exit 1)   [regression proven: the pre-H-9 pipe-count rule would have exited 0 on this fixture]
+PASS  header and data rows but no delimiter row at all  (exit 1)   [regression proven: the pre-H-9 pipe-count rule would have exited 0 on this fixture]
+PASS  delimiter row declaring the wrong number of columns  (exit 1)   [the pre-H-9 rule also rejected this fixture — it is coverage, not a red case]
+PASS  uneven data row (the original incident) is still caught  (exit 1)
+PASS  single pipe-led line cannot be a table  (exit 1)   [regression proven: the pre-H-9 pipe-count rule would have exited 0 on this fixture]
+PASS  header plus delimiter with no data rows is flagged  (exit 1)
+PASS  docs/ passes the strengthened rule   (OK: 256 tables in 16 markdown files, each with a header, a delimiter row and a uniform column count)
+
+14 passed, 0 failed

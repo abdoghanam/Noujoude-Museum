@@ -6,15 +6,17 @@
  * is where those inputs are produced or honestly reported as absent, and it is the only place a page is
  * allowed to ask.
  *
- * Both answers today are "there is none", and neither is a stub:
+ * Two facts, and where each comes from:
  *
- * - **Source.** No derivative has ever been produced. The pipeline cannot run for any asset while RB-01
- *   stands, because producing a derivative from an uncleared original would create a second copy of
- *   material with no rights statement — `docs/MEDIA_AND_RIGHTS_GOVERNANCE.md` §8 says the fix "cannot
- *   precede the clearance" in exactly these words.
- * - **Alt text.** The register has an `Alt Text Status` column and no Alt Text column, so 82/82 rows read
- *   `Not Recorded` and no amount of parsing the delivered file can yield a description. Text has to
- *   arrive with the record that owns it. Writing one would be the fabricated content §6.1 forbids.
+ * - **Source.** A derivative exists only once `scripts/build-media-derivatives.mjs` has produced it and recorded
+ *   its lineage, and the builder refuses any asset its clearance ledger does not name. While 0 of 82 assets were
+ *   cleared the pipeline exited 3 and produced nothing, so `servedSrcFor` answered null for every row. That is now
+ *   a state with a cause rather than a permanent law: an asset with no produced copy has no source, and the slot
+ *   says so.
+ * - **Alt text.** The register has an `Alt Text Status` column and no Alt Text column, so descriptions arrive from
+ *   `docs/asset-governance/descriptive-labels.json` and nothing else. An unlabelled row has no description, and no
+ *   amount of parsing the delivered file can yield one — writing a sentence to make a slot open would be the
+ *   fabricated content §6.1 forbids.
  */
 
 import path from "node:path";
@@ -30,6 +32,7 @@ import {
   derivativeUrl,
   readDerivativeManifestSource,
 } from "@/lib/server/media/derivative-store";
+import { labelFor } from "@/lib/server/media/labels";
 
 interface ManifestCacheEntry {
   /** Resolved directory the bytes came from, so a second root cannot be served the first root's record. */
@@ -117,22 +120,20 @@ export function servedSrcFor(
 }
 
 /**
- * Alt text for a register-sourced asset: always null, because the register carries a status, not a
- * description.
+ * Alt text for a register-sourced asset: the string the governance record owns, or null when no one has
+ * described the picture.
  *
- * The locale is part of the signature because §8.14's field table asks for `alt_text_en` and
- * `alt_text_ar` as two required localized values, not one — so the lookup has to be per-locale from the
- * first day, and a slot that asked for "the alt text" would end up shipping English text into an Arabic
- * page. A future CMS record supplies the strings and this is where they are read.
+ * The register carries an `Alt Text Status` column and no Alt Text column, so a description has to arrive with
+ * the record that owns it — which from 4 November 2026 is `docs/asset-governance/descriptive-labels.json`, read
+ * through `src/lib/server/media/labels.ts`. The locale is part of the signature because §8.14's field table asks
+ * for `alt_text_en` and `alt_text_ar` as two required localized values, not one; an Arabic page that fell back to
+ * the English string would ship English copy into Arabic markup, and this lookup refuses to do that silently.
  *
- * Until then the slot refuses, which is the correct outcome for an image that would otherwise ship with
- * an invented caption or an empty `alt=""` asserting that the picture is decorative.
+ * An asset with no authored label still refuses to render, which is the correct outcome for an image that would
+ * otherwise arrive with an invented caption or an `alt=""` asserting that it is decorative.
  */
-export function altTextFor(
-  _asset: AssetRecord,
-  _locale: Locale,
-): string | null {
-  return null;
+export function altTextFor(asset: AssetRecord, locale: Locale): string | null {
+  return labelFor(asset.filename, locale);
 }
 
 /**

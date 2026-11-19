@@ -47,10 +47,11 @@ export const ASSET_REGISTER_PATH = path.join(
  * page uses. The declaration rule is the shared `declarationMismatch`, which is what makes R-04 — "no
  * code trusts a filename" — one rule with three callers instead of three restatements of it.
  *
- * The `vocabulary` is the wording-to-state policy and defaults to the production one, whose clearance
- * whitelists are empty. `readAssetRegister` never passes one, so the delivered register — and every page
- * and every request built on it — is evaluated under the production policy and nothing else. A fixture
- * that needs an armed policy supplies its own here, in a test file.
+ * The `vocabulary` is the wording-to-state policy and defaults to the production one, which since 4 November
+ * 2026 carries the Owner's cleared, approval and publication markers. `readAssetRegister` never passes one,
+ * so the delivered register — and every page and every request built on it — is evaluated under the
+ * production policy and nothing else. A fixture that needs a different policy supplies its own here, in a
+ * test file, and cannot travel.
  */
 export function registryFromText(
   text: string,
@@ -251,7 +252,13 @@ export function resetAssetRegisterCache(): void {
   cache = null;
 }
 
-/** Assets that a public page may render *right now*. Measured: this is the empty set. */
+/**
+ * Assets that a public page may render *right now*, measured from the delivered register on every call.
+ *
+ * 46 of 82 on 4 November 2026. It is a filter over the gate rather than a list this file maintains, so an
+ * Owner withdrawal changes the answer here without a line of code moving — which is the only reason the
+ * number is safe to state at all.
+ */
 export function publiclyServeableAssets(
   root = process.cwd(),
 ): readonly AssetRecord[] {

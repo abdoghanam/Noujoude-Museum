@@ -1,0 +1,5 @@
+summary keys=["generatedAt","tool","workspaceRoot","catalogTotal","original72","additional10","perCategoryExpected","perCategoryParsed","catalogParseDrift","physicalFileCount","physicalBytesTotal","uncataloguedFiles","dimensionDecodeFailures","namePixelMismatches","traceabilityCsv","sourceVerification","systematicCatalogFinding","problems"]
+unlabelled="absent"
+labels len=82 decorative true=21
+decorative by cat={"A.2 Brand Identity Assets":1,"A.3 Museum Architecture and Environment":2,"A.7 Textures, Backgrounds, Lighting and Transitions":18}
+alt distinct=["Recorded — EN and AR from docs/asset-governance/descriptive-labels.json"]

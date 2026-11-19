@@ -1,0 +1,509 @@
+{
+  "record": "noujoude.asset-governance.descriptive-labels",
+  "version": 1,
+  "recordedOn": "2026-11-04",
+  "rule": "An alt string describes what the picture shows and states what it is not. It is derived from the role the Owner's own catalog assigns in Appendix A of the Master Specification, and from the Arabic manifest that shipped with the generated set. No string here asserts a date, an issuer, a maker, a site, a provenance or an inventory fact, because those remain unverified.",
+  "sources": [
+    "reference/Noujoude_Master_Specification_EN.md — Appendix A rows 1-82 (role and association columns, transcribed into docs/ASSET_INVENTORY_AUDIT.csv column 14)",
+    "Noujoude.photo/GENERATED_ASSETS_MANIFEST_AR.md — the EN and AR alt drafts the manifest authored for the ten generated files, adopted verbatim"
+  ],
+  "decorativeUse": "A row marked decorative is intended to be painted as a CSS background through the gated /api/media URL, where it carries no alt text at all. The strings below exist for the day one of them is placed in a content slot instead.",
+  "labels": [
+    {
+      "file": "brand_seal_monogram_1024.webp",
+      "en": "Noujoude circular monogram seal.",
+      "ar": "ختم نجود الدائري بالمونوغرام.",
+      "decorative": false
+    },
+    {
+      "file": "logo_badge_burgundy_1024.webp",
+      "en": "Noujoude badge in burgundy.",
+      "ar": "شارة نجود بالعنابي.",
+      "decorative": false
+    },
+    {
+      "file": "logo_stacked_vertical_1024x1536.webp",
+      "en": "Noujoude vertical stacked logo.",
+      "ar": "شعار نجود العمودي المتراص.",
+      "decorative": false
+    },
+    {
+      "file": "logo_wordmark_1024x768.webp",
+      "en": "Noujoude wordmark.",
+      "ar": "اسم نجود المكتوب.",
+      "decorative": false
+    },
+    {
+      "file": "certificate_authenticity_1024.webp",
+      "en": "Certificate layout reference for artefact documentation; it is not an issued certificate.",
+      "ar": "مرجع لتصميم شهادة الأصالة لتوثيق القطع؛ وهي ليست شهادة مُصدَرة.",
+      "decorative": false
+    },
+    {
+      "file": "certificate_identity_scene_4x3.webp",
+      "en": "Illustrative scene of certificate and archive presentation; not a record of any document held.",
+      "ar": "مشهد توضيحي لعرض الشهادات والأرشيف؛ وليس تسجيلاً لأي وثيقة محفوظة.",
+      "decorative": false
+    },
+    {
+      "file": "premium_packaging_identity_1x1.webp",
+      "en": "Packaging identity reference showing the brand mark on a presentation surface.",
+      "ar": "مرجع لهوية التغليف يعرض العلامة على سطح تقديمي.",
+      "decorative": false
+    },
+    {
+      "file": "social_announcement_seal_1x1.jpg",
+      "en": "Announcement seal artwork in the brand palette.",
+      "ar": "عمل فني لختم الإعلان بلوحة ألوان العلامة.",
+      "decorative": false
+    },
+    {
+      "file": "watermark_system_16x9.webp",
+      "en": "Watermark system reference sheet for image branding.",
+      "ar": "ورقة مرجعية لنظام العلامة المائية لضبط الصور.",
+      "decorative": true
+    },
+    {
+      "file": "wax_seal_texture_macro_1x1.jpg",
+      "en": "Close study of a wax seal surface, used for certificates and archival detail.",
+      "ar": "دراسة مقرّبة لسطح ختم شمعي، تُستخدم للشهادات وتفصيلات الأرشيف.",
+      "decorative": false
+    },
+    {
+      "file": "launch_banner_16x9.jpg",
+      "en": "Institutional launch banner artwork.",
+      "ar": "لوحة إطلاق مؤسسية.",
+      "decorative": false
+    },
+    {
+      "file": "social_instagram_1024.webp",
+      "en": "Square social identity asset for Noujoude.",
+      "ar": "أصل تعريفي مربّع لمواقع التواصل لنجود.",
+      "decorative": false
+    },
+    {
+      "file": "master_atmosphere_definitive.webp",
+      "en": "Museum atmosphere study: a dim gallery interior in burgundy and gold light. Illustrative environment, not a photograph of a built Noujoude space.",
+      "ar": "دراسة أجواء المتحف: قاعة معرض خافتة بضوء عنابي وذهبي. بيئة توضيحية، وليست صورة لفضاء نجود مبنيّ.",
+      "decorative": false
+    },
+    {
+      "file": "main_entrance_mobile_9x16.webp",
+      "en": "Vertical entrance composition for small screens; illustrative, not a recorded building.",
+      "ar": "توليفة مدخل عمودية للشاشات الصغيرة؛ توضيحية وليست مبنىً موثّقاً.",
+      "decorative": false
+    },
+    {
+      "file": "grand_entrance_dusk.webp",
+      "en": "A grand museum entrance at dusk, lit warmly against a dark sky. Illustrative environment.",
+      "ar": "مدخل متحف مهيب عند الغروب، مضاء بدفء مقابل سماء معتمة. بيئة توضيحية.",
+      "decorative": false
+    },
+    {
+      "file": "arrival_hall_morning.webp",
+      "en": "An arrival hall in morning light. Illustrative environment, not a documented Noujoude interior.",
+      "ar": "قاعة وصول في ضوء الصباح. بيئة توضيحية وليست من داخل نجود الموثّق.",
+      "decorative": false
+    },
+    {
+      "file": "golden_hour_hall.webp",
+      "en": "A museum hall at golden hour. Illustrative architecture.",
+      "ar": "قاعة متحف في ساعة الذُّهب. عمارة توضيحية.",
+      "decorative": false
+    },
+    {
+      "file": "grand_staircase.webp",
+      "en": "A grand staircase interior. Illustrative architecture.",
+      "ar": "درج مهيب من الداخل. عمارة توضيحية.",
+      "decorative": false
+    },
+    {
+      "file": "museum_building_1024.webp",
+      "en": "Museum building image used for institutional pages; illustrative, not a verified façade.",
+      "ar": "صورة مبنى المتحف تُستخدم للصفحات المؤسسية؛ توضيحية وليست واجهة موثّقة.",
+      "decorative": false
+    },
+    {
+      "file": "glass_dome_looking_up.webp",
+      "en": "View upward through a glass dome and its ironwork. Illustrative architectural detail.",
+      "ar": "نظرة إلى الأعلى عبر قبة زجاجية وهيكلها المعدني. تفصيل معماري توضيحي.",
+      "decorative": false
+    },
+    {
+      "file": "marble_corridor.webp",
+      "en": "A marble corridor used for spatial transitions. Illustrative.",
+      "ar": "ممر رخامي يُستخدم للانتقالات المكانية. توضيحي.",
+      "decorative": true
+    },
+    {
+      "file": "rose_courtyard_golden_hour.webp",
+      "en": "A courtyard at golden hour with rose-toned planting. Illustrative atmosphere.",
+      "ar": "فناء في ساعة الذُّهب مع نبات بلون الورد. أجواء توضيحية.",
+      "decorative": false
+    },
+    {
+      "file": "luxury_night.webp",
+      "en": "A night interior in deep burgundy and gold. Illustrative background.",
+      "ar": "فضاء ليلي بالعنابي العميق والذهبي. خلفية توضيحية.",
+      "decorative": true
+    },
+    {
+      "file": "luxury_library_night.webp",
+      "en": "A library interior at night, shelves lit warmly. Illustrative atmosphere for stories and archives.",
+      "ar": "مكتبة من الداخل ليلاً، رفوف مضاءة بدفء. أجواء توضيحية للحكايات والأرشيف.",
+      "decorative": false
+    },
+    {
+      "file": "morning_gallery.webp",
+      "en": "A gallery in morning light. Illustrative exhibition environment.",
+      "ar": "قاعة عرض في ضوء الصباح. بيئة عرض توضيحية.",
+      "decorative": false
+    },
+    {
+      "file": "main_gallery_burgundy.webp",
+      "en": "A main gallery dressed in burgundy. Illustrative exhibition environment.",
+      "ar": "القاعة الرئيسية بحلّة عنابية. بيئة عرض توضيحية.",
+      "decorative": false
+    },
+    {
+      "file": "archive_chamber.webp",
+      "en": "An archive chamber with stored material. Illustrative, not a record of holdings.",
+      "ar": "غرفة أرشيف بمحفوظات. توضيحية وليست سجلاً للمقتنيات.",
+      "decorative": false
+    },
+    {
+      "file": "private_archive_room_16x9.webp",
+      "en": "A private archive room. Illustrative environment for documentation pages.",
+      "ar": "غرفة أرشيف خاصة. بيئة توضيحية لصفحات التوثيق.",
+      "decorative": false
+    },
+    {
+      "file": "collector_lounge_night.webp",
+      "en": "A collector's lounge at night. Illustrative institutional atmosphere.",
+      "ar": "صالة مجموعة ليلية. أجواء مؤسسية توضيحية.",
+      "decorative": false
+    },
+    {
+      "file": "museum_cafe_morning.webp",
+      "en": "A museum café in morning light. Optional visitor atmosphere reference, illustrative.",
+      "ar": "مقهى المتحف في ضوء الصباح. مرجع أجواء زوّار اختياري، توضيحي.",
+      "decorative": false
+    },
+    {
+      "file": "ai_curator_sanctum_16x9.jpg",
+      "en": "Environment artwork for the AI Curator page. Illustrative, and not a depiction of a physical room.",
+      "ar": "عمل فني بيئي لصفحة القيّم الرقمي. توضيحي، وليس تصويرًا لغرفة حقيقية.",
+      "decorative": false
+    },
+    {
+      "file": "ai_curator_sparkle_1024.webp",
+      "en": "Identity detail for the AI Curator mark.",
+      "ar": "تفصيل هوياتي لعلامة القيّم الرقمي.",
+      "decorative": false
+    },
+    {
+      "file": "curator_hands_emotional_moment_16x9.webp",
+      "en": "A curatorial hands-and-object moment used for storytelling. Illustrative; no individual is identified.",
+      "ar": "لحظة يدَي قيّم مع قطعة تُستخدم للسرد. توضيحية؛ ولا تُعرَّف فيها شخصية.",
+      "decorative": false
+    },
+    {
+      "file": "collection_gallery_shelves_16x9.jpg",
+      "en": "Collection shelving environment used on Collections pages. Illustrative storage, not an inventory view.",
+      "ar": "بيئة رفوف المجموعات في صفحات المجموعات. تخزين توضيحي وليس عرضًا للجرد.",
+      "decorative": false
+    },
+    {
+      "file": "rare_stamp_1024.webp",
+      "en": "Stamp visual for the stamps category. Illustrative; it does not depict a catalogued stamp.",
+      "ar": "صورة طابع لتصنيف الطوابع. توضيحية؛ ولا تصوّر طابعًا مفهرسًا.",
+      "decorative": false
+    },
+    {
+      "file": "rare_stamps_glass_cabinet_4x3.jpg",
+      "en": "A stamp cabinet in a glass vitrine. Illustrative exhibition scene, not a photographed holding.",
+      "ar": "خزانة طوابع داخل فاترينة زجاجية. مشهد عرض توضيحي وليس قطعة مصوّرة محفوظة.",
+      "decorative": false
+    },
+    {
+      "file": "heritage_jewelry_1024.webp",
+      "en": "Heritage jewellery visual for object categories. Illustrative; not a catalogued piece.",
+      "ar": "صورة حُلي تراثي لتصنيفات القطع. توضيحية؛ وليست قطعة مفهرسة.",
+      "decorative": false
+    },
+    {
+      "file": "historical_documents_atmosphere_4x3.jpg",
+      "en": "Document atmosphere scene for the documents category. Illustrative; no text is legible and no document is identified.",
+      "ar": "مشهد أجواء وثائقية لتصنيف الوثائق. توضيحي؛ ولا يُقرأ فيه نص ولا تُحدَّد فيه وثيقة.",
+      "decorative": false
+    },
+    {
+      "file": "family_letters_1024.webp",
+      "en": "Letters visual for the letters and archives category. Illustrative; the correspondence is not identified.",
+      "ar": "صورة رسائل لتصنيف الرسائل والأرشيف. توضيحية؛ والمراسلات غير معرَّفة.",
+      "decorative": false
+    },
+    {
+      "file": "family_letters_bundle_1x1.jpg",
+      "en": "A bundle of aged letters. Illustrative; no letter, hand or date is claimed.",
+      "ar": "حزمة رسائل معتَّقة. توضيحية؛ ولا يُدَّعى رسالة أو كاتب أو تاريخ.",
+      "decorative": false
+    },
+    {
+      "file": "vintage_collector_desk_16x9.jpg",
+      "en": "A collector's desk environment for collection storytelling. Illustrative.",
+      "ar": "بيئة مكتب جامع لسرد المجموعات. توضيحية.",
+      "decorative": false
+    },
+    {
+      "file": "brand_muse_golden_hour.webp",
+      "en": "Brand atmosphere at golden hour for institutional storytelling. Illustrative.",
+      "ar": "أجواء العلامة في ساعة الذُّهب للسرد المؤسسي. توضيحية.",
+      "decorative": false
+    },
+    {
+      "file": "gift_boutique.webp",
+      "en": "Gift boutique visual, held as reference only; this museum operates no shop.",
+      "ar": "صورة بوتيك الهدايا، محفوظة كمرجع فقط؛ فهذا المتحف لا يدير متجرًا.",
+      "decorative": false
+    },
+    {
+      "file": "perfume_vanity_1024.webp",
+      "en": "Heritage vanity visual, held as reference unless it is matched to real collection material.",
+      "ar": "صورة تزيين تراثية، محفوظة كمرجع ما لم تُربط بمقتنيات حقيقية.",
+      "decorative": false
+    },
+    {
+      "file": "app_interface_showcase_16x9.jpg",
+      "en": "Interface visual reference for design work. Illustrative mock, not a screenshot of this product.",
+      "ar": "مرجع بصري للواجهة لأعمال التصميم. نموذج توضيحي وليس لقطة شاشة لهذا المنتج.",
+      "decorative": false
+    },
+    {
+      "file": "interface_collection_page_4x3.jpg",
+      "en": "Collection layout reference for the Collections interface. Illustrative mock.",
+      "ar": "مرجع تخطيطي لصفحة المجموعات. نموذج توضيحي.",
+      "decorative": false
+    },
+    {
+      "file": "control_center_desk_16x9.jpg",
+      "en": "Control Center atmosphere for the administrative environment. Illustrative.",
+      "ar": "أجواء مركز التحكم للبيئة الإدارية. توضيحية.",
+      "decorative": false
+    },
+    {
+      "file": "mobile_app_scene_9x16.jpg",
+      "en": "Mobile experience reference in vertical format. Illustrative mock.",
+      "ar": "مرجع لتجربة الجوال بالصيغة العمودية. نموذج توضيحي.",
+      "decorative": false
+    },
+    {
+      "file": "user_account_1024.webp",
+      "en": "Account visual for restricted account-related interfaces where applicable.",
+      "ar": "صورة حساب للواجهات الحسابية المقيّدة عند الانطباق.",
+      "decorative": false
+    },
+    {
+      "file": "search_discovery_1024.webp",
+      "en": "Discovery visual used on the search surface.",
+      "ar": "صورة اكتشاف تُستخدم في سطح البحث.",
+      "decorative": false
+    },
+    {
+      "file": "contact_envelope_1024.webp",
+      "en": "Correspondence visual used on the contact surface.",
+      "ar": "صورة مراسلة تُستخدم في سطح التواصل.",
+      "decorative": false
+    },
+    {
+      "file": "telephone_1024.webp",
+      "en": "Contact visual; it carries no telephone number and must not imply one.",
+      "ar": "صورة تواصل؛ لا تحوي رقم هاتف ولا توحي برقم.",
+      "decorative": false
+    },
+    {
+      "file": "favorite_heart_1024.webp",
+      "en": "Favorite icon reference, reserved for a future visitor interaction that has not been approved.",
+      "ar": "مرجع أيقونة المفضلة، محجوز لتفاعل زوّار مستقبلي غير معتمد.",
+      "decorative": false
+    },
+    {
+      "file": "location_paris_1024.webp",
+      "en": "Location visual; no Noujoude location in Paris is asserted.",
+      "ar": "صورة موقع؛ ولا يُدَّعى لنجود موقع في باريس.",
+      "decorative": false
+    },
+    {
+      "file": "bg_ivory_petals.webp",
+      "en": "Ivory petal background for selected editorial panels.",
+      "ar": "خلفية بتلات عاجية للوحات التحريرية المختارة.",
+      "decorative": true
+    },
+    {
+      "file": "bg_dark_museum_bokeh.webp",
+      "en": "Dark museum atmosphere with out-of-focus light, used as a page background.",
+      "ar": "أجواء متحف داكنة مع ضوء غير متمركز، تُستخدم خلفية للصفحة.",
+      "decorative": true
+    },
+    {
+      "file": "burgundy_velvet_texture.webp",
+      "en": "Burgundy velvet texture used behind exhibition content.",
+      "ar": "ملمس مخمل عنابي خلف محتويات العرض.",
+      "decorative": true
+    },
+    {
+      "file": "champagne_gold_marble_texture.webp",
+      "en": "Champagne gold and marble texture used for fine visual detail.",
+      "ar": "ملمس ذهبي شمبانيا ورخام لتفصيل بصري دقيق.",
+      "decorative": true
+    },
+    {
+      "file": "dark_museum_wood_texture.webp",
+      "en": "Dark wood texture used in archival environments.",
+      "ar": "ملمس خشب داكن لبيئات الأرشيف.",
+      "decorative": true
+    },
+    {
+      "file": "floral_section_background_16x9.webp",
+      "en": "Floral background for selected thematic sections.",
+      "ar": "خلفية نباتية للأقسام الموضوعية المختارة.",
+      "decorative": true
+    },
+    {
+      "file": "gold_embroidery_detail_1x1.jpg",
+      "en": "Gold embroidery detail used as an archival accent.",
+      "ar": "تفصيل تطريز ذهبي كإبراز أرشيفي.",
+      "decorative": true
+    },
+    {
+      "file": "gold_leaf_dark_texture.webp",
+      "en": "Gold leaf on a dark ground, used for restrained luxury detail.",
+      "ar": "ورق ذهب على أرض داكنة لتفصيل فخم مضبوط.",
+      "decorative": true
+    },
+    {
+      "file": "ivory_marble_texture.webp",
+      "en": "Ivory marble surface used for paper and architectural tones.",
+      "ar": "سطح رخامي عاجي لأوراق النغمات المعمارية.",
+      "decorative": true
+    },
+    {
+      "file": "ivory_silk_texture.webp",
+      "en": "Ivory silk texture used as a soft background.",
+      "ar": "ملمس حرير عاجي كخلفية ناعمة.",
+      "decorative": true
+    },
+    {
+      "file": "old_paper_texture.webp",
+      "en": "Aged archival paper texture used for document storytelling.",
+      "ar": "ملمس ورق أرشيفي معتّق لسرد الوثائق.",
+      "decorative": true
+    },
+    {
+      "file": "rose_marble_texture.webp",
+      "en": "Rose marble texture used in selected identity sections.",
+      "ar": "ملمس رخام وردي لأقسام هوياتية مختارة.",
+      "decorative": true
+    },
+    {
+      "file": "section_transition_background_16x9.webp",
+      "en": "Section transition background.",
+      "ar": "خلفية انتقال بين الأقسام.",
+      "decorative": true
+    },
+    {
+      "file": "light_rays_dust.webp",
+      "en": "Shafts of light through dust, used for museum lighting atmosphere.",
+      "ar": "أشعة ضوء عبر غبار لأجواء إضاءة المتحف.",
+      "decorative": true
+    },
+    {
+      "file": "loading_golden_rays.webp",
+      "en": "Golden ray atmosphere used in loading states.",
+      "ar": "أجواء أشعة ذهبية في حالات التحميل.",
+      "decorative": true
+    },
+    {
+      "file": "rose_petals_floating.webp",
+      "en": "Floating rose petals used in selected transitions.",
+      "ar": "بتلات ورد طافية في انتقالات مختارة.",
+      "decorative": true
+    },
+    {
+      "file": "warm_candlelight.webp",
+      "en": "Warm candlelight used for museum atmosphere.",
+      "ar": "ضوء شموع دافئ لأجواء المتحف.",
+      "decorative": true
+    },
+    {
+      "file": "overlay_glass_reflections.webp",
+      "en": "Glass reflection overlay for vitrine and display effects.",
+      "ar": "طبقة انعكاس زجاجي لتأثيرات الفاترينات والعرض.",
+      "decorative": true
+    },
+    {
+      "file": "world_morocco_hero_16x9.webp",
+      "en": "Illustrative scene: a dim historic Moroccan courtyard with zellige tilework, a carved arch and a lantern, lit by warm low light.",
+      "ar": "مشهد توضيحي: فناء مغربي تاريخي خافت الإضاءة، مع زليج وعقد منقوش وفانوس، تحت ضوء دافئ منخفض.",
+      "decorative": false
+    },
+    {
+      "file": "world_egypt_hero_16x9.webp",
+      "en": "Illustrative scene: a shadowed Egyptian-style stone colonnade with carved piers and a single shaft of daylight.",
+      "ar": "مشهد توضيحي: رواق حجري مصري الطابع بأعمدة محفورة وشعاع ضوء واحد في العتمة.",
+      "decorative": false
+    },
+    {
+      "file": "world_syria_hero_16x9.webp",
+      "en": "Illustrative scene: a Damascene courtyard of alternating pale and dark stone, inlaid woodwork and a still marble fountain.",
+      "ar": "مشهد توضيحي: فناء دمشقي بحجارة فاتحة وداكنة متناوبة، وأخشاب مطعّمة ونافسة رخامية ساكنة.",
+      "decorative": false
+    },
+    {
+      "file": "world_mauritania_hero_16x9.webp",
+      "en": "Illustrative scene: a carved wooden chest holding bound volumes and leather satchels in a dry stone library lit from a desert archway.",
+      "ar": "مشهد توضيحي: صندوق خشبي محفور يحوي مجلّدات وحقائب جلدية في مكتبة حجرية جافة يضيء بها مدخل صحراوي.",
+      "decorative": false
+    },
+    {
+      "file": "world_libya_hero_16x9.webp",
+      "en": "Illustrative scene: an arcade of pale stone columns and vaults opening toward a fortified Mediterranean town at dusk.",
+      "ar": "مشهد توضيحي: رواق أعمدة حجرية فاتحة وأقبية يطلّ على مدينة متوسطية محصّنة عند الغروب.",
+      "decorative": false
+    },
+    {
+      "file": "world_sudan_hero_16x9.webp",
+      "en": "Illustrative scene: a vaulted sandstone interior with a domed niche, a palm-screen shadow and a beam of light across the floor.",
+      "ar": "مشهد توضيحي: فضاء رملي معقود السقف مع محراب مقبّب وظلّ سعف النخيل وشعاع ضوء على الأرض.",
+      "decorative": false
+    },
+    {
+      "file": "collection_first_day_covers_4x3.webp",
+      "en": "Illustrative display: aged envelopes with abstract, illegible printed labels and blurred ink markings in a dark tray.",
+      "ar": "عرض توضيحي: مغلفات معتّقة بملصقات مطبوعة مجردة غير مقروءة وعلامات حبر ضبابية في صينية معتمة.",
+      "decorative": false
+    },
+    {
+      "file": "collection_coins_4x3.webp",
+      "en": "Illustrative display: unmarked aged metal discs resting in a burgundy velvet tray under controlled light.",
+      "ar": "عرض توضيحي: أقراص معدنية معتّقة بلا علامات في صينية مخملية عنابية تحت ضوء مضبوط.",
+      "decorative": false
+    },
+    {
+      "file": "collection_artifacts_4x3.webp",
+      "en": "Illustrative display: a generic bronze vessel, a woven textile fragment and a worked stone on burgundy plinths inside a vitrine.",
+      "ar": "عرض توضيحي: وعاء برونزي عام وقطعة نسيج منسوج وحجر مصقول على قواعد عنابية داخل فاترينة.",
+      "decorative": false
+    },
+    {
+      "file": "collection_souvenirs_4x3.webp",
+      "en": "Illustrative display: an engraved frame back, a ribbon rosette, a plain metal fob and a small wooden box on dark velvet.",
+      "ar": "عرض توضيحي: خلفية إطار محفورة ووردة شريط وميدالية معدنية بسيطة وصندوق خشبي صغير على مخمل داكن.",
+      "decorative": false
+    }
+  ],
+  "unlabelled": {
+    "count": 0,
+    "rule": "Any register row absent from this list keeps Alt Text Status = Not Recorded, and src/lib/media/slot.ts will refuse to draw it. That refusal is the correct state for an image nobody has described."
+  }
+}

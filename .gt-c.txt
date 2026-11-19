@@ -1,0 +1,11 @@
+scanned 16 docs/ markdown files, 583 quoted fragments carrying a line reference (skipped 23 quoted strings shorter than 3 tokens)
+VERIFIED 436 | LINE_OFF 0 | LINE_OFF_OTHER_SOURCE 0 | SELF_RECORDING 8 | PROJECT_RECORD 17 | DEFINED_TERM 6 | NOT_FOUND 0 | NO_LINE_REF 122 (of which 0 are verbatim requirement text with no citation)
+BARE REFERENCES (no quotation on the line): 1584 checked, 3 defect(s) [1581 resolve]
+
+docs/ARCHITECTURE_DECISIONS.md: 3 reference(s) with no quotation that do not resolve as written
+  [REF_BLANK_TARGET] doc:1100 "line 352" — line 352 is empty in doc:QUALITY_ACCEPTANCE_FRAMEWORK.md — nothing is being cited
+  [REF_BLANK_TARGET] doc:1105 "line 352" — line 352 is empty in doc:QUALITY_ACCEPTANCE_FRAMEWORK.md — nothing is being cited
+  [REF_BLANK_TARGET] doc:1141 "line 340" — line 340 is empty in doc:QUALITY_ACCEPTANCE_FRAMEWORK.md — nothing is being cited
+
+wrote docs/CITATION_VERIFICATION.json
+CITATION GATE FAILED: 3 actionable defect(s) (exit 1)

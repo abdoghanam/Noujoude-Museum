@@ -1,0 +1,55 @@
+$ vitest run
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.12 [39m[90mE:/no[39m
+
+ [32m✓[39m src/lib/media/publication-register.test.ts [2m([22m[2m28 tests[22m[2m)[22m[33m 1462[2mms[22m[39m
+     [33m[2m✓[22m[39m exits zero when re-running its rule changes nothing [33m 1213[2mms[22m[39m
+ [32m✓[39m src/lib/server/media/serving.test.ts [2m([22m[2m102 tests[22m[2m)[22m[33m 2552[2mms[22m[39m
+     [33m[2m✓[22m[39m answers every catalogued asset with bytes or a refusal, and the bytes are exactly gate ∩ lineage [33m 441[2mms[22m[39m
+     [33m[2m✓[22m[39m answers through the production dependencies exactly what the shipped binding answers [33m 925[2mms[22m[39m
+[90mstderr[2m | src/app/api/media/[assetId]/route.test.ts[2m > [22m[2mthe private store is not a capability[2m > [22m[2mrefuses a lineage row whose file escapes the store, and does not throw on the wire
+[22m[39m/api/media: the serving decision threw, so the request is withheld. Cause: DerivativeManifestError: C:\Users\NaDa\AppData\Local\Temp\ndm-route-gEWC7u\media-derivatives\lineage.json derivatives[0]: "file" is ../../../../.env, which would resolve outside media-derivatives
+    at E:/no/src/lib/server/media/derivative-store.ts:193:13
+    at Array.map (<anonymous>)
+    at validateManifest (E:/no/src/lib/server/media/derivative-store.ts:183:49)
+    at readDerivativeManifestSource (E:/no/src/lib/server/media/derivative-store.ts:109:22)
+    at manifestSnapshot (E:/no/src/lib/server/media/slot-facts.ts:74:31)
+    at derivativeManifest (E:/no/src/lib/server/media/slot-facts.ts:69:10)
+    at Object.readLineageManifest (E:/no/src/lib/server/media/serving.ts:336:32)
+    at serve (E:/no/src/lib/server/media/serving.ts:248:8)
+    at serveDerivative (E:/no/src/lib/server/media/serving.ts:338:4)
+    at E:/no/src/app/api/media/[assetId]/route.test.ts:448:18
+
+ [32m✓[39m src/lib/server/media/registry.test.ts [2m([22m[2m32 tests[22m[2m)[22m[33m 471[2mms[22m[39m
+ [32m✓[39m src/app/api/media/[assetId]/route.test.ts [2m([22m[2m82 tests[22m[2m)[22m[33m 3491[2mms[22m[39m
+     [33m[2m✓[22m[39m derives the partition from the gate and the store, and agrees with the shipped service [33m 359[2mms[22m[39m
+     [33m[2m✓[22m[39m answers 200 with bytes that hash to the recorded digest, for every served id [33m 369[2mms[22m[39m
+     [33m[2m✓[22m[39m emits no served-branch header where the row exists but the bytes do not [33m 649[2mms[22m[39m
+     [33m[2m✓[22m[39m answers with bytes for exactly the served partition, and the refusal for everything else [33m 433[2mms[22m[39m
+ [32m✓[39m src/lib/server/media/request-limits.test.ts [2m([22m[2m39 tests[22m[2m)[22m[32m 183[2mms[22m[39m
+ [32m✓[39m src/lib/server/media/slots.test.ts [2m([22m[2m31 tests[22m[2m)[22m[33m 6056[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the gate count and the slot count distinct concepts [33m 550[2mms[22m[39m
+     [33m[2m✓[22m[39m resolves each target to the same asset list the surface index produces, in the same order [33m 310[2mms[22m[39m
+     [33m[2m✓[22m[39m names each slot with a surface the asset itself declares [33m 315[2mms[22m[39m
+     [33m[2m✓[22m[39m answers for every canonical route without throwing, bound or not [33m 498[2mms[22m[39m
+     [33m[2m✓[22m[39m carries the facts of its own sources into the slot, and invents none [33m 448[2mms[22m[39m
+     [33m[2m✓[22m[39m answers every bound slot with the outcome its own facts imply, in both locales [33m 735[2mms[22m[39m
+     [33m[2m✓[22m[39m writes the label file's own sentence into each locale, and none for a file it does not describe [33m 508[2mms[22m[39m
+     [33m[2m✓[22m[39m draw a picture per cleared surface, a refusal per withheld one, and no identity for either [33m 317[2mms[22m[39m
+     [33m[2m✓[22m[39m draw only what the gate, the store and the label file all agreed to, in both locales [33m 906[2mms[22m[39m
+ [32m✓[39m src/lib/media/usage-map.test.ts [2m([22m[2m25 tests[22m[2m)[22m[32m 213[2mms[22m[39m
+ [32m✓[39m src/domain/response-headers.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 80[2mms[22m[39m
+ [32m✓[39m src/ui/media-slot.test.tsx [2m([22m[2m14 tests[22m[2m)[22m[32m 94[2mms[22m[39m
+ [32m✓[39m src/ui/render-failure.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[32m 103[2mms[22m[39m
+ [32m✓[39m src/lib/media/slot.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 45[2mms[22m[39m
+ [32m✓[39m src/lib/media/asset-record.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 56[2mms[22m[39m
+ [32m✓[39m src/domain/routes.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 34[2mms[22m[39m
+ [32m✓[39m src/domain/rights.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 32[2mms[22m[39m
+ [32m✓[39m src/domain/entry-routing.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m src/domain/locale.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m16 passed[39m[22m[90m (16)[39m
+[2m      Tests [22m [1m[32m448 passed[39m[22m[90m (448)[39m
+[2m   Start at [22m 16:37:18
+[2m   Duration [22m 16.21s[2m (transform 6.50s, setup 2.57s, import 8.41s, tests 14.91s, environment 9ms)[22m
+

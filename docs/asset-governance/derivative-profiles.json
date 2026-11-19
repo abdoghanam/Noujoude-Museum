@@ -1,0 +1,25 @@
+{
+  "record": "noujoude.asset-governance.derivative-profiles",
+  "version": 1,
+  "recordedOn": "2026-11-04",
+  "decides": "docs/MEDIA_AND_RIGHTS_GOVERNANCE.md §10 recorded the sharp profile, quality, width ladder and format set as an explicit non-selection, because the baseline never picks them and a built-in default would pick silently. The Owner's mandate of 4 November 2026 §1 places asset organisation and integration inside the delegated technical decisions, so the selection is made here, on the record; ADR-038 in docs/ARCHITECTURE_DECISIONS.md is the decision this file carries the data for, and it is also where the width ladder is left open and why.",
+  "rationale": [
+    "WebP, not AVIF or JPEG. Every browser the project claims to support decodes WebP, the originals are already WebP and JPEG (69 image/webp and 13 image/jpeg counted by decoded container over the 82 catalogued rows, measured 4 November 2026), and a transcode to AVIF would cost encode time on a pipeline whose lineage has to be byte-verifiable today.",
+    "Quality 80. Below it, the burgundy and gold gradients in the atmosphere set band; well above it, the payload grows for a gain no candle-lit gradient shows. This is a judgement about these specific pictures, and it is written down so it can be argued with.",
+    "Longest-side cap of 1440px. The largest originals in the register are 1920px wide; a 1440 cap keeps a full-bleed hero crisp on a 1440-class viewport and costs nothing on smaller ones. Measured across the 45 delivered renders: 34 came out at their original longest side, 11 were capped to 1440, 0 were enlarged.",
+    "withoutEnlargement true. Measured from docs/ASSET_INVENTORY_AUDIT.csv on 4 November 2026: 59 of 82 assets are 512px on their longest side; the full distribution is 512 by 59, 1024 by 4, 1440 by 4, 1536 by 2, 1600 by 1, 1792 by 6, 1920 by 6. Without this flag the same profile would upscale those 59 by 2.8x and record the enlarged number as the derivative's dimensions, which would make the lineage misstate the detail the file holds."
+  ],
+  "knownLimitation": "One derivative per asset. media-derivatives/lineage.json is keyed by assetId, and src/lib/server/media/slot-facts.ts takes the first row it finds, so a width ladder for the same asset cannot be produced by two runs of this builder without the second overwriting the first's manifest. Responsive srcset therefore stays an open item rather than a claim. A second limitation sits beside this one: docs/asset-governance/clearance-ledger.json records this profile set by path and id only, so editing the quality or the width below changes what the next render run writes without invalidating the ledger that authorised it. ADR-038 states that asymmetry in its Consequences.",
+  "profiles": [
+    {
+      "id": "candlelight-1440-webp",
+      "mime": "image/webp",
+      "quality": 80,
+      "resize": {
+        "width": 1440,
+        "fit": "cover",
+        "withoutEnlargement": true
+      }
+    }
+  ]
+}

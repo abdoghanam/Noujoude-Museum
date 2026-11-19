@@ -87,7 +87,12 @@ an ineligible record; fabricating provenance/ownership/authenticity, which §14.
 Physical fact from the Phase 0 audit (`docs/asset-audit-summary.json`, `docs/ASSET_INVENTORY_AUDIT.csv`):
 **all 82 catalogued assets have `Not Approved — no approval record supplied`, and 72 of them carry rights
 status `UNKNOWN — no rights statement supplied in reference/`.** There is therefore no asset in this
-workspace whose public display is presently defensible.
+workspace whose public display is presently defensible — **the two bolded readings are the Phase 0 audit's, kept as
+the record of that date and superseded as a state statement on 4 November 2026: the Owner's declaration of that date
+(`docs/OWNER_ASSET_AUTHORIZATION_2026-11-04.md`) puts `cleared` and `approved` on 82 of 82 register rows and
+`Published` on 46, so display permission now exists while every fact about the depicted objects is still absent. The
+consequence for this document is the opposite of relief: the surface below is no longer protected by an empty cell,
+it is protected by the serving gate, which raises the stakes on §6 and §10 rather than lowering them.**
 
 Threats: public serving of restricted originals; signed-URL leakage, replay or over-long validity; using a
 file extension as a sanitization claim (Standard §6 line 189); upload of an executable/SVG/script payload
@@ -527,20 +532,26 @@ routing are undefined.** Status: Contract — unimplemented.
 ## 10. Media and object-storage security (Standard §6, lines 183–193)
 
 Detail of the asset *governance* side is `docs/MEDIA_AND_RIGHTS_GOVERNANCE.md`; this section states the
-security controls. All **Contract — unimplemented.**
+security controls. All **Contract — unimplemented** as written on 31 October 2026, and that sentence is now a dated
+reading: re-measured 4 November 2026, **M-04 is implemented** (magic-byte sniffing in `scripts/lib/image-signature.mjs`,
+used by the audit and by the derivative builder, with `NDM-AST-041` held out as the proven contradiction), **M-06 is
+implemented** (`sharp` 0.35.5 / libvips 8.18.7 installed and run; 45 derivatives produced), and **M-10 is partly
+implemented** (`media-derivatives/lineage.json` records original→derivative with a sha256 per render; the 10 broken
+links below are still broken). M-01, M-02, M-03, M-05, M-07, M-08, M-09 and M-11 remain **Contract — unimplemented**,
+and none of the three that moved is verified in a production environment — §2's line-6 rule still caps every row here.
 
 | # | Control | Verbatim requirement (Standard §6) | Plan / note |
 |---|---|---|---|
-| M-01 | Private originals by default | "Keep original collection photography and documentary files private by default **until rights and publication approval are recorded**" (184) | Measured against the audit: **no asset in this workspace currently satisfies the condition** — 82/82 `Not Approved`, 72/82 rights `UNKNOWN` (`ASSET_INVENTORY_AUDIT.csv`). `S3_BUCKET_PRIVATE=noujoude-originals` is declared in `.env.example` line 43 with no bucket existing |
+| M-01 | Private originals by default | "Keep original collection photography and documentary files private by default **until rights and publication approval are recorded**" (184) | The 31 October reading — **no asset in this workspace currently satisfies the condition**, 82/82 `Not Approved`, 72/82 rights `UNKNOWN` (`ASSET_INVENTORY_AUDIT.csv`) — is kept as history. Re-measured 4 November 2026: the condition the control names is now **recorded** on 82/82 (`Owner-Declared Owned…` / `Approved — Owner mandate 2026-11-04…`), so this control no longer rests on an empty cell to keep originals private. That is the sharper result, not the safer one: **the control itself is still unimplemented.** `S3_BUCKET_PRIVATE=noujoude-originals` is declared at `.env.example` line 43 with no bucket, no provider and no policy existing (OID-19), and the 82 originals sit in `Noujoude.photo/` as ordinary files on this host. The only boundary that actually stops an original byte today is the serving gate: `src/lib/server/media/serving.ts` answers with derivative renders and has no path to an original at all |
 | M-02 | Separate policies for public derivatives vs restricted originals | "Use separate logical policies for public derivative assets and restricted originals" (185) | two buckets declared (`noujoude-originals` / `noujoude-derivatives`, `.env.example` 43–44) — **declaration only; nothing provisioned** |
 | M-03 | Short-lived signed URLs | "Use short-lived signed URLs for private assets" (186) | TTL is a decision that must be recorded and tested; `.env.example` lines 39–40 state the rule; no expiry value chosen |
 | M-04 | Content validation | "Validate MIME type, magic bytes, extension, file size, dimensions, and allowed formats" (187) | the Phase 0 audit proves why extension is not evidence: `NDM-AST-041 vintage_collector_desk_16x9.jpg` has a `.jpg` name but its container is `RIFF….WEBP` (magic bytes read directly during preparation of this document; `ASSET_INVENTORY_AUDIT.csv` row 42: MIME `image/webp`, 512×290, `WRONG_FORMAT`) |
 | M-05 | Malware scanning | "Scan uploaded files for malware where the selected infrastructure supports it" (188) | Master §11.8 (line 1603) makes `Security Scan` a pipeline stage and §16.8 (2504) says "scan where tooling supports it"; **no scanner is selected** — a capability-dependent control that must not be reported as unconditional |
-| M-06 | Re-encode derivatives | "Re-encode web-display derivatives; **never treat an extension change as sanitization**" (189) | `sharp` is the approved processor (Standard §2.2 line 53, `ARCHITECTURE_DECISIONS.md` §5) — **not installed**; 72/82 assets are recorded `Original (no derivatives produced)` |
+| M-06 | Re-encode derivatives | "Re-encode web-display derivatives; **never treat an extension change as sanitization**" (189) | `sharp` is the approved processor (Standard §2.2 line 53, `ARCHITECTURE_DECISIONS.md` §5) — **installed and running as of 4 November 2026**: `sharp` 0.35.5 over libvips 8.18.7, `node_modules/sharp/package.json` read directly, driving `scripts/build-media-derivatives.mjs` to **45** renders under `media-derivatives/` (2,422,790 bytes, largest 165,426). The 31 October pair — *not installed*, and `Original (no derivatives produced)` on 72 of 82 — is kept as that date's reading, and the surviving half of it is real: **37** rows still produce nothing, 36 because the publication register names no entry for them and 1 because of M-04's `WRONG_FORMAT` defect on `NDM-AST-041`. The sanitization rule is honoured by construction rather than by wording: the builder re-encodes through libvips from sniffed container bytes and records the resulting digest, so an extension never decides anything — and the profile is a recorded decision (ADR-038), not an ad-hoc call |
 | M-07 | Script/SVG payloads | "Prevent SVG/script payloads and unsafe document previews from executing in the application origin" (190) | reject unsafe formats (§16.8 line 2504); never preview uploaded documents in the app origin; served from a distinct origin/policy where feasible |
 | M-08 | Credentials server-side | "Keep object storage credentials server-side" (191) | Standard §5 line 180 + ESLint client env rule (§6.11) + G.7 line 3790; `S3_ACCESS_KEY_ID`/`S3_SECRET_ACCESS_KEY` are non-`NEXT_PUBLIC_*` by construction (`.env.example` 45–46) |
 | M-09 | Versioning + protected deletion | "Enable versioning and protected deletion for original assets" (192) | also §16.8 line 2506 and §18.8 line 2844; **not provisioned**; note that "protected deletion" for the 10 AI-generated derivatives is already compromised by lost source PNGs (see M-10) |
-| M-10 | Lineage + checksums | "Record original/derivative lineage, checksums, rights, and usage links" (193); §8.14 `source_asset_id` (line 1318); §8.18 line 1386 "Keep the original media file separate from derivatives" | 10/82 records carry a **broken** original→derivative link: `_manifest.json` names source PNGs (e.g. `world_morocco_hero_16x9_1793387944337_307329d3.png`) that are absent from the workspace; SHA-256 baselines exist for all 82 in `ASSET_INVENTORY_AUDIT.csv` and are re-verified by `scripts/preflight.mjs` (82/82 match) |
+| M-10 | Lineage + checksums | "Record original/derivative lineage, checksums, rights, and usage links" (193); §8.14 `source_asset_id` (line 1318); §8.18 line 1386 "Keep the original media file separate from derivatives" | **Partly implemented as of 4 November 2026, and still broken where it was broken.** Implemented: `media-derivatives/lineage.json` carries one row per produced render with `assetId`, `originalFilename`, `originalSha256`, `sha256`, dimensions, bytes, mime and profile (45 rows); `src/lib/server/media/derivative-store.ts` parses and validates it row by row and rejects any `file` value that would resolve outside `media-derivatives`; and `src/lib/server/media/serving.ts` refuses a byte whose sha256 differs from the recorded row — so the lineage record is load-bearing at the boundary, not a log beside it. **What is not bound:** the clearance ledger never reads `lineage.json` (`grep -n 'lineage' scripts/build-clearance-ledger.mjs` → **0 matches**; it binds the *publication register* by digest and the *profile set* by path and id only), `scripts/preflight.mjs` never reads it either (**0 matches**), and there is no `--check` mode that re-verifies the 45 stored bytes against their recorded digests without a rebuild. So a tampered lineage file would be caught at the serving boundary, where the digest is compared before any byte leaves, and by the 27-assertion derivative gate — but not by the ledger or by preflight. That asymmetry is recorded rather than smoothed over. Still broken: **10/82** original→derivative links, because `_manifest.json` names source PNGs (e.g. `world_morocco_hero_16x9_1793387944337_307329d3.png`) that are absent from the workspace (**RB-05**) — re-verified 4 November 2026 against both the quarantine folder and the library root, 10 of 10 absent |
 | M-11 | No public access to restricted artifacts | Standard §15 line 332; STT-002 line 3086 "Unclear/restricted media cannot be publicly served for unauthorized use" | enforced at the serving layer, not by UI hiding |
 
 ---
@@ -602,6 +613,19 @@ assets** (`ASSET_INVENTORY_AUDIT.csv`), and §8.14 (line 1311) makes `alt_text_e
 for meaningful public images*. Automated axe checks have never run: `axe-core` is a declared devDependency
 that is not installed. **No claim of WCAG AA attainment exists or may be made.** NFR-002 (line 3111) requires
 "WCAG 2.2 AA audit has no unresolved release-blocking issue" — there is no audit.
+
+**Re-measured 4 November 2026; two of those four sentences moved and the fourth did not.** Alt text is no
+longer absent: `Alt Text Status` reads `Recorded — EN and AR` on **82 of 82**, backed by
+`docs/asset-governance/descriptive-labels.json` (82 rows, `unlabelled.count` **0**, **21** flagged decorative),
+and `src/lib/media/slot.ts` refuses to draw a labelled-less image, so the field gates pixels rather than
+decorating a row. `axe-core` 4.10.2 is now **installed** (`node_modules/axe-core` present, declared at
+`package.json` line 76) — which is a different problem from the one this paragraph recorded: it is installed and
+**wired to nothing**, since `grep -rn 'axe'` over `src/`, `scripts/` and `tests/` finds only the words `axes` and
+`relaxes`, `playwright.config.ts` line 12 points at `./tests/e2e`, and that directory **does not exist**, so a
+Playwright run today answers *no tests found* — which Directive §17 and the standing rule both refuse to treat as a
+pass. **The WCAG sentence stands unchanged: no audit has ever run, no AA attainment is claimed, and none may be
+asserted from governed alt text.** §8.14's two `Localized text` *columns* still have no `media_asset` record to
+live in, and captions remain unwritten for the curatorial reason **RB-03** gives.
 
 **Core Web Vitals at p75** — Standard §9 lines 216–221; Master §19.6 lines 2934–2941:
 
@@ -886,10 +910,18 @@ system.** No case above is Passed, no case has a recorded approver, and no case 
 or even `second-environment`-class artifact. The four exit-coded measurements at §16.3 are capped at their own
 class — SV-01 at `disposable-harness`, SV-08, SV-10 and SV-12 at `host` — by the ladder rule at §16.1 that a
 claim may not reach above the class of the evidence behind it, so none of them may be read as application
-behavior, as authorization enforcement, as a migration test, as a restore, or as a compliance claim. **SV-12 is
-red**, with unresolved critical and high advisories; **SV-11 does not exist**; several cases (SV-09, SV-13,
-SV-16, SV-19) cannot close without Owner-supplied facts that are absent and not inferable — 0 of 82 asset rights
-are cleared, no provider, storage, hosting, backup vendor, or identity provider is selected, and no institutional
-or legal fact is supplied. Every case is therefore scheduled **pending**, owned by the phase named in its row, and
+behavior, as authorization enforcement, as a migration test, as a restore, or as a compliance claim. **SV-12 was
+red** when this paragraph was written, at 3 critical and 3 high; re-measured on this tree 4 November 2026,
+`pnpm audit --audit-level=high` exits **0** with `3 vulnerabilities found — Severity: 1 low \| 2 moderate`, so the
+Critical/High class the §6.10 threshold names is empty and SV-12's own row (§16.3) carries that reading — while the
+unfiltered `pnpm audit` still exits **1** over those same three sub-threshold advisories, which is a red at a
+different threshold and is recorded as B-11's residual, not waived. **SV-11 does not exist**; several cases (SV-09, SV-13,
+SV-16, SV-19) cannot close without Owner-supplied facts that are absent and not inferable — no provider, storage,
+hosting, backup vendor, or identity provider is selected, and no institutional or legal fact is supplied. **Asset
+rights were the fifth item in that list when this paragraph was written ("0 of 82 asset rights are cleared"); on
+4 November 2026 the Owner supplied a declaration that clears and approves all 82 register rows and publishes 46, so
+that leg no longer withholds these cases — and none of them closes on the strength of it either, because SV-09,
+SV-13, SV-16 and SV-19 ask for infrastructure and institutional facts, not for permission over a file, and the
+provenance half of the asset question is still open as RB-04.** Every case is therefore scheduled **pending**, owned by the phase named in its row, and
 governed by §20.6's evidence-and-approver rule. This section proves that each control has a defined way to be
 proved; it proves none of the controls themselves.

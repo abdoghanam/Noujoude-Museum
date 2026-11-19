@@ -1,0 +1,7 @@
+LEN=1248
+
+HEAD200:
+| REQ-AST-009 | §8.15 1344; §11.6 1593; §13.6 1918+; Standard §13 302 | V1 | — (planned: `RightsRecord` + approval workflow) | — (none; nothing public without a cleared right for that use) | audit CSV: **72/72 original assets `Rights Status = UNKNOWN — no rights statement supplied in reference/`; 10/10 requested assets `Awaiting Rights Review`; 82/82 `Not Approved — no approval record supplied`** — quoted as the file records them. **Re-measured 3 Nov 2026:** `Actual Usage` no longer asserts anything about `src/` (the generator was fixed; see REQ-TRUTH-006), and the requirement still fails for the same reason as before — no cleared right exists for any of the 82. The reason no asset reaches a
+
+TAIL400:
+ draft was wrong: **0** `next/image` imports exist under `src/` — the string's single occurrence, `src/ui/media-slot.tsx:20`, is the comment recording why plain `<img>` is used — and of 21 `<img>` occurrences across 6 `src/` files exactly 1 renders (`src/ui/media-slot.tsx:69`), the rest being comments, docstrings and test assertions. The media route answers `404` on every refusal while rights are unreviewed, so it is the gate that bars delivery, not the absence of code | Blocked by Owner Input |

@@ -7,8 +7,10 @@
  * that the derivative has lineage, that its path stays inside the private store, that it is small enough to
  * read at all (SR-09), and that its bytes still hash to what the manifest recorded. A link that someone
  * bookmarked, typed or scraped therefore buys nothing — the gate is consulted at the moment of serving,
- * which is what §20.4's STT-002 row requires and what RB-01 is about: measured today, 0 of 82 assets pass,
- * so every request to this endpoint answers 404.
+ * which is what §20.4's STT-002 row requires and what RB-01 is about. Measured on 4 November 2026 the gate
+ * passes 46 of the 82 catalogued assets and 45 of those have a recorded derivative, so those 45 answer with
+ * bytes and every other id answers 404; the numbers are a reading of the register and the store, not part of
+ * this file's contract, and `src/app/api/media/[assetId]/route.test.ts` derives them per run.
  *
  * Why the refusal is a 404 and not a 403: a 403 would tell an anonymous caller that the id is real, is
  * derived, and is being withheld from them. That is a disclosure about the register to anyone who can

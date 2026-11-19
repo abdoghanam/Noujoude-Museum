@@ -73,13 +73,18 @@ decision, and it is the only code in this tree that reads a file at runtime. Sti
 later phase: `src/app/control-center/` (Phase 6), `src/payload/` with collections, hooks and access
 (Phase 2), and `src/generated/` (derived, git-ignored).
 
-There is no image pipeline inside `src/`, and there are no derivative bytes to serve. Derivatives are
-produced by `scripts/build-media-derivatives.mjs` into `media-derivatives/`, and measured on 3 November 2026
-that directory **does not exist on this machine**. Two independent fail-closed conditions follow from the
-tree's actual state: every catalogued asset is refused at check 2, because the register records 0 of 82
-cleared and none approved — `src/lib/server/media/slots.test.ts` pins that reading as delivered — and even a
-cleared asset would stop at check 3, because `media-derivatives/lineage.json` is not there to describe it.
-B-06 is the Owner fact that moves the first; running the builder is the step that provisions the second.
+There is still no image pipeline inside `src/`; derivatives are produced by
+`scripts/build-media-derivatives.mjs` into `media-derivatives/`, and measured on 4 November 2026 that
+directory holds **45 WebP files and a `lineage.json` of 45 rows**, with `originalsUnchanged: true`. The two
+fail-closed conditions this section used to describe have separated rather than disappeared. Check 2, the
+gate, now passes 46 of the 82 catalogued rows, because the Owner's declaration of 4 November armed the
+cleared and approval markers and the register carries the citation — that is an Owner fact, recorded in
+`docs/asset-governance/owner-authorization.json`, and not something this tree decided. Check 3, the store,
+still stops one of those 46, because no derivative was produced for it. So 45 assets answer a media request
+with bytes and every other id — 36 gate denials, one cleared-but-unproduced row, and everything outside the
+register — answers the byteless `404`. `src/app/api/media/[assetId]/route.test.ts` derives that partition
+from the register and the manifest on every run, which is why a withdrawal or a new derivative moves a
+number instead of breaking a comment.
 
 ## Two rules that shape every file added here
 
@@ -99,14 +104,19 @@ B-06 is the Owner fact that moves the first; running the builder is the step tha
 
 Per Directive §15, a route or a component is not proof of a completed feature. The claims this
 directory can support are narrow: the canonical route set exists and is locale-prefixed; the writing
-direction follows the locale; an untrusted slug is refused; the rights gate returns a denial for every
-asset in the library's recorded state (0 of 82 cleared, none approved) and refuses an unrecognised
-state rather than allowing it; the shell renders no content it was not given. Since the serving layer
-landed, four more claims are test-pinned rather than asserted: a lineage row that names a path outside
+direction follows the locale; an untrusted slug is refused; the rights gate is a closed vocabulary that
+answers each of its four questions from a cited marker rather than from a heuristic, and refuses an
+unrecognised state instead of allowing it; the shell renders no content it was not given. Since the serving
+layer landed, four more claims are test-pinned rather than asserted: a lineage row that names a path outside
 the store is refused before any read; a derivative whose bytes exceed the 4 MiB serving ceiling, or no
 longer hash to what the manifest records, is not served; every refusal answers `404` with the reason
 withheld from the body; a client past its per-surface allowance answers `429` — measured in-process, not
-yet measured over a running `next start`. The claims it cannot support: that the museum has content, that
-any asset may be served to the public (B-06 keeps the answer no), that the design system is approved
+yet measured over a running `next start`. Two of those branches are now reachable with real assets rather
+than only with fixtures, and both are read that way: the digest re-check and the containment check run on
+requests for the 45 served derivatives, and a substitution written into a copy of the store is refused
+(`route.test.ts`, "the bytes a visitor receives are the bytes the manifest recorded"). The claims it cannot
+support: that the museum has content beyond what the Owner has authorised and the register records, that a
+served image is evidence about the object depicted in it (`DEC-INV-001` and B-05 keep provenance open — the
+rights question and the historical question are different questions), that the design system is approved
 (BA-001…BA-007, OD-16), that any page is release-ready, or that anything here has run in CI (B-08,
 zero runs — there is no remote).

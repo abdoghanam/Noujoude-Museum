@@ -20,6 +20,7 @@
 // runnable before `pnpm install`, so they cannot depend on vitest.
 
 import { spawnSync } from "node:child_process";
+// createHash not needed in this suite.
 import {
   mkdirSync,
   mkdtempSync,

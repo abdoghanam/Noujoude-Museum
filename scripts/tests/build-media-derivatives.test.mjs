@@ -29,6 +29,7 @@ import {
   readFileSync,
   readdirSync,
   rmSync,
+  statSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -200,8 +201,43 @@ function fixture(options = {}) {
   };
 }
 
-// ── 1. the real workspace: nothing is authorised, so nothing is written ────────────────────────────
+// ── 1. the real workspace: an unauthorised run writes nothing ──────────────────────────────────────
 {
+  /*
+   * What this case is about has not changed: a run with no profile set and no ledger must refuse, and a
+   * refusal must not touch the tree. What *was* asserted has, because the assertion was written as the shape
+   * of an empty workspace — `media-derivatives/` does not exist — and on 4 November 2026 the Owner's
+   * declaration plus a completed build made that directory a legitimate part of this checkout, holding 45
+   * authorised derivatives. Asserting its absence today would be asserting that the build must never
+   * succeed, which is the opposite of what §20.4 asks for.
+   *
+   * The requirement-level form is stronger and says nothing about history. Take the store's whole
+   * fingerprint — every filename, every byte of every file — before the refused run and require it again
+   * afterwards. A refusal that created a directory, rewrote `lineage.json`, replaced a derivative or quietly
+   * deleted one fails here. The same refusal is then repeated in an empty temporary workspace, where the
+   * original claim still holds literally and nothing else can explain it: no store is created where none
+   * existed.
+   */
+  const storeDir = path.join(REPO, "media-derivatives");
+  const fingerprintOfStore = () => {
+    if (!existsSync(storeDir)) return "<absent>";
+    const entries = readdirSync(storeDir)
+      .sort()
+      .map((name) => {
+        const target = path.join(storeDir, name);
+        if (!statSync(target).isFile()) return [name, "<not-a-file>"];
+        return [name, sha256(readFileSync(target))];
+      });
+    return JSON.stringify(entries);
+  };
+
+  const before = fingerprintOfStore();
+  check(
+    before !== "<absent>",
+    "the delivered workspace has a derivative store for the run below to be measured against",
+    `${storeDir} is absent — the authorised build has not been run`,
+  );
+
   const r = run(
     [
       "--profile",
@@ -215,14 +251,38 @@ function fixture(options = {}) {
   );
   check(
     r.code === 3 && /no profile set exists/.test(r.out),
-    "the delivered workspace exits 3 naming §10, because no profile set and no clearance ledger exist",
+    "an invocation naming no profile set and no clearance ledger exits 3 citing §10",
     `code ${String(r.code)}: ${r.out}`,
   );
   check(
-    !existsSync(path.join(REPO, "media-derivatives")),
-    "and it creates no derivative store while nothing is authorised",
-    "media-derivatives/ exists",
+    fingerprintOfStore() === before,
+    "and the refused run leaves every byte of the delivered store exactly as it found it",
+    `store changed after the refusal (before ${String(before).slice(0, 120)})`,
   );
+
+  // The same refusal where no store has ever existed, which is where the original wording stays true.
+  const empty = mkdtempSync(path.join(tmpdir(), "ndm-build-refusal-"));
+  try {
+    const fresh = run(
+      [
+        "--profile",
+        "probe",
+        "--profiles",
+        "media-derivatives/profiles.json",
+        "--ledger",
+        "media-derivatives/clearance.json",
+      ],
+      empty,
+    );
+    check(
+      fresh.code === 3 && !existsSync(path.join(empty, "media-derivatives")),
+      "and in a workspace with no store at all it refuses without creating one",
+      `code ${String(fresh.code)}: ${fresh.out}`,
+    );
+  } finally {
+    rmSync(empty, { recursive: true, force: true });
+  }
+
   const missing = run([], REPO);
   check(
     missing.code === 2 && /must be supplied/.test(missing.out),

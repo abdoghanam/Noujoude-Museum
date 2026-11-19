@@ -50,6 +50,10 @@
     "test:gate:spec-copy": "node scripts/tests/copy-master-spec-output.test.mjs",
     "test:gate:derivatives": "node scripts/tests/build-media-derivatives.test.mjs",
     "build:derivatives": "node scripts/build-media-derivatives.mjs",
+    "build:publication-register": "node scripts/build-publication-register.mjs",
+    "build:publication-register:check": "node scripts/build-publication-register.mjs --check",
+    "build:clearance-ledger": "node scripts/build-clearance-ledger.mjs",
+    "build:clearance-ledger:check": "node scripts/build-clearance-ledger.mjs --check",
     "docs:spec-copy": "node scripts/copy-master-spec.mjs"
   },
   "dependencies": {
@@ -58,7 +62,7 @@
     "@payloadcms/plugin-cloud-storage": "3.92.1",
     "@payloadcms/richtext-lexical": "3.92.1",
     "graphql": "^16.8.1",
-    "next": "16.4.3",
+    "next": "16.4.6",
     "payload": "3.92.1",
     "react": "19.3.1",
     "react-dom": "19.3.1",
@@ -68,10 +72,11 @@
   "devDependencies": {
     "@eslint/js": "9.39.5",
     "@playwright/test": "^1.51.1",
+    "@axe-core/playwright": "^4.10.2",
     "@types/react": "19.3.0",
     "axe-core": "^4.10.2",
     "eslint": "^9",
-    "eslint-config-next": "16.4.3",
+    "eslint-config-next": "16.4.6",
     "prettier": "^3",
     "typescript": "^5",
     "typescript-eslint": "8.72.1",

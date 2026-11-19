@@ -27,7 +27,7 @@
  * 3. **It does not write into the original library.** `Noujoude.photo/` is read-only by `.gitignore` line
  *    45, "originals are never overwritten". The audit script reads it; this script reads it too, and
  *    writes only into `media-derivatives/`, which is outside both the library and `public/` — anything in
- *    `public/` is served without passing a gate, which §20.4 bars while 0 of 82 assets are cleared.
+ *    `public/` is served by the static handler without passing a gate, which §20.4 bars for gated media.
  *
  * Every original is hashed before and after the run. If any byte of any input changed, no manifest is
  * written and the process exits 4: a pipeline that quietly rewrote its own inputs would destroy the
@@ -51,6 +51,17 @@ import sharp from "sharp";
 
 import { parseCsv } from "./lib/csv.mjs";
 import { sniffFormat } from "./lib/image-signature.mjs";
+import "./lib/ts-module-hooks.mjs";
+
+// The production wording-to-state vocabulary, read from the module that decides it rather than restated here.
+// A refusal message that says "0 of 82 are cleared" is a claim this script cannot see without that vocabulary,
+// and it was in fact false from the day the Owner's 4 November declaration armed it — a script that reports the
+// gate has to report what the gate measures, per run, from the register it was handed.
+const {
+  PRODUCTION_RIGHTS_VOCABULARY,
+  approvalFrom,
+  rightsStateFrom,
+} = await import("@/lib/media/asset-record");
 
 // ------------------------------------------------------------------ inputs
 
@@ -146,11 +157,33 @@ function validateProfile(value, where) {
       `${where}: "resize.fit" must be one of ${[...SHARP_FITS].join(", ")}`,
     );
   }
+  /*
+   * Optional, and the reason it exists is measured rather than theoretical. The register records real
+   * pixels, and 43 of the 82 catalogued assets are 512px on their longest side while the country heroes are
+   * 1792px. A profile that says `width: 1280` would therefore *upsample* every small original by 2.5x and
+   * then record the enlarged number as the derivative's dimensions — a lineage row that misstates how much
+   * detail the file holds, in a project whose whole media architecture is built on the lineage being
+   * truthful. `withoutEnlargement` is sharp's own guard, passed through rather than assumed.
+   */
+  const withoutEnlargement = resize.withoutEnlargement;
+  if (
+    withoutEnlargement !== undefined &&
+    typeof withoutEnlargement !== "boolean"
+  ) {
+    throw new Error(
+      `${where}: "resize.withoutEnlargement" must be a boolean when given`,
+    );
+  }
   return {
     id,
     mime,
     quality,
-    resize: { width: resize.width, height: resize.height, fit: resize.fit },
+    resize: {
+      width: resize.width,
+      height: resize.height,
+      fit: resize.fit,
+      withoutEnlargement,
+    },
   };
 }
 
@@ -208,6 +241,33 @@ function readRegister(file) {
 // ------------------------------------------------------------------ the run
 
 /**
+ * What the register in front of this run says about rights, in the gate's own words.
+ *
+ * Used in the refusal text, so the sentence a blocked operator reads is computed from the same cells the
+ * application computes its decisions from. The counts are of the register this invocation was handed, which in
+ * a fixture is the fixture's rows and in the real workspace is the delivered 82 — one sentence, two truths,
+ * neither of them typed in.
+ */
+function rightsPosition(register) {
+  const rows = [...register.values()];
+  const cleared = rows.filter(
+    (row) =>
+      rightsStateFrom(row.rightsStatement, PRODUCTION_RIGHTS_VOCABULARY) ===
+      "cleared",
+  ).length;
+  const approved = rows.filter(
+    (row) =>
+      approvalFrom(row.approvalStatement, PRODUCTION_RIGHTS_VOCABULARY) ===
+      "approved",
+  ).length;
+  return `Measured from this register now: ${String(cleared)} of ${String(
+    rows.length,
+  )} rows read as rights-cleared and ${String(
+    approved,
+  )} as approved under src/lib/media/asset-record.ts's production vocabulary.`;
+}
+
+/**
  * Why one ledger row did not become a file.
  *
  * Every reason is a fact about the delivered record, not a judgement about the asset: the register is
@@ -257,6 +317,9 @@ async function emit(profile, verified, storeDir) {
     width: profile.resize.width,
     height: profile.resize.height,
     fit: profile.resize.fit ?? "cover",
+    // Defaults to the value the profile omits, so a profile file written before this option existed resizes
+    // exactly as it did on 2 November. The enlargement guard is opt-out, not opt-in, by default.
+    withoutEnlargement: profile.resize.withoutEnlargement ?? false,
   });
   // `MIME_EXTENSIONS` admits only the three formats a browser-native heritage gallery needs. A PNG
   // derivative of a photographic original is a raster of a raster, and offering it here would invite a
@@ -362,9 +425,10 @@ async function main() {
   if (ledger === undefined) {
     fail(
       3,
-      `build-media-derivatives: no clearance ledger at ${LEDGER_FILE}, so no asset is authorised for derivation. ` +
-        "Measured today: 0 of 82 catalogued assets are rights-cleared and 0 are approved, and §8 bars producing a " +
-        "derivative from an asset whose rights state is unknown — the fix cannot precede the clearance.",
+      `build-media-derivatives: no clearance ledger at ${LEDGER_FILE}, so nothing is authorised for derivation ` +
+        "whatever the register's rights cells say. §8 of docs/MEDIA_AND_RIGHTS_GOVERNANCE.md bars producing a " +
+        "derivative from an asset no clearance record names, and the ledger is that record: write it with " +
+        "`node scripts/build-clearance-ledger.mjs`, which copies the register's own cells rather than authoring new ones.",
     );
     return;
   }
@@ -409,9 +473,9 @@ async function main() {
       3,
       `build-media-derivatives: ${String(approvals.length)} ledger row(s) supplied, 0 authorised for derivation.` +
         (detail === "" ? "" : `\n${detail}\n`) +
-        ` Nothing was written${DRY_RUN ? " (dry run)" : ""}. Measured position: 0 of 82 catalogued assets are ` +
-        "rights-cleared and 0 are approved, and §8 of docs/MEDIA_AND_RIGHTS_GOVERNANCE.md bars producing a " +
-        "derivative from an asset whose rights state is unknown — the fix cannot precede the clearance.",
+        ` Nothing was written${DRY_RUN ? " (dry run)" : ""}. ${rightsPosition(register)} §8 of ` +
+        "docs/MEDIA_AND_RIGHTS_GOVERNANCE.md bars producing a derivative from an asset whose rights state is " +
+        "unknown — the fix cannot precede the clearance.",
     );
     return;
   }

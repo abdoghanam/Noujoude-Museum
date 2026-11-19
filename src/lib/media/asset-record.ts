@@ -106,40 +106,74 @@ export class AssetRegistryError extends Error {
  * check what the production vocabulary says, but could not check what the *evaluation* does when a
  * vocabulary is armed, because arming it meant editing this file.
  *
- * `PRODUCTION_RIGHTS_VOCABULARY` is the same three empty whitelists and the same one pending statement,
- * gathered into one value that is passed by default. Every production caller — `readAssetRegister`, the
- * audit, the preflight gate, the HTTP path — resolves it exactly as before, and an armed vocabulary exists
- * only inside a test fixture that names it. The lists stay whitelists rather than heuristics: a future
- * row reads as cleared only when a human writes a marker into the production value in advance, which is a
- * visible edit and not an accident of string matching.
+ * `PRODUCTION_RIGHTS_VOCABULARY` is those four answers gathered into one value that is passed by default.
+ * Every production caller — `readAssetRegister`, the audit, the preflight gate, the HTTP path — resolves it,
+ * so there is no second policy to keep in sync and no caller that can quietly pick a softer one. The lists
+ * stay whitelists rather than heuristics: a row reads as cleared, approved or published only when a human
+ * has written, in advance, a marker that cites the instrument behind it — which is a visible edit and not an
+ * accident of string matching. Arming them is the Owner's act, not this file's; the vocabulary's production
+ * content is pinned by name in `src/lib/server/media/serving.test.ts`, so an edit here fails a test and has
+ * to be explained rather than slipped through.
  */
 export interface RightsVocabulary {
-  /** `Rights Status` prefixes that mean cleared. Empty in production. */
+  /**
+   * `Rights Status` prefixes that mean cleared.
+   *
+   * The shape is deliberately a whitelist of sentence openings rather than a classifier, and it has been
+   * non-empty only since 4 November 2026. A list that is empty denies everything, and a list that names a
+   * citation cannot be satisfied by a row that does not carry one — which is the property §13.3 and §23 ask
+   * for. Whether the production value is empty or armed is a fact about `PRODUCTION_RIGHTS_VOCABULARY`
+   * below, pinned by `src/lib/server/media/serving.test.ts`; it is not something this type may assert.
+   */
   readonly clearedMarkers: readonly string[];
   /** Exact `Rights Status` values that mean a human is reviewing this now. */
   readonly pendingStatements: readonly string[];
-  /** `Brand/Curatorial Approval` prefixes that mean granted. Empty in production. */
+  /** `Brand/Curatorial Approval` prefixes that mean granted. */
   readonly grantedApprovalMarkers: readonly string[];
-  /** `Actual Usage` prefixes that mean a publication transaction exists. Empty in production. */
+  /** `Actual Usage` prefixes that mean a publication transaction exists. */
   readonly publishedMarkers: readonly string[];
 }
 
-/** Rights statements that count as cleared. **Deliberately empty.** */
-const CLEARED_RIGHTS_MARKERS: readonly string[] = [];
+/**
+ * Rights statements that count as cleared.
+ *
+ * Armed on 4 November 2026 by the Owner's own declaration, recorded in
+ * `docs/asset-governance/owner-authorization.json` and `docs/OWNER_ASSET_AUTHORIZATION_2026-11-04.md`. The
+ * whitelist is the prefix of a sentence that names its own authority, so a row can only read as cleared when
+ * it quotes the instrument that cleared it — which is the visible-edit property this vocabulary was built for.
+ * What the instrument grants is permission to *use* a file. It is not evidence about the object in the file:
+ * `DEC-INV-001` and blocker `B-05` stay open, and no page may turn a cleared image into an inventory claim.
+ */
+const CLEARED_RIGHTS_MARKERS: readonly string[] = [
+  "Owner-Declared Owned — authorisation:",
+];
 
 /** The one statement that means "a human is looking at this", per §13.3's state name. */
 const PENDING_RIGHTS_STATEMENTS: readonly string[] = ["Awaiting Rights Review"];
 
-/** Approval markers that count as granted. **Also deliberately empty.** All 82 rows carry `Not Approved — no approval record supplied`, and the brand marks are gated by OID-18. */
-const GRANTED_APPROVAL_MARKERS: readonly string[] = [];
-
-/** Publication markers. **Empty, because no publication transaction exists yet**: no `MediaAsset` collection, no publish route, no record with a publish date. */
-const PUBLISHED_MARKERS: readonly string[] = [];
+/**
+ * Approval markers that count as granted, armed by the same instrument: mandate §2 covers brand material and
+ * §7 covers design integration. A row the declaration does not name keeps its `Not Approved` cell and stays
+ * denied, which is how `gift_boutique.webp` and the reference-only visuals remain reference-only.
+ */
+const GRANTED_APPROVAL_MARKERS: readonly string[] = [
+  "Approved — Owner mandate 2026-11-04",
+];
 
 /**
- * What production honours. The three whitelists are empty by decision, and §23 bars a file in a library
- * from counting as cleared, so nothing a row can say on its own is evidence of a right or an approval.
- * A test that needs armed lists passes its own `RightsVocabulary`; it does not edit this one.
+ * Publication markers. A row reads as published only when `docs/asset-governance/publication-register.json`
+ * carries a dated entry naming the surfaces it is live on — the transaction §8.16 asks for, held in a file
+ * until the Phase 2 CMS owns it. Authorised but unpublished is a real state, and §13.3 refuses to collapse it.
+ */
+const PUBLISHED_MARKERS: readonly string[] = ["Published — register:"];
+
+/**
+ * What production honours. Each of the three armed lists holds one prefix, and each prefix is the opening of a
+ * sentence that cites the Owner instrument behind it, so nothing reaches `cleared`, `approved` or `published`
+ * by an accident of string matching. §23 still bars a file in a library from counting as cleared on its own
+ * existence, and that rule is what makes the four rows above load-bearing rather than decorative: what changed
+ * on 4 November is not that files became evidence, it is that the person entitled to grant permission did.
+ * A test that needs a different vocabulary passes its own `RightsVocabulary`; it does not edit this one.
  */
 export const PRODUCTION_RIGHTS_VOCABULARY: RightsVocabulary = {
   clearedMarkers: CLEARED_RIGHTS_MARKERS,
@@ -180,10 +214,12 @@ export function approvalFrom(
 }
 
 /**
- * Publication is a server-side transaction that does not exist yet, so the production vocabulary has no
- * marker for it and every row answers `false`. It is a function over the vocabulary rather than a literal
- * so that the day a publication register exists, the place that changed is named — and so a test can
- * establish that the *evaluation* works without anyone arming the production list.
+ * Publication is a transaction, not a wish: a row answers `true` only when its `Actual Usage` cell carries a
+ * marker naming the register entry that put it live. That entry exists from 4 November 2026 as
+ * `docs/asset-governance/publication-register.json`, generated from the surfaces the code binds and reviewed
+ * as data, and the marker is the prefix of a sentence citing it. It is a function over the vocabulary rather
+ * than a literal so that the place a widening changed is named — and so a test can establish that the
+ * *evaluation* works on wording the production list does not accept.
  */
 export function publishedFrom(
   statement: string,
@@ -257,8 +293,10 @@ function physicalStatusFrom(raw: string, assetId: string): PhysicalStatus {
  * The `vocabulary` argument is the wording-to-state policy described above. It defaults to
  * `PRODUCTION_RIGHTS_VOCABULARY`, so every caller that reads the delivered register — the audit, the
  * preflight gate, `src/lib/server/media/registry.ts` and therefore every page and every HTTP request —
- * evaluates rows exactly as it did before. A test that needs an armed vocabulary passes one; nothing
- * routes a synthetic approval into the production path, because the production path never supplies one.
+ * evaluates rows under one policy and only one. A test that needs a different vocabulary passes its own;
+ * nothing routes a synthetic approval into the production path, because the production path never supplies
+ * one. That is the direction the parameter exists to keep: widening the shipped list is an edit to the
+ * constants above, reviewable and tested, while a fixture's list can never travel.
  */
 export function recordsFromRows(
   rows: readonly (readonly string[])[],

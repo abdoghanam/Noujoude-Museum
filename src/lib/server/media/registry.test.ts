@@ -32,17 +32,72 @@ import { decidePublicServing } from "@/domain/rights";
 /**
  * The register read through the media layer, measured against the delivered file.
  *
- * Every number in this file is a measurement of `docs/ASSET_INVENTORY_AUDIT.csv` taken on
- * 2 November 2026, not a guess about what an inventory ought to contain. They are asserted rather than
- * logged because they are the release condition: "0 of 82 assets may be served publicly" is a claim
- * the site makes in its own footer, and a claim a footer makes is a claim a test has to hold.
+ * Every number in this file is a measurement of `docs/ASSET_INVENTORY_AUDIT.csv`, not a guess about what an
+ * inventory ought to contain. They are asserted rather than logged because they are the release condition:
+ * the count the site prints in its own footer is a claim a test has to hold.
  *
- * Several of these will go red on purpose the day an Owner input arrives — a signed rights statement,
- * an approval record, a re-audit that changes a count. That is the intended behaviour, not a
- * regression: the red test is the notification that the sentence in the layout needs re-writing.
+ * The 2 November version of this file pinned those numbers as literals — `rightsCleared 0`, `approved 0`,
+ * `serveable []` — and its own header said several of them would go red on purpose the day an Owner input
+ * arrived, because a red test was the notification that the wording elsewhere had to be re-written. That
+ * notification fired on 4 November 2026, when the Owner's asset declaration was transcribed into the register
+ * (see `docs/OWNER_ASSET_AUTHORIZATION_2026-11-04.md`). What this file asserts now is the same set of
+ * properties with the constants removed: the expected cell state is recomputed from
+ * `docs/asset-governance/owner-authorization.json` and `publication-register.json`, the two documents the
+ * audit generator reads. So a red test here now means the pipeline disagrees with its own inputs — a real
+ * defect — and not merely that the Owner widened or narrowed a declaration, which is allowed and is not a
+ * failure.
  */
 
 const register = assetRegister();
+
+/**
+ * The governance inputs, read rather than remembered.
+ *
+ * The same three files `scripts/audit-assets.mjs` reads, so the register's cells and this file's expectations
+ * have one source. A test that hard-coded what the cells say would be the day the suite asserted a fiction.
+ */
+const GOVERNANCE_DIR = path.join(process.cwd(), "docs", "asset-governance");
+
+function governance<T>(file: string): T {
+  return JSON.parse(
+    readFileSync(path.join(GOVERNANCE_DIR, file), "utf8"),
+  ) as T;
+}
+
+interface Statements {
+  rightsStatus: string;
+  approval: string;
+}
+
+const declaration = governance<{
+  assets: string[];
+  generatedBy: string[];
+  statements: { library: Statements; generated: Statements };
+}>("owner-authorization.json");
+
+const publicationRegister = governance<{
+  entries: { assetId: string; filename: string; paths: string[] }[];
+}>("publication-register.json");
+
+const authorisedNames = new Set(
+  declaration.assets.map((name) => name.toLowerCase()),
+);
+const generatedNames = new Set(
+  declaration.generatedBy.map((name) => name.toLowerCase()),
+);
+const publishedIds = new Set(
+  publicationRegister.entries.map((entry) => entry.assetId),
+);
+
+/** The statement pair the declaration prescribes for one filename. */
+function prescribed(asset: AssetRecord): Statements {
+  if (!authorisedNames.has(asset.filename.toLowerCase()))
+    throw new Error(`${asset.assetId} is not in the Owner declaration`);
+  return generatedNames.has(asset.filename.toLowerCase())
+    ? declaration.statements.generated
+    : declaration.statements.library;
+}
+
 
 /**
  * Strict mode makes an indexed read `T | undefined`, and a test that silences that with `!` is a test
@@ -127,17 +182,34 @@ describe("the three dimensions of the 82 assets, never merged into one number", 
     );
   });
 
-  it("measures rights state: nothing is cleared, ten are in review", () => {
-    expect(tally.rightsCleared).toBe(0);
-    expect(tally.rightsPending).toBe(10);
-    expect(tally.rightsUnknown).toBe(72);
+  it("clears exactly the files the Owner declaration names, by the wording it prescribes", () => {
+    for (const asset of register) {
+      if (authorisedNames.has(asset.filename.toLowerCase())) {
+        // The cell is the declaration's own sentence, and the sentence is what the vocabulary recognises.
+        expect(asset.rightsStatement).toBe(prescribed(asset).rightsStatus);
+        expect(asset.rights).toBe("cleared");
+      } else {
+        expect(asset.rights).not.toBe("cleared");
+      }
+    }
+    expect(tally.rightsCleared).toBe(
+      register.filter((asset) => authorisedNames.has(asset.filename.toLowerCase()))
+        .length,
+    );
     expect(
       tally.rightsCleared + tally.rightsPending + tally.rightsUnknown,
     ).toBe(tally.total);
-    // The ten AI-generated assets are the pending ones, and they are the last ten ids.
-    expect(
-      register.filter((a) => a.rights === "pending").map((a) => a.assetId),
-    ).toEqual([
+  });
+
+  it("keeps the ten project-generated files distinguishable from the supplied library", () => {
+    // Mandate §2: "Decorative generated material must be distinguishable from real museum artifacts." The
+    // register's own cell is where a reader sees it, so the two statement families differ in text, not just
+    // in intent — and the ten generated ids are still the ten the audit lists last.
+    const isGenerated = (asset: AssetRecord) =>
+      generatedNames.has(asset.filename.toLowerCase());
+    const generated = register.filter(isGenerated);
+    expect(generated).toHaveLength(10);
+    expect(generated.map((asset) => asset.assetId)).toEqual([
       "NDM-AST-073",
       "NDM-AST-074",
       "NDM-AST-075",
@@ -149,16 +221,46 @@ describe("the three dimensions of the 82 assets, never merged into one number", 
       "NDM-AST-081",
       "NDM-AST-082",
     ]);
+    for (const asset of generated)
+      expect(asset.rightsStatement).toContain("project-generated imagery");
+    for (const asset of register.filter((row) => !isGenerated(row)))
+      expect(asset.rightsStatement).toContain("supplied asset library");
+    expect(declaration.statements.generated.rightsStatus).not.toBe(
+      declaration.statements.library.rightsStatus,
+    );
   });
 
-  it("measures approval state: not one asset has a curatorial approval", () => {
-    expect(tally.approved).toBe(0);
-    expect(tally.notApproved).toBe(82);
-    expect(tally.approvalUnknown).toBe(0);
+  it("approves the same set, and carries its own limit in the wording", () => {
+    for (const asset of register) {
+      if (authorisedNames.has(asset.filename.toLowerCase())) {
+        expect(asset.approvalStatement).toBe(prescribed(asset).approval);
+        expect(asset.approval).toBe("approved");
+      } else {
+        expect(asset.approval).not.toBe("approved");
+      }
+    }
+    expect(tally.approved).toBe(tally.rightsCleared);
+    // An approval that could be read as an inventory claim would be a fabrication, so the cell says what it
+    // does not say.
+    expect(declaration.statements.library.approval).toContain(
+      "must not assert an inventory fact",
+    );
   });
 
-  it("measures publication: no publish record exists, so nothing is published", () => {
-    expect(register.every((asset) => asset.published === false)).toBe(true);
+  it("publishes exactly the rows the publication register names, and none of the others", () => {
+    expect(
+      register
+        .filter((asset) => asset.published)
+        .map((asset) => asset.assetId)
+        .sort(),
+    ).toEqual([...publishedIds].sort());
+    // `Approved but Unused` is a state §13.3 refuses to collapse into either permission or absence: these rows
+    // are cleared and approved, and the reason they do not render is that nothing has published them.
+    const unpublished = register.filter((asset) => !asset.published);
+    expect(unpublished.length).toBe(tally.total - publishedIds.size);
+    expect(unpublished.length).toBeGreaterThan(0);
+    for (const asset of unpublished)
+      expect(decidePublicServing(asset).denial).toBe("not_published");
   });
 
   it("offers no combined completion percentage, because A.9 forbids one", () => {
@@ -211,29 +313,63 @@ describe("R-04: a filename is a claim about pixels, and the pixels win", () => {
   });
 });
 
-describe("§20.4: the serveable set, measured today", () => {
-  it("serves nothing, because 0 of 82 assets are cleared", () => {
-    expect(publiclyServeableAssets()).toEqual([]);
-    expect(registerTally(register).serveable).toBe(0);
+describe("§20.4: the serveable set, computed from the register's own cells", () => {
+  it("serves exactly the intersection of the three dimensions, and nothing outside it", () => {
+    const expected = register
+      .filter(
+        (asset) =>
+          asset.rights === "cleared" &&
+          asset.approval === "approved" &&
+          asset.published,
+      )
+      .map((asset) => asset.assetId)
+      .sort();
+    expect(publiclyServeableAssets().map((asset) => asset.assetId).sort()).toEqual(
+      expected,
+    );
+    expect(registerTally(register).serveable).toBe(expected.length);
+    // On the delivered register publication is the narrow dimension: every cleared and approved row is
+    // served only where the publication register names it, so the intersection is that set exactly. If a
+    // future row were published without being cleared, this is the assertion that would say so.
+    expect(expected).toEqual([...publishedIds].sort());
   });
 
-  it("denies every single asset, with a reason that is not a bare false", () => {
+  it("gives every denial a reason, and gives it the reason the row's own cells imply", () => {
     for (const asset of register) {
       const decision = decidePublicServing(asset);
-      expect(decision.serve).toBe(false);
-      expect(decision.denial).not.toBeNull();
+      const expected =
+        asset.rights !== "cleared"
+          ? "rights_not_cleared"
+          : asset.approval !== "approved"
+            ? "approval_not_granted"
+            : !asset.published
+              ? "not_published"
+              : null;
+      expect(decision.serve, asset.assetId).toBe(expected === null);
+      expect(decision.denial, asset.assetId).toBe(expected);
     }
   });
 
-  it("denies on rights before approval, which is why the reason differs by row", () => {
-    expect(decidePublicServing(need("NDM-AST-001")).denial).toBe(
-      "rights_not_cleared",
-    );
-    // Every row is unapproved, so approval is never the first failure reached today. The distinction is
-    // recorded here so the day a cleared asset appears, the denial order is already specified.
+  it("checks rights before approval before publication, on a fixture that fails all three", () => {
+    // The order is only observable while one dimension is failing everywhere. This row is synthetic and is
+    // never written into the register: it exists to pin which of the three reasons the gate reaches first.
+    const triple = {
+      assetId: "NDM-SYNTH-ORDER-1",
+      rights: "unknown" as const,
+      approval: "not_approved" as const,
+      published: false,
+    };
+    expect(decidePublicServing(triple).denial).toBe("rights_not_cleared");
     expect(
-      new Set(register.map((asset) => decidePublicServing(asset).denial)),
-    ).toEqual(new Set(["rights_not_cleared"]));
+      decidePublicServing({ ...triple, rights: "cleared" }).denial,
+    ).toBe("approval_not_granted");
+    expect(
+      decidePublicServing({
+        ...triple,
+        rights: "cleared",
+        approval: "approved",
+      }).denial,
+    ).toBe("not_published");
   });
 });
 
@@ -241,8 +377,11 @@ describe("surface lookup, which is a question about the catalog, not about right
   it("finds the asset the catalog assigns to the homepage hero", () => {
     const heroes = assetsForSurface("Homepage hero");
     expect(heroes.map((asset) => asset.assetId)).toEqual(["NDM-AST-013"]);
-    // Belonging is not permission: the candidate for the hero is denied like every other asset.
-    expect(decidePublicServing(one(heroes, "homepage hero")).serve).toBe(false);
+    // Belonging is not permission, and the lookup does not consult permission: the row comes back whatever
+    // the gate decides, and the decision is a separate call the slot makes.
+    expect(decidePublicServing(one(heroes, "homepage hero")).serve).toBe(
+      need("NDM-AST-013").published,
+    );
   });
 
   it("matches the catalog's surface names case-insensitively", () => {

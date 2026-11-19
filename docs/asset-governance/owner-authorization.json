@@ -1,0 +1,149 @@
+{
+  "record": "noujoude.asset-governance.owner-authorization",
+  "version": 1,
+  "recordedOn": "2026-11-04",
+  "authority": {
+    "instrument": "Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026",
+    "section": "1 (execution authorisation) and 2 (Owner-supplied assets)",
+    "quotedText": "The Owner authorizes the use of photographs, images, graphics, logos, design materials, and fonts that the Owner has supplied or explicitly identified as owned by the Owner. Treat the Owner's explicit ownership declaration as authorization to use those identified materials in this project.",
+    "recordedIn": "docs/OWNER_ASSET_AUTHORIZATION_2026-11-04.md",
+    "quotedBy": "scripts/build-media-derivatives.mjs reads rightsStatement and approvalStatement verbatim; where this file and docs/ASSET_INVENTORY_AUDIT.csv disagree, the register wins and no derivative is produced."
+  },
+  "whatThisAuthorises": [
+    "permission to display, optimise and serve the listed files in this project's public and administrative surfaces",
+    "the production rights vocabulary in src/lib/media/asset-record.ts recognising the statements below as cleared and approved"
+  ],
+  "whatThisDoesNotAuthorise": [
+    "It is not evidence about the historical object depicted. Provenance, date, issuer, authenticity and ownership of any artefact remain unverified while DEC-INV-001 and B-05 stand open.",
+    "It is not a catalogue record. No asset here is a photograph of an inventoried museum object, and no page may present one as one.",
+    "It does not verify third-party rights in any file not listed here. A file that merely exists in the workspace is not authorised by existing.",
+    "It does not license any font. Fonts are covered by their own licence texts in brand/_tools/fonts/ and are governed separately."
+  ],
+  "statements": {
+    "library": {
+      "rightsStatus": "Owner-Declared Owned — authorisation: Owner mandate 2026-11-04 §2; supplied asset library; not evidence of a catalogued object",
+      "approval": "Approved — Owner mandate 2026-11-04 §2; presentation is illustrative and must not assert an inventory fact"
+    },
+    "generated": {
+      "rightsStatus": "Owner-Declared Owned — authorisation: Owner mandate 2026-11-04 §2; project-generated imagery; illustrative only",
+      "approval": "Approved — Owner mandate 2026-11-04 §2; generated imagery, labelled illustrative wherever shown"
+    }
+  },
+  "publication": {
+    "actualUsage": "Published — register: docs/asset-governance/publication-register.json"
+  },
+  "assets": [
+    "brand_seal_monogram_1024.webp",
+    "logo_badge_burgundy_1024.webp",
+    "logo_stacked_vertical_1024x1536.webp",
+    "logo_wordmark_1024x768.webp",
+    "certificate_authenticity_1024.webp",
+    "certificate_identity_scene_4x3.webp",
+    "premium_packaging_identity_1x1.webp",
+    "social_announcement_seal_1x1.jpg",
+    "watermark_system_16x9.webp",
+    "wax_seal_texture_macro_1x1.jpg",
+    "launch_banner_16x9.jpg",
+    "social_instagram_1024.webp",
+    "master_atmosphere_definitive.webp",
+    "main_entrance_mobile_9x16.webp",
+    "grand_entrance_dusk.webp",
+    "arrival_hall_morning.webp",
+    "golden_hour_hall.webp",
+    "grand_staircase.webp",
+    "museum_building_1024.webp",
+    "glass_dome_looking_up.webp",
+    "marble_corridor.webp",
+    "rose_courtyard_golden_hour.webp",
+    "luxury_night.webp",
+    "luxury_library_night.webp",
+    "morning_gallery.webp",
+    "main_gallery_burgundy.webp",
+    "archive_chamber.webp",
+    "private_archive_room_16x9.webp",
+    "collector_lounge_night.webp",
+    "museum_cafe_morning.webp",
+    "ai_curator_sanctum_16x9.jpg",
+    "ai_curator_sparkle_1024.webp",
+    "curator_hands_emotional_moment_16x9.webp",
+    "collection_gallery_shelves_16x9.jpg",
+    "rare_stamp_1024.webp",
+    "rare_stamps_glass_cabinet_4x3.jpg",
+    "heritage_jewelry_1024.webp",
+    "historical_documents_atmosphere_4x3.jpg",
+    "family_letters_1024.webp",
+    "family_letters_bundle_1x1.jpg",
+    "vintage_collector_desk_16x9.jpg",
+    "brand_muse_golden_hour.webp",
+    "gift_boutique.webp",
+    "perfume_vanity_1024.webp",
+    "app_interface_showcase_16x9.jpg",
+    "interface_collection_page_4x3.jpg",
+    "control_center_desk_16x9.jpg",
+    "mobile_app_scene_9x16.jpg",
+    "user_account_1024.webp",
+    "search_discovery_1024.webp",
+    "contact_envelope_1024.webp",
+    "telephone_1024.webp",
+    "favorite_heart_1024.webp",
+    "location_paris_1024.webp",
+    "bg_ivory_petals.webp",
+    "bg_dark_museum_bokeh.webp",
+    "burgundy_velvet_texture.webp",
+    "champagne_gold_marble_texture.webp",
+    "dark_museum_wood_texture.webp",
+    "floral_section_background_16x9.webp",
+    "gold_embroidery_detail_1x1.jpg",
+    "gold_leaf_dark_texture.webp",
+    "ivory_marble_texture.webp",
+    "ivory_silk_texture.webp",
+    "old_paper_texture.webp",
+    "rose_marble_texture.webp",
+    "section_transition_background_16x9.webp",
+    "light_rays_dust.webp",
+    "loading_golden_rays.webp",
+    "rose_petals_floating.webp",
+    "warm_candlelight.webp",
+    "overlay_glass_reflections.webp",
+    "world_morocco_hero_16x9.webp",
+    "world_egypt_hero_16x9.webp",
+    "world_syria_hero_16x9.webp",
+    "world_mauritania_hero_16x9.webp",
+    "world_libya_hero_16x9.webp",
+    "world_sudan_hero_16x9.webp",
+    "collection_first_day_covers_4x3.webp",
+    "collection_coins_4x3.webp",
+    "collection_artifacts_4x3.webp",
+    "collection_souvenirs_4x3.webp"
+  ],
+  "generatedBy": [
+    "world_morocco_hero_16x9.webp",
+    "world_egypt_hero_16x9.webp",
+    "world_syria_hero_16x9.webp",
+    "world_mauritania_hero_16x9.webp",
+    "world_libya_hero_16x9.webp",
+    "world_sudan_hero_16x9.webp",
+    "collection_first_day_covers_4x3.webp",
+    "collection_coins_4x3.webp",
+    "collection_artifacts_4x3.webp",
+    "collection_souvenirs_4x3.webp"
+  ],
+  "excluded": {
+    "count": 3,
+    "items": [
+      {
+        "path": "Noujoude.photo/logo_presentation_scene_16x9_v3.webp",
+        "why": "uncatalogued — it has no row in docs/ASSET_INVENTORY_AUDIT.csv, so no asset id, no checksum record and no gate; existing in the library is not authorisation"
+      },
+      {
+        "path": "Noujoude.photo/_pending_review_AI_generated/**",
+        "why": "duplicate copies of the ten generated files, still marked Pending Human Approval / Awaiting Rights Review by their own manifest, and not register rows. The register rows are the copies at the library root."
+      },
+      {
+        "path": "Noujoude.photo/Noujoude.photo.rar",
+        "why": "an archive, not an asset; invisible to git through a global *.rar ignore (OD-18) and not authorised for serving in any form"
+      }
+    ],
+    "note": "All 82 register rows are listed above and authorised. Nothing outside the register is."
+  }
+}

@@ -1,0 +1,20 @@
+.state {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ndm-space-2);
+  padding: var(--ndm-space-4);
+  border: 1px solid var(--ndm-color-museum-glass);
+  background-color: var(--ndm-surface-raised);
+  color: var(--ndm-text-primary);
+}
+
+.title {
+  font-family: var(--ndm-font-display);
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+.description {
+  color: var(--ndm-text-secondary);
+  margin: 0;
+}

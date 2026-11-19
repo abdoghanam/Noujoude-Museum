@@ -5,6 +5,7 @@ import {
   UNBOUND_SURFACES,
   bindingForSurface,
   bindingsForRoute,
+  boundPathsFor,
   describeUsage,
   unboundReasonFor,
 } from "@/lib/media/usage-map";
@@ -184,7 +185,16 @@ describe("describeUsage, the sentence the register should carry", () => {
     const usage = describeUsage(["Homepage hero"]);
     expect(usage.state).toBe("bound");
     expect(usage.text).toContain("/en");
-    expect(usage.text).toContain("served nowhere");
+  });
+
+  it("reports placement only, because the map cannot see the gate", () => {
+    // Until 4 November 2026 this sentence ended "; served nowhere while the rights gate denies". That
+    // clause was a claim about a module this file does not consult, and the Owner's asset declaration made
+    // it false on the same day it became measurable. The requirement is the narrower one: a usage sentence
+    // must not assert a serving outcome.
+    const usage = describeUsage(["Homepage hero", "Morocco World"]);
+    expect(usage.text).not.toMatch(/serv|den|refus|withheld/i);
+    expect(usage.text).toContain("/en/worlds/morocco");
   });
 
   it("resolves a slug binding to the detail path, not the directory", () => {
@@ -229,7 +239,12 @@ describe("the map is usage, not permission", () => {
     expect(UNBOUND_SURFACES.length).toBe(38);
   });
 
-  it("keeps every bound asset refused by the gate, so binding cannot leak a pixel", () => {
+  it("binds an asset without clearing it: placement and permission stay different questions", () => {
+    // The invariant is not "no bound asset is ever served" — that was a reading of a register whose
+    // production vocabulary was empty, and the Owner's 4 November declaration changed the register, not
+    // the rule. The rule is that a serve decision is a function of the row's three cells and of nothing the
+    // map holds, so a bound-and-denied asset must be denied *by its cells*, and a bound-and-served asset
+    // must be served *by its cells*. Either way, consulting the binding tells you nothing.
     const bound = new Set<string>();
     for (const target of ALL_TARGETS) {
       for (const asset of assetsBoundToRoute(target)) bound.add(asset.assetId);
@@ -239,7 +254,29 @@ describe("the map is usage, not permission", () => {
       const asset = register.find((candidate) => candidate.assetId === assetId);
       if (asset === undefined)
         throw new Error(`${assetId} vanished from the register`);
-      expect(decidePublicServing(asset).serve).toBe(false);
+      const cleared =
+        asset.rights === "cleared" &&
+        asset.approval === "approved" &&
+        asset.published;
+      expect(decidePublicServing(asset).serve).toBe(cleared);
+    }
+  });
+
+  it("leaves no bound asset published without being placed, and none placed without a path", () => {
+    // `boundPathsFor` is what the publication register is generated from, so the two failure modes worth
+    // pinning are the ones that would make a register cell untrue: a surface that resolves to nothing, and
+    // a register row whose declared surfaces are not the ones the map knows.
+    for (const asset of register) {
+      if (asset.surfaces.length === 0) continue;
+      const unrecognised = asset.surfaces.filter(
+        (surface) =>
+          bindingForSurface(surface) === null &&
+          unboundReasonFor(surface) === null,
+      );
+      expect(unrecognised, `${asset.assetId} surfaces`).toEqual([]);
+      for (const path of boundPathsFor(asset.surfaces)) {
+        expect(path.length).toBeGreaterThan(0);
+      }
     }
   });
 

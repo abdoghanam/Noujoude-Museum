@@ -1,0 +1,12 @@
+rights prefix Owner-Declared Owned = 82
+rights contains cleared = 0
+approval prefix Approved = 82
+approval contains cleared = 0
+register counts = {"registerRows":82,"published":46,"notPublished":36,"boundSurfaces":46}
+register entries = 46 notPublished = 36
+entry sample = {"assetId":"NDM-AST-001","filename":"brand_seal_monogram_1024.webp","surfaces":["Header"],"paths":["every page (masthead band)"],"locales":["en","ar"],"publishedAt":"2026-11-04","authority":"Owner Master Autonomous Completion & Production Launch Mandate, 4 November 2026, §1 and §2"}
+paths = ["/en","/en/about","/en/artifacts/{artifact-slug}","/en/collections","/en/collections/artifacts","/en/collections/coins","/en/collections/first-day-covers","/en/collections/souvenirs","/en/contact","/en/curator","/en/search","/en/stories","/en/the-museum","/en/worlds","/en/worlds/egypt","/en/worlds/libya","/en/worlds/mauritania","/en/worlds/morocco","/en/worlds/sudan","/en/worlds/syria","every page (masthead band)"]
+derivatives = 45 sample = {"assetId":"NDM-AST-001","originalFilename":"brand_seal_monogram_1024.webp","originalSha256":"3a2022b12c46e95943ed7092715ee8daa02d66760d50a32a669082ce03323a0f","file":"NDM-AST-001--candlelight-1440-webp.webp","sha256":"f27a82503ae367b19a1e7b8b252fc6583ee4518017ee30bbf8d2142f73721a41","width":512,"height":512,"bytes":55128,"mime":"image/webp","profile":"candlelight-1440-webp"}
+bytes field present = true total = 2422790
+max bytes = 165426
+assets with render = 45

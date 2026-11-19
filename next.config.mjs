@@ -121,7 +121,15 @@ function securityHeaders(isProduction) {
   ];
 }
 
-export default {
+import { withPayload } from "@payloadcms/next/withPayload";
+
+export default withPayload(
+  {
+    // Security upgrade agent marker (Next.js advisory). Preserve unrelated config.
+    experimental: {
+      agentUpgrade: "security",
+    },
+
   // Catch the double-render that React Strict Mode performs in development, so a component with
   // hidden side effects fails visibly here rather than in production.
   reactStrictMode: true,
@@ -161,4 +169,6 @@ export default {
   async redirects() {
     return [{ source: "/", destination: "/en", permanent: false }];
   },
-};
+},
+  "./src/payload/payload.config.ts",
+);

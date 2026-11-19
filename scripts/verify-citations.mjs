@@ -82,8 +82,7 @@
  *     conclusion. A passing citation is necessary evidence, not sufficient.
  *
  * Reads reference/, docs/, the root configuration and the Owner's photo manifest below
- * Noujoude.photo (all read-only here); writes its report to exactly one file, by default
- * docs/CITATION_VERIFICATION.json, redirected with `--out <path>`.
+ * Noujoude.photo (all read-only here); writes docs/CITATION_VERIFICATION.json only.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -91,21 +90,18 @@ import path from "node:path";
 const ROOT = process.cwd();
 const DOCS = path.join(ROOT, "docs");
 
-// Where the report lands is a parameter, not a constant. `pnpm audit:citations` deliberately writes the
-// tracked artifact, but a test that verifies the real docs/ set has to be able to run this same checker
-// without rewriting a tracked file. Measured 3 November 2026: `pnpm test:gates` moved
-// docs/CITATION_VERIFICATION.json — its `generatedAt` field alone — and so broke the SHA-256 manifest
-// pin on a checkpoint whose content had not otherwise changed. With no `--out` the behaviour is the
-// default above, unchanged.
-const OUT_FLAG = process.argv.indexOf("--out");
-if (OUT_FLAG > -1 && !process.argv[OUT_FLAG + 1]) {
-  console.error("usage error: --out needs a path");
+// The artifact path is a parameter, not a constant. `pnpm audit:citations` writes
+// docs/CITATION_VERIFICATION.json deliberately; a regression suite that re-runs the checker against
+// the REAL docs/ set must be able to do so without rewriting a tracked file — measured 3 Nov 2026,
+// running `pnpm test:gates` bumped only the generatedAt timestamp of that artifact, which broke the
+// SHA-256 manifest pin for a tree that had changed nothing else. The default is unchanged.
+const argvOutIndex = process.argv.indexOf("--out");
+if (argvOutIndex !== -1 && !process.argv[argvOutIndex + 1]) {
+  console.error("usage error: --out requires a path");
   process.exit(2);
 }
-const OUT =
-  OUT_FLAG > -1
-    ? path.resolve(ROOT, process.argv[OUT_FLAG + 1])
-    : path.join(ROOT, "docs", "CITATION_VERIFICATION.json");
+const argvOut = argvOutIndex === -1 ? null : process.argv[argvOutIndex + 1];
+const OUT = argvOut ?? path.join(ROOT, "docs", "CITATION_VERIFICATION.json");
 
 // Quotations in docs/ are not limited to the specification. They also cite the repository's own
 // authored configuration (`.env.example` records rules the docs quote back) and each other
@@ -1300,6 +1296,7 @@ const report = {
   files: results,
 };
 
+fs.mkdirSync(path.dirname(OUT), { recursive: true });
 fs.writeFileSync(OUT, JSON.stringify(report, null, 2) + "\n", "utf8");
 
 // NOTE ON THE PRINTED COUNTS, added 31 Oct 2026 because a reader tried to sum them and got 489 from 485.
@@ -1396,7 +1393,9 @@ for (const r of results) {
   for (const chk of r.refChecks)
     actionable.push(`${r.file}:${chk.docLine} ${chk.status}`);
 }
-console.log(`\nwrote docs/CITATION_VERIFICATION.json`);
+console.log(
+  argvOut ? `\nwrote ${OUT}` : `\nwrote docs/CITATION_VERIFICATION.json`,
+);
 if (actionable.length) {
   console.log(
     `CITATION GATE FAILED: ${actionable.length} actionable defect(s) (exit 1)`,

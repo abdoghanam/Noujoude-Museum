@@ -1,0 +1,61 @@
+┌─────────────────────┬────────────────────────────────────────────────────────┐
+│ moderate            │ esbuild enables any website to send any requests to    │
+│                     │ the development server and read the response           │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Package             │ esbuild                                                │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Vulnerable versions │ <=0.24.2                                               │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Patched versions    │ >=0.24.3                                               │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Paths               │ .>@payloadcms/db-postgres>drizzle-kit>@esbuild-kit/    │
+│                     │ esm-loader>@esbuild-kit/core-utils>esbuild             │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ More info           │ https://github.com/advisories/GHSA-67mh-4wv8-2f99      │
+└─────────────────────┴────────────────────────────────────────────────────────┘
+┌─────────────────────┬────────────────────────────────────────────────────────┐
+│ moderate            │ minimatch has potential denial of service via          │
+│                     │ globparts amplification                                │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Package             │ minimatch                                              │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Vulnerable versions │ <11.0.1                                                │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Patched versions    │ >=11.0.1                                               │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Paths               │ .>eslint>@eslint/config-array>minimatch                │
+│                     │                                                        │
+│                     │ .>eslint>@eslint/eslintrc>minimatch                    │
+│                     │                                                        │
+│                     │ .>eslint>minimatch                                     │
+│                     │                                                        │
+│                     │ ... Found 118 paths, run `pnpm why minimatch` for more │
+│                     │ information                                            │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ More info           │ https://github.com/advisories/GHSA-g3hv-75wg-m249      │
+└─────────────────────┴────────────────────────────────────────────────────────┘
+┌─────────────────────┬────────────────────────────────────────────────────────┐
+│ low                 │ deepmerge mergeObject() allows prototype poisoning of  │
+│                     │ returned objects                                       │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Package             │ deepmerge                                              │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Vulnerable versions │ >=4.2.0 <=4.3.1                                        │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Patched versions    │ >=4.3.2                                                │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Paths               │ .>@payloadcms/db-postgres>@payloadcms/                 │
+│                     │ drizzle>payload>deepmerge                              │
+│                     │                                                        │
+│                     │ .>@payloadcms/db-postgres>payload>deepmerge            │
+│                     │                                                        │
+│                     │ .>@payloadcms/next>@payloadcms/                        │
+│                     │ graphql>payload>deepmerge                              │
+│                     │                                                        │
+│                     │ ... Found 13 paths, run `pnpm why deepmerge` for more  │
+│                     │ information                                            │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ More info           │ https://github.com/advisories/GHSA-gcqx-w48m-w2h4      │
+└─────────────────────┴────────────────────────────────────────────────────────┘
+3 vulnerabilities found
+Severity: 1 low | 2 moderate

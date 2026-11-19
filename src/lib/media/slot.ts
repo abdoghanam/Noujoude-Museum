@@ -109,8 +109,12 @@ function withheld(record: MediaRecord, reason: WithheldReason): WithheldSlot {
  * 4. Are the dimensions measured? R-04 forbids a filename standing in for a pixel count, and 18 of the
  *    82 catalogued files are smaller than their own names claim.
  *
- * The first failure is reported rather than all of them, because the reason a visitor sees nothing is
- * the reason the build stopped — and today that is step 1 for every one of the 82 assets.
+ * The first failure is reported rather than all of them, because the reason a visitor sees nothing is the
+ * reason the build stopped. Which step that is has to be measured rather than asserted here: the gate stops
+ * some rows, a cleared row can still be missing its derivative, its label or its measured pixels, and the
+ * rows that survive all four are the pictures. `src/lib/server/media/slots.test.ts` derives the counts from
+ * the register and the store on every run, which is what keeps this ordering honest as the governance data
+ * moves.
  */
 export function decideMediaSlot(
   record: SlotRecord,

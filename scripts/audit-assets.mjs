@@ -20,6 +20,16 @@ import path from "node:path";
 import { parseCsv } from "./lib/csv.mjs";
 import { sniffFormat, readDimensions } from "./lib/image-signature.mjs";
 import { declarationMismatch } from "./lib/asset-declarations.mjs";
+import "./lib/ts-module-hooks.mjs";
+
+// Resolved after the alias hook above has run, so the audit can ask the usage map the one question it owns:
+// "does a §4.2 route carry this asset's declared surfaces?" Restating the surface table in JavaScript here is
+// the H-7 shape — two implementations that agree until one is edited — and this column has already shipped a
+// stale literal once.
+const { describeUsage } = await import("@/lib/media/usage-map");
+const derivativeStoreModule = await import(
+  "@/lib/server/media/derivative-store"
+);
 
 // ---------------------------------------------------------------- paths
 
@@ -59,7 +69,123 @@ const csvCell = (v) => {
   return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };
 
-// -------------------------------------------------- catalog from Appendix A
+// ---------------------------------------------------------- governance input
+/*
+ * Until 4 November 2026 this script wrote three columns from a constant: `UNKNOWN — no rights statement
+ * supplied in reference/`, `Not Approved — no approval record supplied`, `Not Recorded`. Those were the
+ * truth of the workspace then, and the script was right to refuse to guess. They are no longer the truth,
+ * because the Owner supplied a declaration.
+ *
+ * The Owner's Master Autonomous Completion Mandate of 4 November 2026, §2, states: "The Owner authorizes
+ * the use of photographs, images, graphics, logos, design materials, and fonts that the Owner has supplied
+ * or explicitly identified as owned by the Owner. Treat the Owner's explicit ownership declaration as
+ * authorization to use those identified materials in this project."
+ *
+ * That is permission to *use*, and nothing more. So the governance overlay below is read from
+ * docs/asset-governance/, where the declaration, its scope, its exclusions and its limits are recorded as
+ * data a reviewer can check — not inferred by this script from the fact that a file exists. A row that the
+ * overlay does not name keeps the old denial cells, unchanged, which is why `gift_boutique.webp` and the
+ * other reference-only images can be cleared for use and still not be presented as holdings.
+ *
+ * Absent overlay files are not an error: the audit degrades to exactly what it wrote before, because a
+ * missing governance record is a statement that nothing has been authorised.
+ */
+const GOVERNANCE_DIR = path.join(OUT_DIR, "asset-governance");
+
+function readGovernance(file) {
+  try {
+    return JSON.parse(readFileSync(path.join(GOVERNANCE_DIR, file), "utf8"));
+  } catch (error) {
+    if (error.code === "ENOENT") return null;
+    throw new Error(
+      `audit-assets: ${file} is present but unreadable — ${error.message}`,
+      { cause: error },
+    );
+  }
+}
+
+const AUTHORIZATION = readGovernance("owner-authorization.json");
+const PUBLICATION = readGovernance("publication-register.json");
+const LABELS = readGovernance("descriptive-labels.json");
+
+/** filename → the rights/approval statements the Owner's declaration supports. */
+const AUTHORIZED = new Map(
+  (AUTHORIZATION?.assets ?? []).map((filename) => [
+    filename.toLowerCase(),
+    AUTHORIZATION.generatedBy?.includes(filename)
+      ? AUTHORIZATION.statements.generated
+      : AUTHORIZATION.statements.library,
+  ]),
+);
+
+/** filename → the surfaces this project actually publishes it on, per the publication register. */
+const PUBLISHED = new Map(
+  (PUBLICATION?.entries ?? []).map((entry) => [
+    entry.filename.toLowerCase(),
+    entry,
+  ]),
+);
+
+/** filename → authored alt text in both locales. */
+const LABELLED = new Map(
+  (LABELS?.labels ?? []).map((entry) => [entry.file.toLowerCase(), entry]),
+);
+
+/**
+ * The `Actual Usage` cell, in three states that §13.3 refuses to collapse.
+ *
+ * Published (the register names it, with a date and the paths), cleared-but-unused (the map binds it and the
+ * publication register does not name it — `Approved but Unused`, a real state the baseline enumerates), and
+ * not-bound (no §4.2 route carries it, which is a fact about the baseline rather than a deferral). The last two
+ * are `describeUsage`'s own words, so this column and the module that decides placement cannot disagree.
+ */
+function actualUsageCell(filename, surfaces) {
+  const published = PUBLISHED.get(filename.toLowerCase());
+  if (published)
+    return `${AUTHORIZATION.publication.actualUsage} — ${published.publishedAt} on ${published.paths.join(", ")}`;
+  const usage = describeUsage(surfaces);
+  if (usage.state === "bound")
+    return `Not published — ${usage.text} is where the usage map binds it; docs/asset-governance/publication-register.json names no entry, which is the Approved-but-unused state, not a missing permission`;
+  return usage.text;
+}
+
+/**
+ * The `Derivative Status` cell, read from the lineage record rather than asserted.
+ *
+ * Until 4 November 2026 this column carried a literal about what the *delivered* file is — true of the ten
+ * generated webps, and the only sentence the generator could write when no derivative had ever been produced.
+ * Now a derivative can exist, so the cell has to say which of the two facts it is reporting. It reports both:
+ * what was delivered, and whether `media-derivatives/lineage.json` records an optimised render of it.
+ *
+ * The lineage file is read as the store reads it — `src/lib/server/media/derivative-store.ts` owns the path —
+ * so a manifest that has moved on disk is reflected here rather than cached, and a malformed one fails the
+ * audit the same way it fails a request instead of being reported as "no derivatives".
+ */
+const LINEAGE = (() => {
+  const { readDerivativeManifestSource } = derivativeStoreModule;
+  const { manifest } = readDerivativeManifestSource(ROOT);
+  const byAsset = new Map();
+  for (const row of manifest?.derivatives ?? []) byAsset.set(row.assetId, row);
+  return byAsset;
+})();
+
+// The store path is recorded with forward slashes on every platform, because this cell lands in a CSV that
+// developers and tools on three operating systems read, and `path.join` gives a Windows separator to nobody's
+// benefit.
+const derivativeStoreNote = derivativeStoreModule.DERIVATIVE_MANIFEST_PATH.split(
+  path.sep,
+).join("/");
+
+function derivativeStatusCell(assetId, isGenerated) {
+  const delivered = isGenerated
+    ? "Delivered file is itself a DERIVATIVE (webp) from a PNG original that is not retained"
+    : "Delivered file is the Original";
+  const row = LINEAGE.get(assetId);
+  if (row === undefined)
+    return `${delivered}; no optimised render is recorded in ${derivativeStoreNote}`;
+  return `${delivered}; optimised render ${row.file} (${row.profile}, ${String(row.width)}x${String(row.height)}, ${row.mime}, sha-256 ${row.sha256.slice(0, 12)}…) recorded in ${derivativeStoreNote}`;
+}
+
 
 function parseCatalog() {
   const md = readFileSync(SPEC_MD, "utf8").split(/\r?\n/);
@@ -207,25 +333,18 @@ const ai = loadAiManifest();
 // exists yet (src/ is empty)" — on all 82 rows. That sentence stopped being true on
 // 2 November 2026, when the application was initialised under `src/`, and because the
 // audit rewrote it on every run no document edit could repair it: the generator had to
-// stop asserting a fact it never measured. What the register actually holds is still
-// that no usage mapping is stored *here*; the binding lives in
-// `src/lib/media/usage-map.ts`, which is the module that resolves a declared surface to
-// a canonical route. The `src/` count below is taken at audit time, so this cell cannot
-// go stale the way the literal did. If the register ever gains a usage column fed from
-// the map, this note is the thing to delete.
-function usageColumnNote() {
-  let files;
-  try {
-    files = walk(path.join(ROOT, "src")).length;
-  } catch {
-    return "None recorded — no usage mapping is stored in this register (src/ could not be read)";
-  }
-  return files === 0
-    ? "None recorded — no usage mapping is stored in this register, and src/ holds 0 files"
-    : `None recorded — no usage mapping is stored in this register; usage is resolved in code by src/lib/media/usage-map.ts (src/ holds ${files} files at audit time)`;
+// stop asserting a fact it never measured. The comment that replaced it ended with
+// "If the register ever gains a usage column fed from the map, this note is the thing to
+// delete." On 4 November 2026 it did: `actualUsageCell()` above asks `src/lib/media/
+// usage-map.ts` where each asset's own declared surfaces are bound, and
+// `docs/asset-governance/publication-register.json` for what has actually been published,
+// so there is nothing left for a note to stand in for.
+function surfacesOf(entry) {
+  return String(entry.association ?? "")
+    .split(",")
+    .map((surface) => surface.trim())
+    .filter((surface) => surface.length > 0);
 }
-
-const USAGE_NOTE = usageColumnNote();
 
 const expectedCounts = {
   "A.2": 12,
@@ -397,6 +516,22 @@ for (const c of catalog) {
   if (status !== "PRESENT")
     problems.push(`${c.assetId} ${c.filename} → ${status}`);
 
+  const rightsStatement = AUTHORIZED.get(c.filename.toLowerCase())
+    ? AUTHORIZED.get(c.filename.toLowerCase()).rightsStatus
+    : isAi
+      ? "Awaiting Rights Review"
+      : "UNKNOWN — no rights statement supplied in reference/";
+
+  const approvalStatement = AUTHORIZED.get(c.filename.toLowerCase())
+    ? AUTHORIZED.get(c.filename.toLowerCase()).approval
+    : "Not Approved — no approval record supplied";
+
+  const label = LABELLED.get(c.filename.toLowerCase());
+  const altTextStatus =
+    label && label.en.trim() && label.ar.trim()
+      ? "Recorded — EN and AR from docs/asset-governance/descriptive-labels.json"
+      : "Not Recorded";
+
   rows.push([
     c.assetId,
     c.filename,
@@ -411,16 +546,12 @@ for (const c of catalog) {
     isAi
       ? "AI-generated (Qwen ImageGen tooling), generator recorded in _manifest.json"
       : "Not supplied in any reference document",
-    isAi
-      ? "Awaiting Rights Review"
-      : "UNKNOWN — no rights statement supplied in reference/",
-    "Not Approved — no approval record supplied",
+    rightsStatement,
+    approvalStatement,
     `${c.role} | ${c.association}`,
-    USAGE_NOTE,
-    isAi
-      ? "DERIVATIVE (webp) from a PNG original that is not retained"
-      : "Original (no derivatives produced)",
-    "Not Recorded",
+    actualUsageCell(c.filename, surfacesOf(c)),
+    derivativeStatusCell(c.assetId, isAi),
+    altTextStatus,
     noteBits.join(" ; "),
     "scripts/audit-assets.mjs (automated physical verification)",
     new Date().toISOString().slice(0, 10),

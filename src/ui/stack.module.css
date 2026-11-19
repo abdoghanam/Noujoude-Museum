@@ -1,0 +1,32 @@
+.stack {
+  display: flex;
+}
+
+.block {
+  flex-direction: column;
+}
+
+.inline {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.gap1 {
+  gap: var(--ndm-space-1);
+}
+
+.gap2 {
+  gap: var(--ndm-space-2);
+}
+
+.gap3 {
+  gap: var(--ndm-space-3);
+}
+
+.gap4 {
+  gap: var(--ndm-space-4);
+}
+
+.gap5 {
+  gap: var(--ndm-space-5);
+}
