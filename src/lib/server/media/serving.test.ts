@@ -104,8 +104,8 @@ const SHA_B = "b".repeat(64);
  * asserting over an empty list. Nothing here hard-codes a count, because a count is what changes when the
  * Owner signs something; the properties these cases pin do not.
  */
-const CLEAR_ASSETS: AssetRecord[] = register.filter((asset) =>
-  decidePublicServing(asset).serve,
+const CLEAR_ASSETS: AssetRecord[] = register.filter(
+  (asset) => decidePublicServing(asset).serve,
 );
 const DENIED_ASSETS: AssetRecord[] = register.filter(
   (asset) => !decidePublicServing(asset).serve,
@@ -126,7 +126,8 @@ const LINEAGE_IDS = new Set(
 
 function need(assetId: string): AssetRecord {
   const record = register.find((asset) => asset.assetId === assetId);
-  if (record === undefined) throw new Error(`${assetId} is not in the register`);
+  if (record === undefined)
+    throw new Error(`${assetId} is not in the register`);
   return record;
 }
 
@@ -939,7 +940,9 @@ describe("serveDerivative is fail-closed for every asset the gate denies", () =>
     // private store carries a lineage record for it. Neither half alone is enough, and the set is their
     // intersection whatever each half happens to be today.
     expect([...served].sort()).toEqual(
-      [...LINEAGE_IDS].filter((id) => decidePublicServing(need(id)).serve).sort(),
+      [...LINEAGE_IDS]
+        .filter((id) => decidePublicServing(need(id)).serve)
+        .sort(),
     );
     for (const assetId of served) expect(LINEAGE_IDS.has(assetId)).toBe(true);
     // And nothing refused can have been refused for a byte-level reason: a denial is the gate's answer, an
@@ -974,7 +977,9 @@ describe("serveDerivative is fail-closed for every asset the gate denies", () =>
   it("consults the gate before the store, so a lineage row cannot open the gate", async () => {
     const root = rootWithManifest(
       JSON.stringify(
-        manifestObject([lineageRow({ assetId: DENIED_ID, file: `${DENIED_ID}.webp` })]),
+        manifestObject([
+          lineageRow({ assetId: DENIED_ID, file: `${DENIED_ID}.webp` }),
+        ]),
       ),
     );
     expect(await refusal(DENIED_ID, root)).toMatchObject({
@@ -1082,17 +1087,13 @@ describe("serveDerivative is fail-closed for every asset the gate denies", () =>
     expect(createHash("sha256").update(body.body).digest("hex")).toBe(
       row.sha256,
     );
-    const delivered = path.join(
-      process.cwd(),
-      DERIVATIVE_STORE_DIR,
-      row.file,
-    );
+    const delivered = path.join(process.cwd(), DERIVATIVE_STORE_DIR, row.file);
     expect(body.body.byteLength).toBe(row.bytes);
     // The bytes the binding returned and the bytes the store holds are the same bytes: same length, same
     // digest. Comparing the digests rather than 50,000 numbers is the same statement, cheaper.
-    expect(createHash("sha256").update(readFileSync(delivered)).digest("hex")).toBe(
-      row.sha256,
-    );
+    expect(
+      createHash("sha256").update(readFileSync(delivered)).digest("hex"),
+    ).toBe(row.sha256);
 
     // Swap the file behind the record and the same request refuses. The substitute is the *same length* as
     // the recorded one on purpose: a shorter file is refused by the size probe, which is a different check,
@@ -1671,9 +1672,11 @@ describe("clearance is a closed vocabulary the code owns, not a property of the 
       expect(marker, `marker ${marker} cites something`).toContain("—");
     // The only wording that means "a human is looking at this", and pending is a denial, not a half-permission.
     expect(rightsStateFrom("Awaiting Rights Review")).toBe("pending");
-    expect(decidePublicServing(syntheticAsset({ "Rights Status": "Awaiting Rights Review" })).serve).toBe(
-      false,
-    );
+    expect(
+      decidePublicServing(
+        syntheticAsset({ "Rights Status": "Awaiting Rights Review" }),
+      ).serve,
+    ).toBe(false);
   });
 
   it("refuses the wordings a future audit or a forged row would most plausibly use", () => {
@@ -1692,8 +1695,12 @@ describe("clearance is a closed vocabulary the code owns, not a property of the 
       "Published — homepage",
     ];
     for (const wording of lookalikes) {
-      expect(rightsStateFrom(wording), `rights: ${wording}`).not.toBe("cleared");
-      expect(approvalFrom(wording), `approval: ${wording}`).not.toBe("approved");
+      expect(rightsStateFrom(wording), `rights: ${wording}`).not.toBe(
+        "cleared",
+      );
+      expect(approvalFrom(wording), `approval: ${wording}`).not.toBe(
+        "approved",
+      );
       expect(publishedFrom(wording), `published: ${wording}`).toBe(false);
     }
     // The prefix reads only from the front, which is the whole mechanism: a row that quotes the instrument
@@ -1773,9 +1780,7 @@ describe("clearance is a closed vocabulary the code owns, not a property of the 
       .map((asset) => asset.assetId)
       .sort();
     expect(published).toEqual(
-      PUBLICATION_REGISTER.entries
-        .map((entry) => entry.assetId)
-        .sort(),
+      PUBLICATION_REGISTER.entries.map((entry) => entry.assetId).sort(),
     );
     expect(PUBLICATION_REGISTER.counts.notPublished).toBe(
       register.length - published.length,

@@ -130,45 +130,45 @@ export default withPayload(
       agentUpgrade: "security",
     },
 
-  // Catch the double-render that React Strict Mode performs in development, so a component with
-  // hidden side effects fails visibly here rather than in production.
-  reactStrictMode: true,
+    // Catch the double-render that React Strict Mode performs in development, so a component with
+    // hidden side effects fails visibly here rather than in production.
+    reactStrictMode: true,
 
-  // Standard §5.4: do not advertise the server stack to anonymous requests.
-  poweredByHeader: false,
+    // Standard §5.4: do not advertise the server stack to anonymous requests.
+    poweredByHeader: false,
 
-  /**
-   * The header set above, on every route the application serves — public pages and `/api/*` alike,
-   * because a refusal endpoint is a response too and `SR-03` measured it bare.
-   *
-   * `docs/SECURITY_AND_PERMISSIONS.md` §6.1 also warns that "admin UI compatibility with a strict
-   * policy must be measured, not assumed". That measurement belongs to the Phase 6 Control Center,
-   * which is where a per-matcher split (a narrower `frame-ancestors` for an embedded editor) would
-   * have to be justified by a real frame, not by a guess made now.
-   */
-  async headers() {
-    return [
-      {
-        source: "/:path*",
-        headers: securityHeaders(process.env["NODE_ENV"] === "production"),
-      },
-    ];
+    /**
+     * The header set above, on every route the application serves — public pages and `/api/*` alike,
+     * because a refusal endpoint is a response too and `SR-03` measured it bare.
+     *
+     * `docs/SECURITY_AND_PERMISSIONS.md` §6.1 also warns that "admin UI compatibility with a strict
+     * policy must be measured, not assumed". That measurement belongs to the Phase 6 Control Center,
+     * which is where a per-matcher split (a narrower `frame-ancestors` for an embedded editor) would
+     * have to be justified by a real frame, not by a guess made now.
+     */
+    async headers() {
+      return [
+        {
+          source: "/:path*",
+          headers: securityHeaders(process.env["NODE_ENV"] === "production"),
+        },
+      ];
+    },
+
+    /**
+     * `/` → `/en`. §4.2 line 408 makes the locale prefix mandatory for public pages, so the root URL
+     * must resolve to a locale-prefixed page rather than render an unprefixed one — a root page would
+     * exist in no locale and could not carry a `lang` attribute.
+     *
+     * `permanent: false` on purpose. The default locale is an engineering choice the Owner has not
+     * ratified (see `docs/OWNER_INPUT_REGISTER.md` and `src/domain/locale.ts`), and a 301 is cached by
+     * browsers and CDNs, which would turn an unratified choice into something hard to change. The
+     * destination is asserted against `DEFAULT_LOCALE` by `src/domain/entry-routing.test.ts`, so the
+     * literal below and the domain constant cannot drift apart unnoticed.
+     */
+    async redirects() {
+      return [{ source: "/", destination: "/en", permanent: false }];
+    },
   },
-
-  /**
-   * `/` → `/en`. §4.2 line 408 makes the locale prefix mandatory for public pages, so the root URL
-   * must resolve to a locale-prefixed page rather than render an unprefixed one — a root page would
-   * exist in no locale and could not carry a `lang` attribute.
-   *
-   * `permanent: false` on purpose. The default locale is an engineering choice the Owner has not
-   * ratified (see `docs/OWNER_INPUT_REGISTER.md` and `src/domain/locale.ts`), and a 301 is cached by
-   * browsers and CDNs, which would turn an unratified choice into something hard to change. The
-   * destination is asserted against `DEFAULT_LOCALE` by `src/domain/entry-routing.test.ts`, so the
-   * literal below and the domain constant cannot drift apart unnoticed.
-   */
-  async redirects() {
-    return [{ source: "/", destination: "/en", permanent: false }];
-  },
-},
   "./src/payload/payload.config.ts",
 );

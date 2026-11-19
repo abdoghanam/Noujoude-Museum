@@ -9,23 +9,35 @@ interface MediaAsset {
 }
 
 function mayServeImage(asset: MediaAsset): boolean {
-  return asset.altText !== null && asset.altText.trim().length > 0 && asset.altTextStatus === "Approved";
+  return (
+    asset.altText !== null &&
+    asset.altText.trim().length > 0 &&
+    asset.altTextStatus === "Approved"
+  );
 }
 
 describe("alt-text workflow", () => {
   it("no alt text -> not servable", () => {
-    expect(mayServeImage({ altText: null, altTextStatus: "Approved" })).toBe(false);
+    expect(mayServeImage({ altText: null, altTextStatus: "Approved" })).toBe(
+      false,
+    );
   });
 
   it("empty alt text -> not servable", () => {
-    expect(mayServeImage({ altText: "   ", altTextStatus: "Approved" })).toBe(false);
+    expect(mayServeImage({ altText: "   ", altTextStatus: "Approved" })).toBe(
+      false,
+    );
   });
 
   it("not approved status -> not servable", () => {
-    expect(mayServeImage({ altText: "A coin", altTextStatus: "Draft" })).toBe(false);
+    expect(mayServeImage({ altText: "A coin", altTextStatus: "Draft" })).toBe(
+      false,
+    );
   });
 
   it("approved with alt text -> servable", () => {
-    expect(mayServeImage({ altText: "A coin", altTextStatus: "Approved" })).toBe(true);
+    expect(
+      mayServeImage({ altText: "A coin", altTextStatus: "Approved" }),
+    ).toBe(true);
   });
 });

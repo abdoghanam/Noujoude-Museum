@@ -8,8 +8,15 @@ export interface ContainerProps extends HTMLAttributes<HTMLDivElement> {
   readonly measure?: "reading" | "wide";
 }
 
-export function Container({ measure = "wide", className, children, ...rest }: ContainerProps) {
-  const classes = [styles.container, styles[measure], className].filter(Boolean).join(" ");
+export function Container({
+  measure = "wide",
+  className,
+  children,
+  ...rest
+}: ContainerProps) {
+  const classes = [styles.container, styles[measure], className]
+    .filter(Boolean)
+    .join(" ");
   return (
     <div className={classes} {...rest}>
       {children}

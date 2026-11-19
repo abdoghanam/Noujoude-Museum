@@ -6,10 +6,14 @@ test.describe("keyboard traversal", () => {
     // The skip link must be reachable by keyboard at some point.
     for (let i = 0; i < 5; i++) {
       await page.keyboard.press("Tab");
-      const focused = await page.evaluate(() => document.activeElement?.textContent ?? "");
+      const focused = await page.evaluate(
+        () => document.activeElement?.textContent ?? "",
+      );
       if (focused.toLowerCase().includes("skip")) return;
     }
-    const focused = await page.evaluate(() => document.activeElement?.textContent ?? "");
+    const focused = await page.evaluate(
+      () => document.activeElement?.textContent ?? "",
+    );
     expect(focused.toLowerCase()).toContain("skip");
   });
 
@@ -17,7 +21,9 @@ test.describe("keyboard traversal", () => {
     await page.goto("/");
     const navLink = page.locator("nav[aria-label='Primary'] a").first();
     await navLink.focus();
-    const tag = await page.evaluate(() => document.activeElement?.tagName ?? "");
+    const tag = await page.evaluate(
+      () => document.activeElement?.tagName ?? "",
+    );
     expect(tag).toBe("A");
   });
 });

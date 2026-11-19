@@ -9,7 +9,10 @@ type Args = {
   searchParams: Promise<{ [key: string]: string | string[] }>;
 };
 
-export async function generateMetadata({ params, searchParams }: Args): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+  searchParams,
+}: Args): Promise<Metadata> {
   return generatePageMetadata({
     config: Promise.resolve(config),
     params,

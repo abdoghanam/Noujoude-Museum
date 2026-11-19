@@ -27,9 +27,8 @@ import "./lib/ts-module-hooks.mjs";
 // the H-7 shape — two implementations that agree until one is edited — and this column has already shipped a
 // stale literal once.
 const { describeUsage } = await import("@/lib/media/usage-map");
-const derivativeStoreModule = await import(
-  "@/lib/server/media/derivative-store"
-);
+const derivativeStoreModule =
+  await import("@/lib/server/media/derivative-store");
 
 // ---------------------------------------------------------------- paths
 
@@ -172,9 +171,8 @@ const LINEAGE = (() => {
 // The store path is recorded with forward slashes on every platform, because this cell lands in a CSV that
 // developers and tools on three operating systems read, and `path.join` gives a Windows separator to nobody's
 // benefit.
-const derivativeStoreNote = derivativeStoreModule.DERIVATIVE_MANIFEST_PATH.split(
-  path.sep,
-).join("/");
+const derivativeStoreNote =
+  derivativeStoreModule.DERIVATIVE_MANIFEST_PATH.split(path.sep).join("/");
 
 function derivativeStatusCell(assetId, isGenerated) {
   const delivered = isGenerated
@@ -185,7 +183,6 @@ function derivativeStatusCell(assetId, isGenerated) {
     return `${delivered}; no optimised render is recorded in ${derivativeStoreNote}`;
   return `${delivered}; optimised render ${row.file} (${row.profile}, ${String(row.width)}x${String(row.height)}, ${row.mime}, sha-256 ${row.sha256.slice(0, 12)}…) recorded in ${derivativeStoreNote}`;
 }
-
 
 function parseCatalog() {
   const md = readFileSync(SPEC_MD, "utf8").split(/\r?\n/);

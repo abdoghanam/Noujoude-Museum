@@ -59,9 +59,7 @@ const register = assetRegister();
 const GOVERNANCE_DIR = path.join(process.cwd(), "docs", "asset-governance");
 
 function governance<T>(file: string): T {
-  return JSON.parse(
-    readFileSync(path.join(GOVERNANCE_DIR, file), "utf8"),
-  ) as T;
+  return JSON.parse(readFileSync(path.join(GOVERNANCE_DIR, file), "utf8")) as T;
 }
 
 interface Statements {
@@ -97,7 +95,6 @@ function prescribed(asset: AssetRecord): Statements {
     ? declaration.statements.generated
     : declaration.statements.library;
 }
-
 
 /**
  * Strict mode makes an indexed read `T | undefined`, and a test that silences that with `!` is a test
@@ -193,8 +190,9 @@ describe("the three dimensions of the 82 assets, never merged into one number", 
       }
     }
     expect(tally.rightsCleared).toBe(
-      register.filter((asset) => authorisedNames.has(asset.filename.toLowerCase()))
-        .length,
+      register.filter((asset) =>
+        authorisedNames.has(asset.filename.toLowerCase()),
+      ).length,
     );
     expect(
       tally.rightsCleared + tally.rightsPending + tally.rightsUnknown,
@@ -324,9 +322,11 @@ describe("§20.4: the serveable set, computed from the register's own cells", ()
       )
       .map((asset) => asset.assetId)
       .sort();
-    expect(publiclyServeableAssets().map((asset) => asset.assetId).sort()).toEqual(
-      expected,
-    );
+    expect(
+      publiclyServeableAssets()
+        .map((asset) => asset.assetId)
+        .sort(),
+    ).toEqual(expected);
     expect(registerTally(register).serveable).toBe(expected.length);
     // On the delivered register publication is the narrow dimension: every cleared and approved row is
     // served only where the publication register names it, so the intersection is that set exactly. If a
@@ -360,9 +360,9 @@ describe("§20.4: the serveable set, computed from the register's own cells", ()
       published: false,
     };
     expect(decidePublicServing(triple).denial).toBe("rights_not_cleared");
-    expect(
-      decidePublicServing({ ...triple, rights: "cleared" }).denial,
-    ).toBe("approval_not_granted");
+    expect(decidePublicServing({ ...triple, rights: "cleared" }).denial).toBe(
+      "approval_not_granted",
+    );
     expect(
       decidePublicServing({
         ...triple,

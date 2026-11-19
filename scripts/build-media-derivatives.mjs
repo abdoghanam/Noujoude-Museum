@@ -57,11 +57,8 @@ import "./lib/ts-module-hooks.mjs";
 // A refusal message that says "0 of 82 are cleared" is a claim this script cannot see without that vocabulary,
 // and it was in fact false from the day the Owner's 4 November declaration armed it — a script that reports the
 // gate has to report what the gate measures, per run, from the register it was handed.
-const {
-  PRODUCTION_RIGHTS_VOCABULARY,
-  approvalFrom,
-  rightsStateFrom,
-} = await import("@/lib/media/asset-record");
+const { PRODUCTION_RIGHTS_VOCABULARY, approvalFrom, rightsStateFrom } =
+  await import("@/lib/media/asset-record");
 
 // ------------------------------------------------------------------ inputs
 

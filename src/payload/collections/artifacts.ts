@@ -11,7 +11,16 @@ export const Artifacts: CollectionConfig = {
     {
       name: "artifactType",
       type: "select",
-      options: ["Stamp", "First Day Cover", "Coin", "Document", "Letter", "Souvenir", "Heritage Object", "Artifact"],
+      options: [
+        "Stamp",
+        "First Day Cover",
+        "Coin",
+        "Document",
+        "Letter",
+        "Souvenir",
+        "Heritage Object",
+        "Artifact",
+      ],
     },
     {
       name: "categories",
@@ -58,7 +67,13 @@ export const Artifacts: CollectionConfig = {
     {
       name: "translationState",
       type: "select",
-      options: ["Not Started", "In Progress", "Reviewed", "Approved", "Published"],
+      options: [
+        "Not Started",
+        "In Progress",
+        "Reviewed",
+        "Approved",
+        "Published",
+      ],
       defaultValue: "Not Started",
     },
     {

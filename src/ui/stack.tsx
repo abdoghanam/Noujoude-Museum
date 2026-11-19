@@ -17,7 +17,12 @@ export function Stack({
   style,
   ...rest
 }: StackProps) {
-  const classes = [styles.stack, styles[`gap${gap}`], styles[direction], className]
+  const classes = [
+    styles.stack,
+    styles[`gap${gap}`],
+    styles[direction],
+    className,
+  ]
     .filter(Boolean)
     .join(" ");
   return (

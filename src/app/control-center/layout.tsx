@@ -8,10 +8,21 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function ControlCenterLayout({ children }: { children: ReactNode }) {
+export default function ControlCenterLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   return (
     <html lang="en" dir="ltr">
-      <body style={{ margin: 0, background: "var(--ndm-surface-page)", color: "var(--ndm-text-primary)", fontFamily: "var(--ndm-font-body)" }}>
+      <body
+        style={{
+          margin: 0,
+          background: "var(--ndm-surface-page)",
+          color: "var(--ndm-text-primary)",
+          fontFamily: "var(--ndm-font-body)",
+        }}
+      >
         {children}
       </body>
     </html>

@@ -11,7 +11,9 @@ describe("Card primitive", () => {
   });
 
   it("supports section/div as element", () => {
-    expect(renderToStaticMarkup(<Card as="section">y</Card>)).toContain("<section");
+    expect(renderToStaticMarkup(<Card as="section">y</Card>)).toContain(
+      "<section",
+    );
     expect(renderToStaticMarkup(<Card as="div">z</Card>)).toContain("<div");
   });
 });

@@ -273,9 +273,6 @@ jobs:
         # First, because it is the check that can say "nothing here compiles" about every file at once.
         run: pnpm typecheck
 
-      - name: Generate media derivatives (build output, not source)
-        run: pnpm build:derivatives
-
       - name: Unit + integration tests
         # The security half of this job: the rights gate, the six ordered serving refusals and the
         # route's 404 contract all live in what this step runs. It must be able to report for itself,

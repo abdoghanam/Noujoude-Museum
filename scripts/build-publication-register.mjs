@@ -45,12 +45,10 @@ import path from "node:path";
 import "./lib/ts-module-hooks.mjs";
 import { parseCsv } from "./lib/csv.mjs";
 
-const { PRODUCTION_RIGHTS_VOCABULARY, recordsFromRows } = await import(
-  "@/lib/media/asset-record"
-);
-const { SURFACE_BINDINGS, bindingForSurface, boundPathsFor } = await import(
-  "@/lib/media/usage-map"
-);
+const { PRODUCTION_RIGHTS_VOCABULARY, recordsFromRows } =
+  await import("@/lib/media/asset-record");
+const { SURFACE_BINDINGS, bindingForSurface, boundPathsFor } =
+  await import("@/lib/media/usage-map");
 
 const argv = process.argv.slice(2);
 const flag = (name) => argv.indexOf(`--${name}`) >= 0;
@@ -180,9 +178,7 @@ const document = {
 };
 
 const text = `${JSON.stringify(document, null, 2)}\n`;
-const current = existsSync(OUT_FILE)
-  ? readFileSync(OUT_FILE, "utf8")
-  : null;
+const current = existsSync(OUT_FILE) ? readFileSync(OUT_FILE, "utf8") : null;
 
 // Wrapped rather than top-level: a `.mjs` module cannot `return`, and the three exit paths below all want to
 // stop before the write.

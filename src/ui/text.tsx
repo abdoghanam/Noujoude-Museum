@@ -10,8 +10,15 @@ export interface TextProps extends HTMLAttributes<HTMLParagraphElement> {
   readonly variant?: TextVariant;
 }
 
-export function Text({ variant = "body", className, children, ...rest }: TextProps) {
-  const classes = [styles.text, styles[variant], className].filter(Boolean).join(" ");
+export function Text({
+  variant = "body",
+  className,
+  children,
+  ...rest
+}: TextProps) {
+  const classes = [styles.text, styles[variant], className]
+    .filter(Boolean)
+    .join(" ");
   return (
     <p className={classes} {...rest}>
       {children}

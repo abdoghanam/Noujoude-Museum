@@ -8,7 +8,12 @@ export interface CardProps extends HTMLAttributes<HTMLElement> {
   readonly as?: "article" | "section" | "div";
 }
 
-export function Card({ as: Tag = "article", className, children, ...rest }: CardProps) {
+export function Card({
+  as: Tag = "article",
+  className,
+  children,
+  ...rest
+}: CardProps) {
   const classes = [styles.card, className].filter(Boolean).join(" ");
   return (
     <Tag className={classes} {...rest}>

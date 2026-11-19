@@ -15,7 +15,8 @@ export default function LanguagePage() {
     <Container measure="wide">
       <Heading level={1}>Language & Translation Center</Heading>
       <Text variant="secondary">
-        Per-locale publication state and translation review. Managed via PublicationRecords in Payload admin.
+        Per-locale publication state and translation review. Managed via
+        PublicationRecords in Payload admin.
       </Text>
       <State
         kind="empty"
@@ -23,7 +24,10 @@ export default function LanguagePage() {
         description="Publication records are created per (entity, locale) by the publishing workflow."
       />
       <p style={{ marginTop: "1rem" }}>
-        <a href="/admin/collections/publication-records" style={{ color: "var(--ndm-accent-primary)" }}>
+        <a
+          href="/admin/collections/publication-records"
+          style={{ color: "var(--ndm-accent-primary)" }}
+        >
           Open Publication Records →
         </a>
       </p>

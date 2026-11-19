@@ -55,7 +55,8 @@ export class NoopAiGateway implements AiGateway {
         available: false,
         answer: null,
         citations: [],
-        uncertainty: "This question is outside the scope of the museum's published knowledge.",
+        uncertainty:
+          "This question is outside the scope of the museum's published knowledge.",
         refused: true,
         refusalReason: "out_of_scope",
         conflictingSources: [],
@@ -68,7 +69,8 @@ export class NoopAiGateway implements AiGateway {
         available: false,
         answer: null,
         citations: [],
-        uncertainty: "No eligible knowledge sources are available for this question.",
+        uncertainty:
+          "No eligible knowledge sources are available for this question.",
         refused: true,
         refusalReason: "ineligible",
         conflictingSources: [],

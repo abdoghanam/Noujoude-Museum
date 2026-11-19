@@ -15,7 +15,8 @@ export default function AuditPage() {
     <Container measure="wide">
       <Heading level={1}>Audit & Activity Center</Heading>
       <Text variant="secondary">
-        Append-only audit events. Enforced by DB grants + trigger + RLS (ADR-019).
+        Append-only audit events. Enforced by DB grants + trigger + RLS
+        (ADR-019).
       </Text>
       <State
         kind="empty"
@@ -23,7 +24,10 @@ export default function AuditPage() {
         description="Audit events are written by the system during content operations."
       />
       <p style={{ marginTop: "1rem" }}>
-        <a href="/admin/collections/audit-event" style={{ color: "var(--ndm-accent-primary)" }}>
+        <a
+          href="/admin/collections/audit-event"
+          style={{ color: "var(--ndm-accent-primary)" }}
+        >
           Open Audit Events →
         </a>
       </p>

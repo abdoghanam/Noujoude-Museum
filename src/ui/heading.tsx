@@ -17,7 +17,12 @@ const TAGS = {
   4: "h4",
 } as const;
 
-export function Heading({ level = 2, className, children, ...rest }: HeadingProps) {
+export function Heading({
+  level = 2,
+  className,
+  children,
+  ...rest
+}: HeadingProps) {
   const Tag = TAGS[level];
   const classes = [styles.heading, styles[`level${level}`], className]
     .filter(Boolean)

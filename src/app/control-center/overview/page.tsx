@@ -15,7 +15,8 @@ export default function OverviewPage() {
     <Container measure="wide">
       <Heading level={1}>Executive Overview</Heading>
       <Text variant="secondary">
-        Operational summary. No published records exist yet; all counts are measured from the database.
+        Operational summary. No published records exist yet; all counts are
+        measured from the database.
       </Text>
       <State
         kind="empty"

@@ -14,7 +14,14 @@ export const ArtifactClaims: CollectionConfig = {
     {
       name: "claimType",
       type: "select",
-      options: ["Identity", "Date", "Origin", "Provenance", "Material", "Other"],
+      options: [
+        "Identity",
+        "Date",
+        "Origin",
+        "Provenance",
+        "Material",
+        "Other",
+      ],
     },
     {
       name: "reviewState",

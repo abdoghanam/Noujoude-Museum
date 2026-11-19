@@ -5,7 +5,9 @@ import { State } from "./state";
 
 describe("State primitive", () => {
   it("renders title and description", () => {
-    const html = renderToStaticMarkup(<State kind="empty" title="Nothing here" description="Try later" />);
+    const html = renderToStaticMarkup(
+      <State kind="empty" title="Nothing here" description="Try later" />,
+    );
     expect(html).toContain("Nothing here");
     expect(html).toContain("Try later");
     expect(html).toContain('role="status"');

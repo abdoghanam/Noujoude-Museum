@@ -180,12 +180,8 @@
           "name": "countries_locales_parent_id_fk",
           "tableFrom": "countries_locales",
           "tableTo": "countries",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["_parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -372,12 +368,8 @@
           "name": "eras_locales_parent_id_fk",
           "tableFrom": "eras_locales",
           "tableTo": "eras",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["_parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -552,12 +544,8 @@
           "name": "categories_locales_parent_id_fk",
           "tableFrom": "categories_locales",
           "tableTo": "categories",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["_parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -746,12 +734,8 @@
           "name": "collections_locales_parent_id_fk",
           "tableFrom": "collections_locales",
           "tableTo": "collections",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["_parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -885,12 +869,8 @@
           "name": "collections_rels_parent_fk",
           "tableFrom": "collections_rels",
           "tableTo": "collections",
-          "columnsFrom": [
-            "parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -898,12 +878,8 @@
           "name": "collections_rels_countries_fk",
           "tableFrom": "collections_rels",
           "tableTo": "countries",
-          "columnsFrom": [
-            "countries_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["countries_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -911,12 +887,8 @@
           "name": "collections_rels_categories_fk",
           "tableFrom": "collections_rels",
           "tableTo": "categories",
-          "columnsFrom": [
-            "categories_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["categories_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1105,12 +1077,8 @@
           "name": "stories_locales_parent_id_fk",
           "tableFrom": "stories_locales",
           "tableTo": "stories",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["_parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1244,12 +1212,8 @@
           "name": "stories_rels_parent_fk",
           "tableFrom": "stories_rels",
           "tableTo": "stories",
-          "columnsFrom": [
-            "parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1257,12 +1221,8 @@
           "name": "stories_rels_countries_fk",
           "tableFrom": "stories_rels",
           "tableTo": "countries",
-          "columnsFrom": [
-            "countries_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["countries_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1270,12 +1230,8 @@
           "name": "stories_rels_collections_fk",
           "tableFrom": "stories_rels",
           "tableTo": "collections",
-          "columnsFrom": [
-            "collections_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["collections_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1469,12 +1425,8 @@
           "name": "sources_locales_parent_id_fk",
           "tableFrom": "sources_locales",
           "tableTo": "sources",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["_parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1796,12 +1748,8 @@
           "name": "artifacts_locales_parent_id_fk",
           "tableFrom": "artifacts_locales",
           "tableTo": "artifacts",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["_parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1998,12 +1946,8 @@
           "name": "artifacts_rels_parent_fk",
           "tableFrom": "artifacts_rels",
           "tableTo": "artifacts",
-          "columnsFrom": [
-            "parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2011,12 +1955,8 @@
           "name": "artifacts_rels_categories_fk",
           "tableFrom": "artifacts_rels",
           "tableTo": "categories",
-          "columnsFrom": [
-            "categories_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["categories_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2024,12 +1964,8 @@
           "name": "artifacts_rels_collections_fk",
           "tableFrom": "artifacts_rels",
           "tableTo": "collections",
-          "columnsFrom": [
-            "collections_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["collections_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2037,12 +1973,8 @@
           "name": "artifacts_rels_countries_fk",
           "tableFrom": "artifacts_rels",
           "tableTo": "countries",
-          "columnsFrom": [
-            "countries_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["countries_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2050,12 +1982,8 @@
           "name": "artifacts_rels_eras_fk",
           "tableFrom": "artifacts_rels",
           "tableTo": "eras",
-          "columnsFrom": [
-            "eras_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["eras_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2063,12 +1991,8 @@
           "name": "artifacts_rels_stories_fk",
           "tableFrom": "artifacts_rels",
           "tableTo": "stories",
-          "columnsFrom": [
-            "stories_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["stories_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2348,12 +2272,8 @@
           "name": "ownership_statements_artifact_id_artifacts_id_fk",
           "tableFrom": "ownership_statements",
           "tableTo": "artifacts",
-          "columnsFrom": [
-            "artifact_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artifact_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -2361,12 +2281,8 @@
           "name": "ownership_statements_evidence_source_id_sources_id_fk",
           "tableFrom": "ownership_statements",
           "tableTo": "sources",
-          "columnsFrom": [
-            "evidence_source_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["evidence_source_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -2450,12 +2366,8 @@
           "name": "ownership_statements_locales_parent_id_fk",
           "tableFrom": "ownership_statements_locales",
           "tableTo": "ownership_statements",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["_parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2596,12 +2508,8 @@
           "name": "authenticity_assessments_artifact_id_artifacts_id_fk",
           "tableFrom": "authenticity_assessments",
           "tableTo": "artifacts",
-          "columnsFrom": [
-            "artifact_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artifact_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -2609,12 +2517,8 @@
           "name": "authenticity_assessments_evidence_source_id_sources_id_fk",
           "tableFrom": "authenticity_assessments",
           "tableTo": "sources",
-          "columnsFrom": [
-            "evidence_source_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["evidence_source_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -2698,12 +2602,8 @@
           "name": "authenticity_assessments_locales_parent_id_fk",
           "tableFrom": "authenticity_assessments_locales",
           "tableTo": "authenticity_assessments",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["_parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2817,12 +2717,8 @@
           "name": "condition_reports_artifact_id_artifacts_id_fk",
           "tableFrom": "condition_reports",
           "tableTo": "artifacts",
-          "columnsFrom": [
-            "artifact_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artifact_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -2912,12 +2808,8 @@
           "name": "condition_reports_locales_parent_id_fk",
           "tableFrom": "condition_reports_locales",
           "tableTo": "condition_reports",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["_parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3046,12 +2938,8 @@
           "name": "artifact_country_relationships_artifact_id_artifacts_id_fk",
           "tableFrom": "artifact_country_relationships",
           "tableTo": "artifacts",
-          "columnsFrom": [
-            "artifact_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artifact_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -3059,12 +2947,8 @@
           "name": "artifact_country_relationships_country_id_countries_id_fk",
           "tableFrom": "artifact_country_relationships",
           "tableTo": "countries",
-          "columnsFrom": [
-            "country_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["country_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -3225,12 +3109,8 @@
           "name": "media_assets_artifact_id_artifacts_id_fk",
           "tableFrom": "media_assets",
           "tableTo": "artifacts",
-          "columnsFrom": [
-            "artifact_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artifact_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -3314,12 +3194,8 @@
           "name": "media_assets_locales_parent_id_fk",
           "tableFrom": "media_assets_locales",
           "tableTo": "media_assets",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["_parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3432,12 +3308,8 @@
           "name": "media_assets_rels_parent_fk",
           "tableFrom": "media_assets_rels",
           "tableTo": "media_assets",
-          "columnsFrom": [
-            "parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3445,12 +3317,8 @@
           "name": "media_assets_rels_rights_records_fk",
           "tableFrom": "media_assets_rels",
           "tableTo": "rights_records",
-          "columnsFrom": [
-            "rights_records_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["rights_records_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3636,12 +3504,8 @@
           "name": "rights_records_locales_parent_id_fk",
           "tableFrom": "rights_records_locales",
           "tableTo": "rights_records",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["_parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3754,12 +3618,8 @@
           "name": "rights_records_rels_parent_fk",
           "tableFrom": "rights_records_rels",
           "tableTo": "rights_records",
-          "columnsFrom": [
-            "parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3767,12 +3627,8 @@
           "name": "rights_records_rels_media_assets_fk",
           "tableFrom": "rights_records_rels",
           "tableTo": "media_assets",
-          "columnsFrom": [
-            "media_assets_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["media_assets_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3881,12 +3737,8 @@
           "name": "artifact_claims_artifact_id_artifacts_id_fk",
           "tableFrom": "artifact_claims",
           "tableTo": "artifacts",
-          "columnsFrom": [
-            "artifact_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artifact_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -3970,12 +3822,8 @@
           "name": "artifact_claims_locales_parent_id_fk",
           "tableFrom": "artifact_claims_locales",
           "tableTo": "artifact_claims",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["_parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4088,12 +3936,8 @@
           "name": "artifact_claims_rels_parent_fk",
           "tableFrom": "artifact_claims_rels",
           "tableTo": "artifact_claims",
-          "columnsFrom": [
-            "parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -4101,12 +3945,8 @@
           "name": "artifact_claims_rels_sources_fk",
           "tableFrom": "artifact_claims_rels",
           "tableTo": "sources",
-          "columnsFrom": [
-            "sources_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["sources_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4189,12 +4029,8 @@
           "name": "users_sessions_parent_id_fk",
           "tableFrom": "users_sessions",
           "tableTo": "users",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["_parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4455,12 +4291,8 @@
           "name": "verification_reviews_reviewer_id_users_id_fk",
           "tableFrom": "verification_reviews",
           "tableTo": "users",
-          "columnsFrom": [
-            "reviewer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["reviewer_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -4544,12 +4376,8 @@
           "name": "verification_reviews_locales_parent_id_fk",
           "tableFrom": "verification_reviews_locales",
           "tableTo": "verification_reviews",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["_parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4649,12 +4477,8 @@
           "name": "provenance_events_artifact_id_artifacts_id_fk",
           "tableFrom": "provenance_events",
           "tableTo": "artifacts",
-          "columnsFrom": [
-            "artifact_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artifact_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -4738,12 +4562,8 @@
           "name": "provenance_events_locales_parent_id_fk",
           "tableFrom": "provenance_events_locales",
           "tableTo": "provenance_events",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["_parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4856,12 +4676,8 @@
           "name": "provenance_events_rels_parent_fk",
           "tableFrom": "provenance_events_rels",
           "tableTo": "provenance_events",
-          "columnsFrom": [
-            "parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -4869,12 +4685,8 @@
           "name": "provenance_events_rels_sources_fk",
           "tableFrom": "provenance_events_rels",
           "tableTo": "sources",
-          "columnsFrom": [
-            "sources_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["sources_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -5061,12 +4873,8 @@
           "name": "pages_locales_parent_id_fk",
           "tableFrom": "pages_locales",
           "tableTo": "pages",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["_parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -5831,12 +5639,8 @@
           "name": "payload_locked_documents_rels_parent_fk",
           "tableFrom": "payload_locked_documents_rels",
           "tableTo": "payload_locked_documents",
-          "columnsFrom": [
-            "parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5844,12 +5648,8 @@
           "name": "payload_locked_documents_rels_countries_fk",
           "tableFrom": "payload_locked_documents_rels",
           "tableTo": "countries",
-          "columnsFrom": [
-            "countries_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["countries_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5857,12 +5657,8 @@
           "name": "payload_locked_documents_rels_eras_fk",
           "tableFrom": "payload_locked_documents_rels",
           "tableTo": "eras",
-          "columnsFrom": [
-            "eras_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["eras_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5870,12 +5666,8 @@
           "name": "payload_locked_documents_rels_categories_fk",
           "tableFrom": "payload_locked_documents_rels",
           "tableTo": "categories",
-          "columnsFrom": [
-            "categories_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["categories_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5883,12 +5675,8 @@
           "name": "payload_locked_documents_rels_collections_fk",
           "tableFrom": "payload_locked_documents_rels",
           "tableTo": "collections",
-          "columnsFrom": [
-            "collections_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["collections_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5896,12 +5684,8 @@
           "name": "payload_locked_documents_rels_stories_fk",
           "tableFrom": "payload_locked_documents_rels",
           "tableTo": "stories",
-          "columnsFrom": [
-            "stories_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["stories_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5909,12 +5693,8 @@
           "name": "payload_locked_documents_rels_sources_fk",
           "tableFrom": "payload_locked_documents_rels",
           "tableTo": "sources",
-          "columnsFrom": [
-            "sources_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["sources_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5922,12 +5702,8 @@
           "name": "payload_locked_documents_rels_inquiries_fk",
           "tableFrom": "payload_locked_documents_rels",
           "tableTo": "inquiries",
-          "columnsFrom": [
-            "inquiries_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["inquiries_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5935,12 +5711,8 @@
           "name": "payload_locked_documents_rels_artifacts_fk",
           "tableFrom": "payload_locked_documents_rels",
           "tableTo": "artifacts",
-          "columnsFrom": [
-            "artifacts_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artifacts_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5948,12 +5720,8 @@
           "name": "payload_locked_documents_rels_publication_records_fk",
           "tableFrom": "payload_locked_documents_rels",
           "tableTo": "publication_records",
-          "columnsFrom": [
-            "publication_records_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["publication_records_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5961,12 +5729,8 @@
           "name": "payload_locked_documents_rels_ownership_statements_fk",
           "tableFrom": "payload_locked_documents_rels",
           "tableTo": "ownership_statements",
-          "columnsFrom": [
-            "ownership_statements_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["ownership_statements_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5974,12 +5738,8 @@
           "name": "payload_locked_documents_rels_authenticity_assessments_fk",
           "tableFrom": "payload_locked_documents_rels",
           "tableTo": "authenticity_assessments",
-          "columnsFrom": [
-            "authenticity_assessments_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["authenticity_assessments_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5987,12 +5747,8 @@
           "name": "payload_locked_documents_rels_condition_reports_fk",
           "tableFrom": "payload_locked_documents_rels",
           "tableTo": "condition_reports",
-          "columnsFrom": [
-            "condition_reports_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["condition_reports_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -6000,12 +5756,8 @@
           "name": "payload_locked_documents_rels_artifact_country_relationsh_fk",
           "tableFrom": "payload_locked_documents_rels",
           "tableTo": "artifact_country_relationships",
-          "columnsFrom": [
-            "artifact_country_relationships_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artifact_country_relationships_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -6013,12 +5765,8 @@
           "name": "payload_locked_documents_rels_media_assets_fk",
           "tableFrom": "payload_locked_documents_rels",
           "tableTo": "media_assets",
-          "columnsFrom": [
-            "media_assets_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["media_assets_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -6026,12 +5774,8 @@
           "name": "payload_locked_documents_rels_rights_records_fk",
           "tableFrom": "payload_locked_documents_rels",
           "tableTo": "rights_records",
-          "columnsFrom": [
-            "rights_records_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["rights_records_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -6039,12 +5783,8 @@
           "name": "payload_locked_documents_rels_artifact_claims_fk",
           "tableFrom": "payload_locked_documents_rels",
           "tableTo": "artifact_claims",
-          "columnsFrom": [
-            "artifact_claims_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artifact_claims_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -6052,12 +5792,8 @@
           "name": "payload_locked_documents_rels_users_fk",
           "tableFrom": "payload_locked_documents_rels",
           "tableTo": "users",
-          "columnsFrom": [
-            "users_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["users_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -6065,12 +5801,8 @@
           "name": "payload_locked_documents_rels_verification_reviews_fk",
           "tableFrom": "payload_locked_documents_rels",
           "tableTo": "verification_reviews",
-          "columnsFrom": [
-            "verification_reviews_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["verification_reviews_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -6078,12 +5810,8 @@
           "name": "payload_locked_documents_rels_provenance_events_fk",
           "tableFrom": "payload_locked_documents_rels",
           "tableTo": "provenance_events",
-          "columnsFrom": [
-            "provenance_events_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["provenance_events_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -6091,12 +5819,8 @@
           "name": "payload_locked_documents_rels_pages_fk",
           "tableFrom": "payload_locked_documents_rels",
           "tableTo": "pages",
-          "columnsFrom": [
-            "pages_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["pages_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -6104,12 +5828,8 @@
           "name": "payload_locked_documents_rels_audit_event_fk",
           "tableFrom": "payload_locked_documents_rels",
           "tableTo": "audit_event",
-          "columnsFrom": [
-            "audit_event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["audit_event_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -6313,12 +6033,8 @@
           "name": "payload_preferences_rels_parent_fk",
           "tableFrom": "payload_preferences_rels",
           "tableTo": "payload_preferences",
-          "columnsFrom": [
-            "parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -6326,12 +6042,8 @@
           "name": "payload_preferences_rels_users_fk",
           "tableFrom": "payload_preferences_rels",
           "tableTo": "users",
-          "columnsFrom": [
-            "users_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["users_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -6423,10 +6135,7 @@
     "public._locales": {
       "name": "_locales",
       "schema": "public",
-      "values": [
-        "en",
-        "ar"
-      ]
+      "values": ["en", "ar"]
     },
     "public.enum_countries_exhibition_state": {
       "name": "enum_countries_exhibition_state",
@@ -6442,40 +6151,22 @@
     "public.enum_collections_status": {
       "name": "enum_collections_status",
       "schema": "public",
-      "values": [
-        "Draft",
-        "In Review",
-        "Approved",
-        "Published"
-      ]
+      "values": ["Draft", "In Review", "Approved", "Published"]
     },
     "public.enum_stories_status": {
       "name": "enum_stories_status",
       "schema": "public",
-      "values": [
-        "Draft",
-        "In Review",
-        "Approved",
-        "Published"
-      ]
+      "values": ["Draft", "In Review", "Approved", "Published"]
     },
     "public.enum_sources_source_type": {
       "name": "enum_sources_source_type",
       "schema": "public",
-      "values": [
-        "Primary",
-        "Secondary",
-        "Tertiary"
-      ]
+      "values": ["Primary", "Secondary", "Tertiary"]
     },
     "public.enum_inquiries_status": {
       "name": "enum_inquiries_status",
       "schema": "public",
-      "values": [
-        "New",
-        "In Progress",
-        "Resolved"
-      ]
+      "values": ["New", "In Progress", "Resolved"]
     },
     "public.enum_artifacts_artifact_type": {
       "name": "enum_artifacts_artifact_type",
@@ -6494,22 +6185,12 @@
     "public.enum_artifacts_claim_review_state": {
       "name": "enum_artifacts_claim_review_state",
       "schema": "public",
-      "values": [
-        "Unreviewed",
-        "In Review",
-        "Approved",
-        "Disputed"
-      ]
+      "values": ["Unreviewed", "In Review", "Approved", "Disputed"]
     },
     "public.enum_artifacts_editorial_state": {
       "name": "enum_artifacts_editorial_state",
       "schema": "public",
-      "values": [
-        "Draft",
-        "In Review",
-        "Approved",
-        "Published"
-      ]
+      "values": ["Draft", "In Review", "Approved", "Published"]
     },
     "public.enum_artifacts_translation_state": {
       "name": "enum_artifacts_translation_state",
@@ -6525,60 +6206,32 @@
     "public.enum_artifacts_publication_state": {
       "name": "enum_artifacts_publication_state",
       "schema": "public",
-      "values": [
-        "Unpublished",
-        "Published",
-        "Scheduled",
-        "Withdrawn"
-      ]
+      "values": ["Unpublished", "Published", "Scheduled", "Withdrawn"]
     },
     "public.enum_publication_records_locale": {
       "name": "enum_publication_records_locale",
       "schema": "public",
-      "values": [
-        "en",
-        "ar"
-      ]
+      "values": ["en", "ar"]
     },
     "public.enum_publication_records_state": {
       "name": "enum_publication_records_state",
       "schema": "public",
-      "values": [
-        "Draft",
-        "In Review",
-        "Published",
-        "Unpublished",
-        "Scheduled"
-      ]
+      "values": ["Draft", "In Review", "Published", "Unpublished", "Scheduled"]
     },
     "public.enum_ownership_statements_state": {
       "name": "enum_ownership_statements_state",
       "schema": "public",
-      "values": [
-        "Draft",
-        "In Review",
-        "Approved",
-        "Rejected"
-      ]
+      "values": ["Draft", "In Review", "Approved", "Rejected"]
     },
     "public.enum_authenticity_assessments_state": {
       "name": "enum_authenticity_assessments_state",
       "schema": "public",
-      "values": [
-        "Draft",
-        "In Review",
-        "Approved",
-        "Rejected"
-      ]
+      "values": ["Draft", "In Review", "Approved", "Rejected"]
     },
     "public.enum_condition_reports_state": {
       "name": "enum_condition_reports_state",
       "schema": "public",
-      "values": [
-        "Draft",
-        "In Review",
-        "Approved"
-      ]
+      "values": ["Draft", "In Review", "Approved"]
     },
     "public.enum_artifact_country_relationships_relationship_type": {
       "name": "enum_artifact_country_relationships_relationship_type",
@@ -6595,12 +6248,7 @@
     "public.enum_media_assets_alt_text_status": {
       "name": "enum_media_assets_alt_text_status",
       "schema": "public",
-      "values": [
-        "Not Recorded",
-        "Draft",
-        "Reviewed",
-        "Approved"
-      ]
+      "values": ["Not Recorded", "Draft", "Reviewed", "Approved"]
     },
     "public.enum_media_assets_readiness_state": {
       "name": "enum_media_assets_readiness_state",
@@ -6617,13 +6265,7 @@
     "public.enum_rights_records_rights_status": {
       "name": "enum_rights_records_rights_status",
       "schema": "public",
-      "values": [
-        "Unknown",
-        "Pending Review",
-        "Cleared",
-        "Restricted",
-        "Denied"
-      ]
+      "values": ["Unknown", "Pending Review", "Cleared", "Restricted", "Denied"]
     },
     "public.enum_artifact_claims_claim_type": {
       "name": "enum_artifact_claims_claim_type",
@@ -6640,13 +6282,7 @@
     "public.enum_artifact_claims_review_state": {
       "name": "enum_artifact_claims_review_state",
       "schema": "public",
-      "values": [
-        "Unreviewed",
-        "In Review",
-        "Approved",
-        "Disputed",
-        "Rejected"
-      ]
+      "values": ["Unreviewed", "In Review", "Approved", "Disputed", "Rejected"]
     },
     "public.enum_users_role": {
       "name": "enum_users_role",
@@ -6668,12 +6304,7 @@
     "public.enum_verification_reviews_result": {
       "name": "enum_verification_reviews_result",
       "schema": "public",
-      "values": [
-        "Pass",
-        "Fail",
-        "Blocked",
-        "Not Run"
-      ]
+      "values": ["Pass", "Fail", "Blocked", "Not Run"]
     }
   },
   "schemas": {},

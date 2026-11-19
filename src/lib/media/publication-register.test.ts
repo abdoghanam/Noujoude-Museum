@@ -6,7 +6,10 @@ import { describe, expect, it } from "vitest";
 
 import { LOCALE_IDENTIFIERS } from "@/domain/locale";
 import { decidePublicServing } from "@/domain/rights";
-import { PRODUCTION_RIGHTS_VOCABULARY, type AssetRecord } from "@/lib/media/asset-record";
+import {
+  PRODUCTION_RIGHTS_VOCABULARY,
+  type AssetRecord,
+} from "@/lib/media/asset-record";
 import {
   SURFACE_BINDINGS,
   bindingForSurface,
@@ -46,9 +49,7 @@ import { assetRegister } from "@/lib/server/media/registry";
 const GOVERNANCE_DIR = path.join(process.cwd(), "docs", "asset-governance");
 
 function governance<T>(file: string): T {
-  return JSON.parse(
-    readFileSync(path.join(GOVERNANCE_DIR, file), "utf8"),
-  ) as T;
+  return JSON.parse(readFileSync(path.join(GOVERNANCE_DIR, file), "utf8")) as T;
 }
 
 /** One published row of the document, as the generator writes it. */
@@ -153,7 +154,9 @@ function applyRule(authorised: ReadonlySet<string>): {
       filename: record.filename,
       // Only the surfaces that produced a path. An asset declaring three surfaces and bound on one is
       // published on one, and a register that listed the other two would claim placement the map denies.
-      surfaces: record.surfaces.filter((surface) => bindingForSurface(surface) !== null),
+      surfaces: record.surfaces.filter(
+        (surface) => bindingForSurface(surface) !== null,
+      ),
       paths,
     });
   }
@@ -235,9 +238,9 @@ describe("the document is the rule applied to its own two inputs", () => {
     // The other direction: an asset can be fully authorised and still have nowhere to go. The document must
     // not invent a home for it, because §13.3's `Approved but Unused` state is a fact, not a gap to fill.
     for (const entry of document.entries) {
-      expect(boundPathsFor(need(entry.assetId).surfaces).length).toBeGreaterThan(
-        0,
-      );
+      expect(
+        boundPathsFor(need(entry.assetId).surfaces).length,
+      ).toBeGreaterThan(0);
     }
     expect(derived.unmapped.length).toBeGreaterThan(0);
   });
@@ -252,9 +255,10 @@ describe("every path in the document is a path this site has", () => {
   it("uses no address that no binding produces", () => {
     for (const entry of document.entries) {
       for (const route of entry.paths) {
-        expect(pathsWithABinding.has(route), `${entry.assetId} -> ${route}`).toBe(
-          true,
-        );
+        expect(
+          pathsWithABinding.has(route),
+          `${entry.assetId} -> ${route}`,
+        ).toBe(true);
       }
     }
   });
@@ -267,7 +271,9 @@ describe("every path in the document is a path this site has", () => {
         const isRooted = prefixes.some(
           (prefix) => route === prefix || route.startsWith(`${prefix}/`),
         );
-        expect(isMasthead || isRooted, `${entry.assetId} -> ${route}`).toBe(true);
+        expect(isMasthead || isRooted, `${entry.assetId} -> ${route}`).toBe(
+          true,
+        );
       }
     }
   });
@@ -284,9 +290,7 @@ describe("every path in the document is a path this site has", () => {
     // §4.2 fixes the identifiers and makes prefixing mandatory for public experiences, so a published asset
     // that named one locale would be a record of a page that does not exist.
     for (const entry of document.entries) {
-      expect([...entry.locales].sort()).toEqual(
-        [...LOCALE_IDENTIFIERS].sort(),
-      );
+      expect([...entry.locales].sort()).toEqual([...LOCALE_IDENTIFIERS].sort());
     }
   });
 
@@ -296,7 +300,9 @@ describe("every path in the document is a path this site has", () => {
       expect(entry.surfaces.length).toBeGreaterThan(0);
       expect(new Set(entry.surfaces).size).toBe(entry.surfaces.length);
       for (const surface of entry.surfaces) {
-        expect(record.surfaces, `${entry.assetId} ${surface}`).toContain(surface);
+        expect(record.surfaces, `${entry.assetId} ${surface}`).toContain(
+          surface,
+        );
         expect(bindingForSurface(surface), surface).not.toBeNull();
       }
     }
@@ -315,7 +321,9 @@ describe("the document is consistent about its own authority", () => {
   it("cites the same instrument the Owner declaration cites", () => {
     const instrument = document.authority.instrument;
     expect(instrument.startsWith(declaration.authority.instrument)).toBe(true);
-    expect(document.authority.recordedIn).toBe(declaration.authority.recordedIn);
+    expect(document.authority.recordedIn).toBe(
+      declaration.authority.recordedIn,
+    );
     for (const entry of document.entries) {
       expect(entry.authority).toBe(instrument);
     }
@@ -345,7 +353,9 @@ describe("the document is consistent about its own authority", () => {
   });
 
   it("says what it is and who wrote it", () => {
-    expect(document.record).toBe("noujoude.asset-governance.publication-register");
+    expect(document.record).toBe(
+      "noujoude.asset-governance.publication-register",
+    );
     expect(document.version).toBe(1);
     expect(document.generatedBy).toBe("scripts/build-publication-register.mjs");
   });
@@ -405,12 +415,14 @@ describe("each excluded row states the thing that bars it", () => {
     // in the first block of this file exercises exactly that branch by taking one filename away.
     for (const assetId of derived.unmapped) {
       const row = document.notPublished.find((r) => r.assetId === assetId);
-      if (row === undefined) throw new Error(`${assetId} vanished from the document`);
+      if (row === undefined)
+        throw new Error(`${assetId} vanished from the document`);
       expect(row.why).toMatch(/usage map|route/i);
     }
     for (const assetId of derived.unnamed) {
       const row = document.notPublished.find((r) => r.assetId === assetId);
-      if (row === undefined) throw new Error(`${assetId} vanished from the document`);
+      if (row === undefined)
+        throw new Error(`${assetId} vanished from the document`);
       expect(row.why).toMatch(/declar|authoris/i);
     }
   });

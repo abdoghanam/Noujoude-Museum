@@ -25,7 +25,14 @@ import { pathToFileURL } from "node:url";
 const SRC_DIR = path.resolve(import.meta.dirname, "..", "..", "src");
 
 /** The extension order a bundler would try for `@/lib/media/usage-map`. */
-const CANDIDATE_SUFFIXES = [".ts", ".tsx", ".js", ".mjs", "/index.ts", "/index.tsx"];
+const CANDIDATE_SUFFIXES = [
+  ".ts",
+  ".tsx",
+  ".js",
+  ".mjs",
+  "/index.ts",
+  "/index.tsx",
+];
 
 function resolveAlias(specifier) {
   const inner = specifier.slice(2);

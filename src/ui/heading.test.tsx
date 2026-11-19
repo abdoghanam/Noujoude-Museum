@@ -10,8 +10,14 @@ describe("Heading primitive", () => {
   });
 
   it("renders the requested level", () => {
-    expect(renderToStaticMarkup(<Heading level={1}>a</Heading>)).toContain("<h1");
-    expect(renderToStaticMarkup(<Heading level={3}>b</Heading>)).toContain("<h3");
-    expect(renderToStaticMarkup(<Heading level={4}>c</Heading>)).toContain("<h4");
+    expect(renderToStaticMarkup(<Heading level={1}>a</Heading>)).toContain(
+      "<h1",
+    );
+    expect(renderToStaticMarkup(<Heading level={3}>b</Heading>)).toContain(
+      "<h3",
+    );
+    expect(renderToStaticMarkup(<Heading level={4}>c</Heading>)).toContain(
+      "<h4",
+    );
   });
 });

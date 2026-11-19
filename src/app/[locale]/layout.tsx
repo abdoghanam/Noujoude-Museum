@@ -79,9 +79,7 @@ export default async function LocaleLayout({
     state, and `src/lib/server/media/slots.test.ts` asserts the reason where it belongs.
   */
   const headerViews = slotViewsFor("global", locale);
-  const headerMark = headerViews.find(
-    (view) => slotOutcome(view) === "image",
-  );
+  const headerMark = headerViews.find((view) => slotOutcome(view) === "image");
 
   return (
     <html lang={locale} dir={directionOf(locale)}>

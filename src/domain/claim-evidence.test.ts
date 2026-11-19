@@ -7,7 +7,8 @@ interface Claim {
   readonly text: string;
   readonly evidenceIds: readonly string[];
   readonly reviewer: string | null;
-  readonly approvalState: "Unreviewed" | "In Review" | "Approved" | "Disputed" | "Rejected";
+  readonly approvalState:
+    "Unreviewed" | "In Review" | "Approved" | "Disputed" | "Rejected";
 }
 
 function isClaimPublishable(claim: Claim): boolean {

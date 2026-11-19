@@ -51,7 +51,10 @@ const DRY_RUN = flag("dry-run");
 
 const GOVERNANCE_DIR = path.join(ROOT, "docs", "asset-governance");
 const REGISTER_FILE = path.join(ROOT, "docs", "ASSET_INVENTORY_AUDIT.csv");
-const AUTHORIZATION_FILE = path.join(GOVERNANCE_DIR, "owner-authorization.json");
+const AUTHORIZATION_FILE = path.join(
+  GOVERNANCE_DIR,
+  "owner-authorization.json",
+);
 const PUBLICATION_FILE = path.join(GOVERNANCE_DIR, "publication-register.json");
 const PROFILES_FILE = path.join(GOVERNANCE_DIR, "derivative-profiles.json");
 const OUT_FILE = path.join(GOVERNANCE_DIR, "clearance-ledger.json");
@@ -68,9 +71,7 @@ function readText(file) {
 }
 
 const registerBytes = readText(REGISTER_FILE);
-const registerSha256 = createHash("sha256")
-  .update(registerBytes)
-  .digest("hex");
+const registerSha256 = createHash("sha256").update(registerBytes).digest("hex");
 
 const authorization = JSON.parse(readText(AUTHORIZATION_FILE));
 const publication = JSON.parse(readText(PUBLICATION_FILE));
@@ -80,10 +81,7 @@ const authorised = new Set(
   (authorization.assets ?? []).map((name) => String(name).toLowerCase()),
 );
 const published = new Map(
-  (publication.entries ?? []).map((entry) => [
-    String(entry.assetId),
-    entry,
-  ]),
+  (publication.entries ?? []).map((entry) => [String(entry.assetId), entry]),
 );
 const profileIds = (profiles.profiles ?? []).map((profile) => profile.id);
 if (profileIds.length === 0)
@@ -106,7 +104,9 @@ for (const name of [
 ]) {
   const at = header.indexOf(name);
   if (at === -1)
-    throw new Error(`build-clearance-ledger: the register has no "${name}" column`);
+    throw new Error(
+      `build-clearance-ledger: the register has no "${name}" column`,
+    );
   index[name] = at;
 }
 
@@ -129,7 +129,10 @@ for (const row of rows.slice(1)) {
     approvalStatement,
     PRODUCTION_RIGHTS_VOCABULARY,
   );
-  const isPublished = publishedFrom(usageStatement, PRODUCTION_RIGHTS_VOCABULARY);
+  const isPublished = publishedFrom(
+    usageStatement,
+    PRODUCTION_RIGHTS_VOCABULARY,
+  );
 
   // Ordered so the first refusal reason a reviewer sees is the most substantive one.
   if (rights !== "cleared") {
@@ -239,7 +242,8 @@ function report() {
     `build-clearance-ledger: wrote ${path.relative(ROOT, OUT_FILE)} with ${String(approvals.length)} authorised row(s) quoting register ${registerSha256.slice(0, 12)}…, ${String(refused.length)} refused.\n`,
   );
   const reasons = new Map();
-  for (const row of refused) reasons.set(row.why, (reasons.get(row.why) ?? 0) + 1);
+  for (const row of refused)
+    reasons.set(row.why, (reasons.get(row.why) ?? 0) + 1);
   for (const [why, count] of reasons)
     process.stdout.write(`  refused x${String(count)}: ${why}\n`);
 }

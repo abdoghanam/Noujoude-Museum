@@ -73,8 +73,14 @@ describe("AI Curator red-team", () => {
   it("AI cannot approve or publish (no such method)", () => {
     const gw = new NoopAiGateway();
     // The gateway interface has no approve/publish/verify methods.
-    expect(typeof (gw as unknown as Record<string, unknown>).approve).toBe("undefined");
-    expect(typeof (gw as unknown as Record<string, unknown>).publish).toBe("undefined");
-    expect(typeof (gw as unknown as Record<string, unknown>).verify).toBe("undefined");
+    expect(typeof (gw as unknown as Record<string, unknown>).approve).toBe(
+      "undefined",
+    );
+    expect(typeof (gw as unknown as Record<string, unknown>).publish).toBe(
+      "undefined",
+    );
+    expect(typeof (gw as unknown as Record<string, unknown>).verify).toBe(
+      "undefined",
+    );
   });
 });

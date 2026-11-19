@@ -20,8 +20,17 @@ export interface StateProps extends HTMLAttributes<HTMLDivElement> {
   readonly children?: ReactNode;
 }
 
-export function State({ kind, title, description, className, children, ...rest }: StateProps) {
-  const classes = [styles.state, styles[kind], className].filter(Boolean).join(" ");
+export function State({
+  kind,
+  title,
+  description,
+  className,
+  children,
+  ...rest
+}: StateProps) {
+  const classes = [styles.state, styles[kind], className]
+    .filter(Boolean)
+    .join(" ");
   return (
     <div role="status" aria-live="polite" className={classes} {...rest}>
       <p className={styles.title}>{title}</p>

@@ -5,7 +5,13 @@ export const MediaAssets: CollectionConfig = {
   admin: { useAsTitle: "filename" },
   fields: [
     { name: "filename", type: "text", required: true },
-    { name: "assetId", type: "text", required: true, unique: true, index: true },
+    {
+      name: "assetId",
+      type: "text",
+      required: true,
+      unique: true,
+      index: true,
+    },
     { name: "mimeType", type: "text" },
     { name: "width", type: "number" },
     { name: "height", type: "number" },

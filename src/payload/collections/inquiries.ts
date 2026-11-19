@@ -9,6 +9,11 @@ export const Inquiries: CollectionConfig = {
     { name: "subject", type: "text", required: true },
     { name: "message", type: "textarea", required: true },
     { name: "locale", type: "text" },
-    { name: "status", type: "select", options: ["New", "In Progress", "Resolved"], defaultValue: "New" },
+    {
+      name: "status",
+      type: "select",
+      options: ["New", "In Progress", "Resolved"],
+      defaultValue: "New",
+    },
   ],
 };

@@ -10,7 +10,11 @@ describe("Container primitive", () => {
   });
 
   it("applies measure class", () => {
-    expect(renderToStaticMarkup(<Container measure="reading">y</Container>)).toContain("reading");
-    expect(renderToStaticMarkup(<Container measure="wide">z</Container>)).toContain("wide");
+    expect(
+      renderToStaticMarkup(<Container measure="reading">y</Container>),
+    ).toContain("reading");
+    expect(
+      renderToStaticMarkup(<Container measure="wide">z</Container>),
+    ).toContain("wide");
   });
 });

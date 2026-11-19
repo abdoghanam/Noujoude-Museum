@@ -38,7 +38,8 @@ import { Pages } from "./collections/pages";
 import { AuditEvents } from "./collections/audit-events";
 import { AiKnowledgeSources } from "./collections/ai-knowledge-sources";
 
-const serverURL = process.env["PAYLOAD_PUBLIC_SERVER_URL"] ?? "http://localhost:3000";
+const serverURL =
+  process.env["PAYLOAD_PUBLIC_SERVER_URL"] ?? "http://localhost:3000";
 
 export default buildConfig({
   secret: process.env["PAYLOAD_SECRET"] ?? "dev-only-insecure-secret-change-me",

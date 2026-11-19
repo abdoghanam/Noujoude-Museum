@@ -24,17 +24,21 @@ export function isEligible(input: EligibilityInput): boolean {
 // Prompt-injection defense: treat retrieved content as untrusted data.
 export function sanitizeQuestion(question: string): string {
   // Strip control characters and common injection patterns.
-  return question
-    // eslint-disable-next-line no-control-regex
-    .replace(/[\u0000-\u001F\u007F]/g, "")
-    .replace(/ignore\s+(previous|all)\s+instructions/gi, "[redacted]")
-    .trim()
-    .slice(0, 2000);
+  return (
+    question
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\u0000-\u001F\u007F]/g, "")
+      .replace(/ignore\s+(previous|all)\s+instructions/gi, "[redacted]")
+      .trim()
+      .slice(0, 2000)
+  );
 }
 
 // Conflicting-source disclosure: when multiple eligible sources disagree,
 // return the list of conflicting source IDs.
-export function detectConflictingSources(sourceContents: readonly string[]): string[] {
+export function detectConflictingSources(
+  sourceContents: readonly string[],
+): string[] {
   const seen = new Set<string>();
   const conflicts: string[] = [];
   for (const content of sourceContents) {

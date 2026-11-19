@@ -8,10 +8,18 @@ test.describe("Phase 4 invariants", () => {
   });
 
   test("no commerce UI on canonical routes", async ({ page }) => {
-    for (const path of ["/en", "/en/collections", "/en/worlds", "/en/worlds/morocco", "/en/stories"]) {
+    for (const path of [
+      "/en",
+      "/en/collections",
+      "/en/worlds",
+      "/en/worlds/morocco",
+      "/en/stories",
+    ]) {
       await page.goto(path);
       const body = await page.content();
-      expect(body).not.toMatch(/buy now|checkout|shopping cart|add to cart|price:/i);
+      expect(body).not.toMatch(
+        /buy now|checkout|shopping cart|add to cart|price:/i,
+      );
     }
   });
 
@@ -22,7 +30,9 @@ test.describe("Phase 4 invariants", () => {
 
   test("noindex on shells", async ({ page }) => {
     await page.goto("/en");
-    const robots = await page.locator('meta[name="robots"]').getAttribute("content");
+    const robots = await page
+      .locator('meta[name="robots"]')
+      .getAttribute("content");
     expect(robots).toContain("noindex");
   });
 });

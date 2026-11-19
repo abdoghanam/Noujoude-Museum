@@ -54,7 +54,8 @@ export function DetailPage({
       >
         <p className={styles.withheld} lang="en">
           Owner-supplied records, rights and approvals are required before any
-          {` ${kind} `} may be published. Until then this page renders structure only.
+          {` ${kind} `} may be published. Until then this page renders structure
+          only.
         </p>
       </State>
       {children}

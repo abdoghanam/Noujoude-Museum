@@ -448,7 +448,7 @@ if (!dockerReady) {
       [
         "inspect",
         "-f",
-        "{{ index .Config.Labels \"com.docker.compose.project\" }}|{{ index .Config.Labels \"com.docker.compose.service\" }}|{{ .Config.Image }}",
+        '{{ index .Config.Labels "com.docker.compose.project" }}|{{ index .Config.Labels "com.docker.compose.service" }}|{{ .Config.Image }}',
         nameLine,
       ],
       { encoding: "utf8", cwd: ROOT, timeout: 60_000 },

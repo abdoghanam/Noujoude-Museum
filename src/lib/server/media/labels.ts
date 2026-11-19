@@ -69,7 +69,9 @@ function parseLabels(text: string): ReadonlyMap<string, DescriptiveLabel> {
       throw new Error(`${at}: "decorative" must be a boolean`);
     const key = file.trim().toLowerCase();
     if (out.has(key))
-      throw new Error(`${at}: duplicate label for ${file}, which one wins is ambiguous`);
+      throw new Error(
+        `${at}: duplicate label for ${file}, which one wins is ambiguous`,
+      );
     out.set(key, { en: en.trim(), ar: ar.trim(), decorative });
   });
   return out;
@@ -85,9 +87,13 @@ function snapshot(root: string): LabelCache {
     if (code !== "ENOENT") throw error;
     bytes = null;
   }
-  const stamp = bytes === null ? null : createHash("sha256").update(bytes).digest("hex");
+  const stamp =
+    bytes === null ? null : createHash("sha256").update(bytes).digest("hex");
   if (cache !== null && cache.stamp === stamp) return cache;
-  const byFilename = bytes === null ? new Map<string, DescriptiveLabel>() : parseLabels(bytes.toString("utf8"));
+  const byFilename =
+    bytes === null
+      ? new Map<string, DescriptiveLabel>()
+      : parseLabels(bytes.toString("utf8"));
   cache = { stamp, byFilename };
   return cache;
 }

@@ -309,9 +309,7 @@ function rootWithRowsFor(assetIds: readonly string[]): string {
   writeFileSync(
     path.join(root, DERIVATIVE_MANIFEST_PATH),
     JSON.stringify({
-      derivatives: assetIds.map((assetId) =>
-        lineageRowFor(assetId, 640, 480),
-      ),
+      derivatives: assetIds.map((assetId) => lineageRowFor(assetId, 640, 480)),
       generatedAt: "2026-11-04T00:00:00.000Z",
       originalsUnchanged: true,
       storeDirectory: DERIVATIVE_STORE_DIR,
@@ -398,7 +396,8 @@ describe("publicServingSummary", () => {
     // the slot asked the gate and stopped there.
     const clearedButUnproduced = one(
       assetRegister().filter(
-        (asset) => decidePublicServing(asset).serve && !LINEAGE_IDS.has(asset.assetId),
+        (asset) =>
+          decidePublicServing(asset).serve && !LINEAGE_IDS.has(asset.assetId),
       ),
       "asset the gate clears with no derivative on disk",
     );
@@ -415,9 +414,7 @@ describe("servingFooterSentence", () => {
     // literal stand: a footer that says *both* numbers and *no pictures* is simply false once pictures exist.
     const summary = publicServingSummary();
     const sentence = servingFooterSentence(summary);
-    expect(sentence).toContain(
-      `${String(summary.total)} catalogued assets`,
-    );
+    expect(sentence).toContain(`${String(summary.total)} catalogued assets`);
     expect(sentence).toContain(
       `${String(summary.gatePassed)} pass the public-serving gate`,
     );
@@ -513,8 +510,11 @@ describe("the layout band", () => {
   it("renders exactly the pictures the shell is allowed to render, and no others", async () => {
     for (const locale of LOCALES) {
       const html = await renderLayout(locale);
-      const drawn = [...html.matchAll(/<img[^>]*src="\/api\/media\/(NDM-AST-\d{3})"[^>]*\/>/g)]
-        .map((match) => match[1] as string);
+      const drawn = [
+        ...html.matchAll(
+          /<img[^>]*src="\/api\/media\/(NDM-AST-\d{3})"[^>]*\/>/g,
+        ),
+      ].map((match) => match[1] as string);
       const expected = slotViewsFor("global", locale)
         .filter((view) => slotOutcome(view) === "image")
         .map((view) => view.assetId);
@@ -739,9 +739,7 @@ describe("the private store cannot open the gate", () => {
         servedSrcFor(asset, root),
         `${asset.assetId}: ${asset.rights}/${asset.approval}/${String(asset.published)}`,
       ).toBe(
-        decidePublicServing(asset).serve
-          ? `/api/media/${asset.assetId}`
-          : null,
+        decidePublicServing(asset).serve ? `/api/media/${asset.assetId}` : null,
       );
     }
     expect(servedSrcFor(DENIED, root)).toBeNull();
@@ -771,7 +769,9 @@ describe("the private store cannot open the gate", () => {
     // The other side of the same seam, for contrast: the masthead asset the Owner's instrument did clear is
     // drawn, so the block above is about permission and not about a component that cannot render.
     expect(
-      slotOutcome(one(slotViewsFor("global", "en"), "the global masthead slot")),
+      slotOutcome(
+        one(slotViewsFor("global", "en"), "the global masthead slot"),
+      ),
     ).toBe("image");
   });
 
@@ -819,7 +819,10 @@ describe("the private store cannot open the gate", () => {
     }
     expect(
       altTextFor(
-        { ...need("NDM-AST-001"), filename: "a-file-nobody-has-described.webp" },
+        {
+          ...need("NDM-AST-001"),
+          filename: "a-file-nobody-has-described.webp",
+        },
         "en",
       ),
     ).toBeNull();
@@ -839,7 +842,9 @@ describe("the bound routes as a visitor receives them", () => {
       // The count in the markup is the count of the things standing under it. §6.1 bars a fabricated count,
       // and the fabricated form that matters now is a tally that still says 0 while pictures are drawn.
       expect(html).toContain(expectedTally(views));
-      const printed = /bound to this route, (\d+) (?:is|are) cleared/.exec(html);
+      const printed = /bound to this route, (\d+) (?:is|are) cleared/.exec(
+        html,
+      );
       expect(printed === null ? null : Number(printed[1])).toBe(images.length);
       expect((html.match(/<img/g) ?? []).length).toBe(images.length);
       expect((html.match(/data-slot="media-withheld"/g) ?? []).length).toBe(
@@ -860,9 +865,7 @@ describe("the bound routes as a visitor receives them", () => {
         .map((match) => match[1])
         .filter((id): id is string => id !== undefined)
         .sort();
-      expect(srcIds).toEqual(
-        images.map((view) => view.assetId).sort(),
-      );
+      expect(srcIds).toEqual(images.map((view) => view.assetId).sort());
       const scaffolding = withoutDrawnImagery(html);
       expect(scaffolding).not.toMatch(/NDM-AST-\d{3}/);
       expect(scaffolding).not.toMatch(/\sdata-(?:asset-id|surface|reason)=/);
@@ -900,7 +903,9 @@ describe("the bound routes as a visitor receives them", () => {
           expect(html, `${label(target)}: ${view.assetId}`).toContain(
             `src="/api/media/${view.assetId}"`,
           );
-          expect(html).toContain(`alt="${attr(altTextFor(asset, locale) ?? "")}"`);
+          expect(html).toContain(
+            `alt="${attr(altTextFor(asset, locale) ?? "")}"`,
+          );
           expect(html).toContain(`width="${String(lineage?.width ?? 0)}"`);
           expect(html).toContain(`height="${String(lineage?.height ?? 0)}"`);
         }

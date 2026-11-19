@@ -5,7 +5,12 @@ export const AiKnowledgeSources: CollectionConfig = {
   admin: { useAsTitle: "title" },
   fields: [
     { name: "title", type: "text", required: true, localized: true },
-    { name: "sourceType", type: "select", options: ["Artifact", "Story", "Collection", "Country", "Page"], required: true },
+    {
+      name: "sourceType",
+      type: "select",
+      options: ["Artifact", "Story", "Collection", "Country", "Page"],
+      required: true,
+    },
     { name: "sourceId", type: "text", required: true, index: true },
     { name: "locale", type: "select", options: ["en", "ar"], required: true },
     { name: "eligible", type: "checkbox", defaultValue: false },

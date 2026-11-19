@@ -21,7 +21,9 @@ test.describe("primary journey", () => {
     expect(res?.status()).toBe(404);
   });
 
-  test("well-formed but unpublished artifact slug renders empty state", async ({ page }) => {
+  test("well-formed but unpublished artifact slug renders empty state", async ({
+    page,
+  }) => {
     const res = await page.goto("/en/artifacts/this-does-not-exist");
     expect(res?.status()).toBe(200);
     await expect(page.getByText(/resolves to nothing/i)).toBeVisible();

@@ -13,7 +13,12 @@ describe("AI gateway", () => {
 
   it("noop gateway reports unavailable", async () => {
     const gw = new NoopAiGateway();
-    const res = await gw.answer({ locale: "en", question: "test", contextEntityIds: [], eligibility: eligible });
+    const res = await gw.answer({
+      locale: "en",
+      question: "test",
+      contextEntityIds: [],
+      eligibility: eligible,
+    });
     expect(res.available).toBe(false);
     expect(res.answer).toBeNull();
     expect(res.citations).toEqual([]);

@@ -11,7 +11,11 @@ describe("Text primitive", () => {
   });
 
   it("applies variant class", () => {
-    expect(renderToStaticMarkup(<Text variant="caption">c</Text>)).toContain("caption");
-    expect(renderToStaticMarkup(<Text variant="secondary">s</Text>)).toContain("secondary");
+    expect(renderToStaticMarkup(<Text variant="caption">c</Text>)).toContain(
+      "caption",
+    );
+    expect(renderToStaticMarkup(<Text variant="secondary">s</Text>)).toContain(
+      "secondary",
+    );
   });
 });

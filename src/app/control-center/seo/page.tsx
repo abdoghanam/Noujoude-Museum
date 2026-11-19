@@ -15,7 +15,8 @@ export default function SeoPage() {
     <Container measure="wide">
       <Heading level={1}>SEO & Metadata Center</Heading>
       <Text variant="secondary">
-        Core SEO metadata for pages. Managed via the Pages collection in Payload admin.
+        Core SEO metadata for pages. Managed via the Pages collection in Payload
+        admin.
       </Text>
       <State
         kind="empty"
@@ -23,7 +24,10 @@ export default function SeoPage() {
         description="Create page records in /admin/collections/pages to manage SEO metadata."
       />
       <p style={{ marginTop: "1rem" }}>
-        <a href="/admin/collections/pages" style={{ color: "var(--ndm-accent-primary)" }}>
+        <a
+          href="/admin/collections/pages"
+          style={{ color: "var(--ndm-accent-primary)" }}
+        >
           Open Pages collection →
         </a>
       </p>

@@ -7,7 +7,9 @@ export async function register() {
     // OTEL_EXPORTER_OTLP_ENDPOINT. Left as a no-op when unset to avoid
     // unverified external calls (zero-cost mandate).
     if (!process.env.OTEL_EXPORTER_OTLP_ENDPOINT) {
-      console.info("OTel: no exporter endpoint configured; telemetry disabled.");
+      console.info(
+        "OTel: no exporter endpoint configured; telemetry disabled.",
+      );
     }
   }
 }

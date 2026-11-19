@@ -10,7 +10,11 @@ describe("Stack primitive", () => {
   });
 
   it("applies gap and direction classes", () => {
-    const html = renderToStaticMarkup(<Stack gap="4" direction="inline">y</Stack>);
+    const html = renderToStaticMarkup(
+      <Stack gap="4" direction="inline">
+        y
+      </Stack>,
+    );
     expect(html).toContain("gap4");
     expect(html).toContain("inline");
   });
