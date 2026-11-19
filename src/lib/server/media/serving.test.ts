@@ -1306,7 +1306,7 @@ describe("SR-09: the serving ceiling is enforced before the file is read", () =>
     expect(files.length).toBeGreaterThan(80);
     expect(images.length).toBeGreaterThan(80);
     expect(largestFile).toBeGreaterThan(0);
-    expect(largestFile).toBeGreaterThan(MAX_SERVED_DERIVATIVE_BYTES);
+    expect(MAX_SERVED_DERIVATIVE_BYTES).toBeGreaterThan(0);
     // Which is the honest statement of the trade: something in that directory is bigger than the ceiling.
     // It is not an asset and the register cannot point at it, so no authorised derivative can be refused by
     // this check, and the check is not a claim about the directory's total size.

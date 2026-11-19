@@ -383,10 +383,10 @@ jobs:
       - name: ADR-019 behavioural evidence (throwaway server)
         run: |
           set -o pipefail
-          IMAGE="$IMAGE" sh scripts/db/run-privilege-tests.sh > privilege-evidence.txt 2>&1
-          rc=$?
+          IMAGE="$IMAGE" sh scripts/db/run-privilege-tests.sh 2>&1 | tee privilege-evidence.txt
+          rc=${PIPESTATUS[0]}
           echo "harness exit code: $rc"
-          cat privilege-evidence.txt | tail -5
+          ls -la privilege-evidence.txt
           exit "$rc"
 
       - name: Archive the privilege transcript as gate evidence

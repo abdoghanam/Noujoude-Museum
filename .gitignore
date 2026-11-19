@@ -33,6 +33,10 @@ pgdata/
 # passing the gate, §20.4).
 media-derivatives/*
 !media-derivatives/lineage.json
+# Committed test fixtures (derivatives) for CI reproducibility (Phase 8).
+# These are the delivered store's files; without them the serving integration test
+# cannot run on a clean checkout. They are reproducible from the lineage manifest.
+!media-derivatives/*.webp
 
 # Payload / Drizzle
 # Migrations ARE source: they are committed (Standard §3.4). Generated types are
