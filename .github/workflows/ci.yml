@@ -427,16 +427,21 @@ jobs:
         # below may echo them.
         run: |
           gen() { openssl rand -hex 24; }
+          POSTGRES_SUPERUSER_PASSWORD="$(gen)"
+          NDM_MIGRATION_PASSWORD="$(gen)"
+          NDM_RUNTIME_PASSWORD="$(gen)"
+          NDM_REPORTING_PASSWORD="$(gen)"
+          NDM_BACKUP_PASSWORD="$(gen)"
           {
             echo "POSTGRES_DB=noujoude_ci"
             echo "POSTGRES_SUPERUSER=noujoude_ci_admin"
-            echo "POSTGRES_SUPERUSER_PASSWORD=$(gen)"
-            echo "NDM_MIGRATION_PASSWORD=$(gen)"
-            echo "NDM_RUNTIME_PASSWORD=$(gen)"
-            echo "NDM_REPORTING_PASSWORD=$(gen)"
-            echo "NDM_BACKUP_PASSWORD=$(gen)"
-            echo "DATABASE_URI=postgresql://ndm_runtime@127.0.0.1:5432/noujoude_ci"
-            echo "DATABASE_URI_MIGRATION=postgresql://ndm_migration@127.0.0.1:5432/noujoude_ci"
+            echo "POSTGRES_SUPERUSER_PASSWORD=${POSTGRES_SUPERUSER_PASSWORD}"
+            echo "NDM_MIGRATION_PASSWORD=${NDM_MIGRATION_PASSWORD}"
+            echo "NDM_RUNTIME_PASSWORD=${NDM_RUNTIME_PASSWORD}"
+            echo "NDM_REPORTING_PASSWORD=${NDM_REPORTING_PASSWORD}"
+            echo "NDM_BACKUP_PASSWORD=${NDM_BACKUP_PASSWORD}"
+            echo "DATABASE_URI=postgresql://ndm_runtime:${NDM_RUNTIME_PASSWORD}@127.0.0.1:5432/noujoude_ci"
+            echo "DATABASE_URI_MIGRATION=postgresql://ndm_migration:${NDM_MIGRATION_PASSWORD}@127.0.0.1:5432/noujoude_ci"
           } >> "$GITHUB_ENV"
 
       - name: Start the local database (loopback only)
@@ -453,6 +458,8 @@ jobs:
 
       - name: Apply migrations as the migration role
         if: steps.armed.outputs.exists == 'true'
+        env:
+          DATABASE_URI: ${{ env.DATABASE_URI_MIGRATION }}
         run: pnpm migrate
 
       # THE GATE ADR-019 NAMES. `db:harden` applies the per-table exception that
