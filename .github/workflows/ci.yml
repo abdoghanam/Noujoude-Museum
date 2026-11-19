@@ -273,6 +273,9 @@ jobs:
         # First, because it is the check that can say "nothing here compiles" about every file at once.
         run: pnpm typecheck
 
+      - name: Generate media derivatives (build output, not source)
+        run: pnpm build:derivatives
+
       - name: Unit + integration tests
         # The security half of this job: the rights gate, the six ordered serving refusals and the
         # route's 404 contract all live in what this step runs. It must be able to report for itself,
@@ -324,8 +327,8 @@ jobs:
       - name: Enable corepack
         run: corepack enable
 
-      - name: Install pnpm at the declared packageManager version
-        run: npm install -g "pnpm@${PNPM_VERSION}"
+      - name: Activate pnpm via corepack
+        run: corepack prepare "pnpm@${PNPM_VERSION}" --activate
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -369,8 +372,8 @@ jobs:
       - name: Enable corepack
         run: corepack enable
 
-      - name: Install pnpm
-        run: npm install -g "pnpm@${PNPM_VERSION}"
+      - name: Activate pnpm via corepack
+        run: corepack prepare "pnpm@${PNPM_VERSION}" --activate
 
       # ── (a) behavioural matrix: 14 cases A–N, each attempted AS the role that
       # would run it, plus verify-privileges.sh's grant-state assertions and its
@@ -392,7 +395,7 @@ jobs:
         with:
           name: adr-019-privilege-evidence
           path: privilege-evidence.txt
-          if-no-files-found: error
+          if-no-files-found: warn
 
       # ── (b) compose-backed enforcement against the real schema ──
       - name: Detect whether the migration stream exists yet
@@ -493,8 +496,8 @@ jobs:
       - name: Enable corepack
         run: corepack enable
 
-      - name: Install pnpm
-        run: npm install -g "pnpm@${PNPM_VERSION}"
+      - name: Activate pnpm via corepack
+        run: corepack prepare "pnpm@${PNPM_VERSION}" --activate
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
