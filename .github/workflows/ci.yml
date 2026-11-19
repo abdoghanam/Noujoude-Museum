@@ -92,6 +92,9 @@ jobs:
       - name: Enable corepack
         run: corepack enable
 
+      - name: Activate pnpm via corepack
+        run: corepack prepare "pnpm@${PNPM_VERSION}" --activate
+
       # Read-only inputs must be byte-identical to their Phase 0 baseline.
       # NOTE: this assumes reference/ and Noujoude.photo/ are committed and present
       # in the checkout. Whether 82 binary assets belong in the repository is an
@@ -380,9 +383,10 @@ jobs:
       - name: ADR-019 behavioural evidence (throwaway server)
         run: |
           set -o pipefail
-          IMAGE="$IMAGE" sh scripts/db/run-privilege-tests.sh 2>&1 | tee privilege-evidence.txt
-          rc=${PIPESTATUS[0]}
+          IMAGE="$IMAGE" sh scripts/db/run-privilege-tests.sh > privilege-evidence.txt 2>&1
+          rc=$?
           echo "harness exit code: $rc"
+          cat privilege-evidence.txt | tail -5
           exit "$rc"
 
       - name: Archive the privilege transcript as gate evidence
