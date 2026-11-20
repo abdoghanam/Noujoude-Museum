@@ -1,0 +1,84 @@
+.identity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ndm-space-3);
+  padding-block: var(--ndm-space-5);
+  border-block-end: 1px solid var(--ndm-color-museum-glass);
+}
+
+.title {
+  font-family: var(--ndm-font-display);
+  font-size: 3rem;
+  font-weight: 300;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 1.125rem;
+  color: var(--ndm-text-secondary);
+  margin: 0;
+}
+
+.body {
+  color: var(--ndm-text-secondary);
+  max-inline-size: 60ch;
+}
+
+.philosophy {
+  padding-block: var(--ndm-space-5);
+  border-block-end: 1px solid var(--ndm-color-museum-glass);
+}
+
+.exploration {
+  padding-block: var(--ndm-space-5);
+  border-block-end: 1px solid var(--ndm-color-museum-glass);
+}
+
+.entryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--ndm-space-3);
+  margin-block-start: var(--ndm-space-3);
+}
+
+.entryCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ndm-space-1);
+  padding: var(--ndm-space-4);
+  border: 1px solid var(--ndm-color-museum-glass);
+  background-color: var(--ndm-surface-raised);
+  color: var(--ndm-text-primary);
+  text-decoration: none;
+  transition: border-color var(--ndm-duration-fast) var(--ndm-easing-default),
+    background-color var(--ndm-duration-fast) var(--ndm-easing-default);
+}
+
+.entryCard:hover {
+  border-color: var(--ndm-accent-primary);
+  background-color: var(--ndm-surface-glass);
+}
+
+.entryCard h3 {
+  font-family: var(--ndm-font-display);
+  font-size: 1.25rem;
+  margin: 0;
+  color: var(--ndm-accent-primary);
+}
+
+.atmosphere {
+  padding-block: var(--ndm-space-5);
+  border-block-end: 1px solid var(--ndm-color-museum-glass);
+}
+
+.closing {
+  padding-block: var(--ndm-space-6);
+  text-align: center;
+}
+
+.closing p {
+  font-family: var(--ndm-font-display);
+  font-size: 1.5rem;
+  color: var(--ndm-accent-primary);
+  font-style: italic;
+}

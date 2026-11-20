@@ -13,9 +13,6 @@ interface HomePageProps {
   readonly params: Promise<{ locale?: string }>;
 }
 
-const NO_RECORDS =
-  "No published record is connected to this section, and no cleared imagery exists; nothing is counted, captioned or invented here.";
-
 export default async function HomePage({ params }: HomePageProps) {
   const { locale: segment } = await params;
   const locale: Locale = segment === "ar" ? "ar" : "en";
@@ -23,27 +20,30 @@ export default async function HomePage({ params }: HomePageProps) {
 
   return (
     <PageShell route="home" locale={locale}>
+      {/* Hero / Museum Entrance */}
       <div className={pageStyles.hero}>
-        <Heading level={1} className={pageStyles.heroTitle}>
-          Noujoude
-        </Heading>
-        <Text variant="secondary" className={pageStyles.heroSubtitle}>
-          More than a collection... it&apos;s a story.
-        </Text>
-        <p className={pageStyles.heroSubtitle}>
-          The approved monogram, the primary tagline and the introductory
-          statement are Owner inputs and have not been supplied, so the hero
-          renders its structure only.
-        </p>
-        {museumEntrance === null ? null : (
-          <a className={pageStyles.heroCta} href={museumEntrance.path}>
-            Enter the Museum
-          </a>
-        )}
+        <div className={pageStyles.heroContent}>
+          <p className={pageStyles.heroEyebrow}>Noujoude</p>
+          <Heading level={1} className={pageStyles.heroTitle}>
+            More than a collection... it&apos;s a story.
+          </Heading>
+          <Text variant="secondary" className={pageStyles.heroSubtitle}>
+            A bilingual digital heritage museum preserving and presenting
+            cultural objects, collections, and the stories they carry.
+          </Text>
+          {museumEntrance === null ? null : (
+            <a className={pageStyles.heroCta} href={museumEntrance.path}>
+              Enter the Museum
+            </a>
+          )}
+        </div>
+        <MediaSlotGroup views={slotViewsFor("home", locale)} />
       </div>
 
+      {/* Required sections in specified order */}
       <div className={pageStyles.sections}>
         {HOME_SECTIONS.map((section) => {
+          if (section.route === "home") return null;
           const views =
             section.route === null ? [] : slotViewsFor(section.route, locale);
           const anchor = section.title.replace(/\W+/g, "-");
@@ -60,12 +60,11 @@ export default async function HomePage({ params }: HomePageProps) {
               >
                 {section.title}
               </Heading>
-              {section.route === "home" ? null : null}
               {section.route === null ? (
                 <State
                   kind="empty"
-                  title="No records"
-                  description={NO_RECORDS}
+                  title="Closing Invitation"
+                  description="Contact the museum to learn more."
                 />
               ) : null}
               <MediaSlotGroup views={views} />

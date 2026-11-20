@@ -5,23 +5,23 @@ import { type RouteKey, routeDefinition } from "@/domain/routes";
 import { slotViewsFor } from "@/lib/server/media/slots";
 import { MediaSlotGroup } from "@/ui/media-slot";
 import { PageShell } from "@/ui/page-shell";
+import { Heading } from "@/ui/heading";
+import { Text } from "@/ui/text";
 
-/**
- * One row of the §4.2 canonical route table. Locale prefixing is mandatory (line 408), so the page
- * reads `locale` from its own segment and renders the shell the registry defines. No editorial
- * copy: the Owner has supplied none, and §6.1 forbids filling space with fabricated content.
- * The media band comes from the usage map and the register, and the gate is armed as of
- * 4 November 2026: a slot renders as an image exactly when its asset is cleared, approved,
- * published and servable, and as an explicit withheld state otherwise. The Owner's declaration
- * of that date cleared and approved all 82 register rows, and the publication register names 46
- * of them; `src/ui/media-slot.tsx` still draws no pixel unless the gate, the served copy, the
- * alt text and the measured dimensions are all present, so a page says which surface has nothing
- * servable rather than showing a reader none.
- */
+import styles from "@/app/[locale]/worlds/page.module.css";
 
 const ROUTE: RouteKey = "worlds";
 
 export const metadata: Metadata = { title: routeDefinition(ROUTE).title };
+
+const COUNTRIES = [
+  { slug: "morocco", name: "Morocco", state: "In Preparation" },
+  { slug: "egypt", name: "Egypt", state: "Coming Soon" },
+  { slug: "syria", name: "Syria", state: "Coming Soon" },
+  { slug: "mauritania", name: "Mauritania", state: "Coming Soon" },
+  { slug: "libya", name: "Libya", state: "Coming Soon" },
+  { slug: "sudan", name: "Sudan", state: "Coming Soon" },
+];
 
 export default async function WorldsPage({
   params,
@@ -30,9 +30,37 @@ export default async function WorldsPage({
 }) {
   const { locale } = await params;
   const resolved = resolveLocale(locale);
+
   return (
     <PageShell route={ROUTE} locale={resolved}>
-      <MediaSlotGroup views={slotViewsFor(ROUTE, resolved)} />
+      <section className={styles.header}>
+        <Heading level={1} className={styles.title}>
+          The Worlds
+        </Heading>
+        <Text variant="secondary" className={styles.subtitle}>
+          Six Cultural Worlds
+        </Text>
+        <Text variant="secondary">
+          Country-based cultural exhibitions. Morocco is the first intended
+          exhibition; others reflect their actual readiness.
+        </Text>
+      </section>
+
+      <div className={styles.grid}>
+        {COUNTRIES.map((country) => (
+          <a
+            key={country.slug}
+            href={`/${resolved}/worlds/${country.slug}`}
+            className={styles.card}
+          >
+            <MediaSlotGroup views={slotViewsFor("world-detail", resolved, country.slug)} />
+            <Heading level={3} className={styles.cardTitle}>
+              {country.name}
+            </Heading>
+            <span className={styles.cardState}>{country.state}</span>
+          </a>
+        ))}
+      </div>
     </PageShell>
   );
 }

@@ -75,3 +75,5 @@ test-results/
 # to the 3 November evidence bundle `residue-tmp-txt-2026-11-03/` with their digests recorded there —
 # preserved, not deleted. The rule stays so a future scratch redirect cannot silently re-litter the root.
 tmp_*.txt
+
+.vercel
