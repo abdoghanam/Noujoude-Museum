@@ -50,7 +50,8 @@
   background-color: var(--ndm-surface-raised);
   color: var(--ndm-text-primary);
   text-decoration: none;
-  transition: border-color var(--ndm-duration-fast) var(--ndm-easing-default),
+  transition:
+    border-color var(--ndm-duration-fast) var(--ndm-easing-default),
     background-color var(--ndm-duration-fast) var(--ndm-easing-default);
 }
 

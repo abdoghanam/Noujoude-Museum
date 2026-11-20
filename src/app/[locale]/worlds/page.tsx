@@ -53,7 +53,9 @@ export default async function WorldsPage({
             href={`/${resolved}/worlds/${country.slug}`}
             className={styles.card}
           >
-            <MediaSlotGroup views={slotViewsFor("world-detail", resolved, country.slug)} />
+            <MediaSlotGroup
+              views={slotViewsFor("world-detail", resolved, country.slug)}
+            />
             <Heading level={3} className={styles.cardTitle}>
               {country.name}
             </Heading>
