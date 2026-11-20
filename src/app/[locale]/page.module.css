@@ -1,19 +1,88 @@
 .sections {
-  display: grid;
-  gap: var(--ndm-space-4);
-}
-
-.slotList {
-  display: grid;
-  gap: var(--ndm-space-2);
-  margin: 0;
-  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ndm-space-6);
 }
 
 .sectionTitle {
-  color: var(--ndm-text-secondary);
-  font-size: 1rem;
-  letter-spacing: 0.08em;
-  margin-block-end: var(--ndm-space-2);
+  font-family: var(--ndm-font-display);
+  font-size: 1.25rem;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
+  color: var(--ndm-accent-primary);
+  border-block-end: 1px solid var(--ndm-color-museum-glass);
+  padding-block-end: var(--ndm-space-2);
+  margin-block-end: var(--ndm-space-3);
+}
+
+.hero {
+  min-block-size: 60vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--ndm-space-4);
+  padding-block: var(--ndm-space-6);
+  border-block-end: 1px solid var(--ndm-color-museum-glass);
+}
+
+.heroTitle {
+  font-family: var(--ndm-font-display);
+  font-size: 3.5rem;
+  font-weight: 300;
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+  margin: 0;
+  color: var(--ndm-text-primary);
+}
+
+.heroSubtitle {
+  font-size: 1.125rem;
+  color: var(--ndm-text-secondary);
+  max-inline-size: 40ch;
+  margin: 0;
+}
+
+.heroCta {
+  display: inline-block;
+  border: 1px solid var(--ndm-accent-primary);
+  color: var(--ndm-accent-primary);
+  padding: var(--ndm-space-2) var(--ndm-space-5);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-size: 0.875rem;
+  align-self: flex-start;
+  transition:
+    background-color var(--ndm-duration-standard) var(--ndm-easing-default),
+    color var(--ndm-duration-standard) var(--ndm-easing-default);
+}
+
+.heroCta:hover {
+  background-color: var(--ndm-accent-primary);
+  color: var(--ndm-surface-page);
+}
+
+.section {
+  padding-block: var(--ndm-space-4);
+}
+
+.section p {
+  color: var(--ndm-text-secondary);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+}
+
+.emptyState {
+  border-inline-start: 2px solid var(--ndm-accent-primary);
+  padding-inline-start: var(--ndm-space-3);
+  color: var(--ndm-text-secondary);
+  font-style: italic;
+  font-size: 0.875rem;
+}
+
+.withheld {
+  color: var(--ndm-text-tertiary);
+  font-size: 0.8125rem;
+  font-style: italic;
+  border-inline-start: 1px solid var(--ndm-color-museum-glass);
+  padding-inline-start: var(--ndm-space-2);
 }

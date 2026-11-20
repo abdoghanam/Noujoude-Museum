@@ -3,18 +3,9 @@
  * default for this project (FINAL OWNER DIRECTIVE §1: "centralized CSS custom properties and CSS
  * Modules unless the architecture proves a better approach").
  *
- * Every value below is quoted from the governing baseline and is marked with what it is waiting
- * for. The palette is §12.2 (lines 1668–1685), which itself states that the values "are the
- * proposed canonical visual specification … and remain subject to formal visual approval" — so
- * they are carried as `proposed` tokens, not as adopted brand (BA-002 is still open, and OD-16
- * asks the Owner to supply or waive BA-001…BA-007).
- *
- * No webfont is loaded here. §12.5 (line 1725) requires that "Font licenses and production
- * suitability must be verified before deployment", zero font files exist in this workspace, and
- * OID-18 is open — so fetching Cormorant Garamond, Inter or Tajawal from a third-party CDN would
- * be an unapproved deployment of unlicensed material. The stacks below name the intended family
- * for a locally-installed copy and fall back to the generic role, which is the substitute clause
- * of the same line ("use an approved substitute without changing the hierarchy or character").
+ * Palette: §12.2 (lines 1668–1685) — carried as `proposed` tokens, subject to formal visual approval (BA-002).
+ * No webfont loaded (§12.5): font licenses unresolved (OID-18). System fallback stacks used.
+ * Logical properties only — serves ltr and rtl without a fork.
  */
 
 :root {
@@ -36,37 +27,41 @@
   --ndm-surface-page: var(--ndm-color-noir);
   --ndm-surface-raised: var(--ndm-color-midnight-velvet);
   --ndm-surface-exhibition: var(--ndm-color-burgundy);
+  --ndm-surface-glass: rgba(216, 217, 213, 0.04);
   --ndm-text-primary: var(--ndm-color-ivory);
   --ndm-text-secondary: var(--ndm-color-muted-stone);
+  --ndm-text-tertiary: var(--ndm-color-museum-glass);
   --ndm-accent-primary: var(--ndm-color-champagne);
+  --ndm-accent-soft: var(--ndm-color-champagne-soft);
+  --ndm-accent-rose: var(--ndm-color-rose);
 
-  /*
-   * §12.5 type roles, lines 1716–1722. Arabic falls back to the system Arabic stack because
-   * Tajawal is licensed-unresolved (OID-18); an English display face must not be used for Arabic
-   * body or display text (line 1731), which is why the Arabic stack is kept separate rather than
-   * shared with the display role.
-   */
+  /* §12.5 type roles — Arabic falls back to system Arabic stack (Tajawal licensed-unresolved, OID-18). */
   --ndm-font-display: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
   --ndm-font-body: "Inter", "Segoe UI", Helvetica, sans-serif;
   --ndm-font-arabic-display:
     "Tajawal", "Noto Naskh Arabic", "Traditional Arabic", serif;
   --ndm-font-arabic-body: "Tajawal", "Noto Sans Arabic", "Segoe UI", sans-serif;
 
-  /* §12.13 motion timing table, lines 1813–1819 — reference ranges, not a licence to animate all. */
+  /* §12.13 motion timing table */
   --ndm-duration-fast: 150ms;
   --ndm-duration-standard: 300ms;
   --ndm-duration-slow-reveal: 800ms;
   --ndm-duration-cinematic: 1200ms;
   --ndm-duration-entrance: 2000ms;
   --ndm-easing-default: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ndm-easing-cinematic: cubic-bezier(0.16, 1, 0.3, 1);
 
-  /* Layout scale is an engineering default; the per-page orders in §6 are what constrain it. */
+  /* Layout scale */
   --ndm-space-1: 0.25rem;
   --ndm-space-2: 0.5rem;
   --ndm-space-3: 1rem;
   --ndm-space-4: 2rem;
   --ndm-space-5: 4rem;
+  --ndm-space-6: 8rem;
   --ndm-measure-reading: 68ch;
+  --ndm-measure-wide: 72rem;
+  --ndm-radius: 0;
+  --ndm-border-thin: 1px;
 }
 
 *,
@@ -76,8 +71,8 @@
 }
 
 html {
-  /* Logical properties only, per src/README: the same sheet must serve ltr and rtl. */
   text-size-adjust: 100%;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -88,15 +83,30 @@ body {
   font-size: 1rem;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Candlelight grain overlay — applied to body via ::before */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
 }
 
 h1,
 h2,
-h3 {
+h3,
+h4 {
   font-family: var(--ndm-font-display);
-  font-weight: 500;
-  line-height: 1.15;
+  font-weight: 400;
+  line-height: 1.1;
   margin-block: 0 var(--ndm-space-2);
+  letter-spacing: 0.01em;
 }
 
 p {
@@ -106,14 +116,14 @@ p {
 
 a {
   color: var(--ndm-accent-primary);
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.18em;
+  text-decoration: none;
+  transition: color var(--ndm-duration-fast) var(--ndm-easing-default);
 }
 
-/*
- * Focus is never carried by colour alone (§12.4, line 1710: "Accent colors must not be the only
- * indicators of state"), so the ring is a shape as well as a hue.
- */
+a:hover {
+  color: var(--ndm-accent-soft);
+}
+
 :focus-visible {
   outline: 2px solid var(--ndm-accent-primary);
   outline-offset: 3px;
@@ -125,15 +135,36 @@ a {
 
 [lang="ar"] h1,
 [lang="ar"] h2,
-[lang="ar"] h3 {
+[lang="ar"] h3,
+[lang="ar"] h4 {
   font-family: var(--ndm-font-arabic-display);
 }
 
-/*
- * §12.13, line 1821 and §16.3, line 2365: reduced motion is honoured and cannot be re-enabled by
- * branding. The override is written so it also wins against anything the motion layer sets later
- * in the cascade, and it is exercised by the reduced-motion run recorded in the test plan.
- */
+/* Fade-in animation for page content */
+@keyframes ndm-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ndm-fade-in {
+  animation: ndm-fade-in var(--ndm-duration-slow-reveal)
+    var(--ndm-easing-cinematic) both;
+}
+
+/* Candlelight glow effect */
+.ndm-glow {
+  box-shadow:
+    0 0 40px rgba(198, 165, 107, 0.08),
+    0 0 80px rgba(198, 165, 107, 0.04);
+}
+
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   :root {
     --ndm-duration-fast: 0.01ms;
@@ -150,5 +181,9 @@ a {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  body::before {
+    display: none;
   }
 }

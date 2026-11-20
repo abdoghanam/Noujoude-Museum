@@ -147,7 +147,9 @@ export default async function LocaleLayout({
             the navigation labels are marked, so an Arabic page does not read English text as Arabic.
           */}
           <p lang="en">{servingFooterSentence(serving)}</p>
-          <p lang="en">© Noujoude Digital Heritage Museum — All Rights Reserved</p>
+          <p lang="en">
+            © Noujoude Digital Heritage Museum — All Rights Reserved
+          </p>
         </footer>
       </body>
     </html>

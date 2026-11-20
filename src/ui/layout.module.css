@@ -1,20 +1,33 @@
 .skip {
+  position: absolute;
   inset-block-start: var(--ndm-space-2);
   inset-inline-start: var(--ndm-space-2);
-  position: absolute;
+  background-color: var(--ndm-surface-raised);
+  color: var(--ndm-text-primary);
+  padding: var(--ndm-space-1) var(--ndm-space-2);
+  z-index: 100;
+  transform: translateY(-200%);
+  transition: transform var(--ndm-duration-fast) var(--ndm-easing-default);
 }
 
 .skip:focus {
-  background-color: var(--ndm-surface-raised);
-  padding: var(--ndm-space-1) var(--ndm-space-2);
+  transform: translateY(0);
 }
 
 .siteHeader {
-  align-items: baseline;
+  align-items: center;
+  background-color: var(--ndm-surface-page);
+  border-block-end: 1px solid var(--ndm-color-museum-glass);
   display: flex;
   flex-wrap: wrap;
-  gap: var(--ndm-space-3) var(--ndm-space-4);
+  gap: var(--ndm-space-3);
   padding-block: var(--ndm-space-3);
+  padding-inline: var(--ndm-space-4);
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 50;
+  backdrop-filter: blur(8px);
+  background-color: rgba(17, 16, 20, 0.85);
 }
 
 .wordmark {
@@ -23,13 +36,9 @@
   letter-spacing: 0.12em;
   margin: 0;
   text-transform: uppercase;
+  color: var(--ndm-accent-primary);
 }
 
-/*
-  The masthead when the catalogued `Header` asset clears its slot (§6.1 item 1): the mark, then the name.
-  The image is sized from the band rather than from its own intrinsic pixels, so a taller derivative cannot
-  stretch the header — the slot supplies width/height attributes for the aspect ratio, and this caps the box.
-*/
 .markBand {
   align-items: center;
   display: flex;
@@ -48,6 +57,7 @@
   font-size: 1.5rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  color: var(--ndm-accent-primary);
 }
 
 .primaryNav {
@@ -57,30 +67,97 @@
 .navList {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--ndm-space-2) var(--ndm-space-3);
+  gap: var(--ndm-space-3);
   list-style: none;
   margin: 0;
   padding: 0;
+}
+
+.navList a {
+  color: var(--ndm-text-secondary);
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding-block: var(--ndm-space-1);
+  border-block-end: 1px solid transparent;
+  transition:
+    color var(--ndm-duration-fast) var(--ndm-easing-default),
+    border-color var(--ndm-duration-fast) var(--ndm-easing-default);
+}
+
+.navList a:hover {
+  color: var(--ndm-text-primary);
+  border-block-end-color: var(--ndm-accent-primary);
 }
 
 .utilities {
   display: flex;
   gap: var(--ndm-space-3);
   margin: 0;
+  font-size: 0.875rem;
+}
+
+.utilities a {
+  color: var(--ndm-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.utilities a:hover {
+  color: var(--ndm-accent-primary);
 }
 
 .main {
+  margin-block: var(--ndm-space-5);
   margin-inline: auto;
-  max-width: 72rem;
-  padding-inline: var(--ndm-space-3);
-  width: 100%;
+  max-inline-size: var(--ndm-measure-wide);
+  padding-inline: var(--ndm-space-4);
+  min-block-size: 60vh;
 }
 
 .siteFooter {
-  border-block-start: 1px solid var(--ndm-color-muted-stone);
+  border-block-start: 1px solid var(--ndm-color-museum-glass);
+  margin-block-start: var(--ndm-space-6);
+  padding-block: var(--ndm-space-4);
+  padding-inline: var(--ndm-space-4);
+  text-align: center;
+}
+
+.siteFooter p {
   color: var(--ndm-text-secondary);
   font-size: 0.875rem;
-  margin-block-start: var(--ndm-space-5);
-  padding-block: var(--ndm-space-3);
-  padding-inline: var(--ndm-space-3);
+  margin-block: 0 var(--ndm-space-1);
+  max-width: none;
+}
+
+.siteFooter p:last-child {
+  color: var(--ndm-text-tertiary);
+  font-size: 0.75rem;
+}
+
+.cta {
+  display: inline-block;
+  border: 1px solid var(--ndm-accent-primary);
+  color: var(--ndm-accent-primary);
+  padding: var(--ndm-space-2) var(--ndm-space-4);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.875rem;
+  transition:
+    background-color var(--ndm-duration-fast) var(--ndm-easing-default),
+    color var(--ndm-duration-fast) var(--ndm-easing-default);
+}
+
+.cta:hover {
+  background-color: var(--ndm-accent-primary);
+  color: var(--ndm-surface-page);
+}
+
+.slot {
+  color: var(--ndm-text-secondary);
+  font-size: 0.875rem;
+  font-style: italic;
+  border-inline-start: 2px solid var(--ndm-accent-primary);
+  padding-inline-start: var(--ndm-space-3);
+  margin-block: var(--ndm-space-3);
 }
