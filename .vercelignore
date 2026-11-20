@@ -1,0 +1,27 @@
+# Exclude large asset library and reference docs from Vercel upload
+Noujoude.photo
+Noujoude.photo/**
+reference
+reference/**
+# Keep runtime data files; exclude only large documentation
+docs/**/*.md
+docs/**/*.txt
+docs/**/*.json
+!docs/ASSET_INVENTORY_AUDIT.csv
+!docs/asset-governance
+!docs/asset-governance/**
+!docs/REFERENCE_INTEGRITY.json
+node_modules
+node_modules/**
+.next
+.next/**
+.git
+.git/**
+brand
+brand/**
+media-derivatives
+media-derivatives/**
+*.log
+.env
+.env.*
+!.env.example
