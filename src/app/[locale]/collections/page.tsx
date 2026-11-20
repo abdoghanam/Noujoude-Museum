@@ -5,23 +5,25 @@ import { type RouteKey, routeDefinition } from "@/domain/routes";
 import { slotViewsFor } from "@/lib/server/media/slots";
 import { MediaSlotGroup } from "@/ui/media-slot";
 import { PageShell } from "@/ui/page-shell";
-
-/**
- * One row of the §4.2 canonical route table. Locale prefixing is mandatory (line 408), so the page
- * reads `locale` from its own segment and renders the shell the registry defines. No editorial
- * copy: the Owner has supplied none, and §6.1 forbids filling space with fabricated content.
- * The media band comes from the usage map and the register, and the gate is armed as of
- * 4 November 2026: a slot renders as an image exactly when its asset is cleared, approved,
- * published and servable, and as an explicit withheld state otherwise. The Owner's declaration
- * of that date cleared and approved all 82 register rows, and the publication register names 46
- * of them; `src/ui/media-slot.tsx` still draws no pixel unless the gate, the served copy, the
- * alt text and the measured dimensions are all present, so a page says which surface has nothing
- * servable rather than showing a reader none.
- */
+import { Heading } from "@/ui/heading";
+import { Text } from "@/ui/text";
+import { State } from "@/ui/state";
+import styles from "@/app/[locale]/collections/page.module.css";
 
 const ROUTE: RouteKey = "collections";
 
 export const metadata: Metadata = { title: routeDefinition(ROUTE).title };
+
+const CATEGORIES = [
+  { slug: "stamps", name: "Stamps", state: "In Preparation" },
+  { slug: "first-day-covers", name: "First Day Covers", state: "In Preparation" },
+  { slug: "coins", name: "Coins", state: "In Preparation" },
+  { slug: "documents", name: "Documents", state: "In Preparation" },
+  { slug: "letters", name: "Letters", state: "In Preparation" },
+  { slug: "souvenirs", name: "Souvenirs", state: "In Preparation" },
+  { slug: "heritage-objects", name: "Heritage Objects", state: "In Preparation" },
+  { slug: "artifacts", name: "Artifacts", state: "In Preparation" },
+];
 
 export default async function CollectionsPage({
   params,
@@ -30,9 +32,41 @@ export default async function CollectionsPage({
 }) {
   const { locale } = await params;
   const resolved = resolveLocale(locale);
+
   return (
     <PageShell route={ROUTE} locale={resolved}>
-      <MediaSlotGroup views={slotViewsFor(ROUTE, resolved)} />
+      <section className={styles.header}>
+        <Heading level={1} className={styles.title}>
+          Collections
+        </Heading>
+        <Text variant="secondary" className={styles.subtitle}>
+          Curated museum groupings by object type and curatorial meaning.
+        </Text>
+      </section>
+
+      <div className={styles.grid}>
+        {CATEGORIES.map((cat) => (
+          <a
+            key={cat.slug}
+            href={`/${resolved}/collections/${cat.slug}`}
+            className={styles.card}
+          >
+            <MediaSlotGroup views={slotViewsFor("collection-detail", resolved, cat.slug)} />
+            <Heading level={3} className={styles.cardTitle}>
+              {cat.name}
+            </Heading>
+            <span className={styles.cardState}>{cat.state}</span>
+          </a>
+        ))}
+      </div>
+
+      <section className={styles.emptyState}>
+        <State
+          kind="empty"
+          title="No collection records published"
+          description="Collection records, curatorial explanations and related stories are Owner inputs. Until supplied, this directory renders its structure and bound imagery only."
+        />
+      </section>
     </PageShell>
   );
 }

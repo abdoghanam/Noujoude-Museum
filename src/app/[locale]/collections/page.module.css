@@ -1,0 +1,61 @@
+.header {
+  padding-block: var(--ndm-space-5);
+  border-block-end: 1px solid var(--ndm-color-museum-glass);
+}
+
+.title {
+  font-family: var(--ndm-font-display);
+  font-size: 3rem;
+  font-weight: 300;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 1.125rem;
+  color: var(--ndm-text-secondary);
+  margin: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--ndm-space-4);
+  padding-block: var(--ndm-space-5);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ndm-space-2);
+  padding: var(--ndm-space-4);
+  border: 1px solid var(--ndm-color-museum-glass);
+  background-color: var(--ndm-surface-raised);
+  color: var(--ndm-text-primary);
+  text-decoration: none;
+  transition: border-color var(--ndm-duration-fast) var(--ndm-easing-default),
+    transform var(--ndm-duration-fast) var(--ndm-easing-default);
+}
+
+.card:hover {
+  border-color: var(--ndm-accent-primary);
+  transform: translateY(-2px);
+}
+
+.cardTitle {
+  font-family: var(--ndm-font-display);
+  font-size: 1.25rem;
+  margin: 0;
+  color: var(--ndm-accent-primary);
+}
+
+.cardState {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ndm-text-secondary);
+}
+
+.emptyState {
+  padding-block: var(--ndm-space-5);
+  border-block-start: 1px solid var(--ndm-color-museum-glass);
+}
