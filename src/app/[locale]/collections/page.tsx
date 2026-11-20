@@ -16,12 +16,20 @@ export const metadata: Metadata = { title: routeDefinition(ROUTE).title };
 
 const CATEGORIES = [
   { slug: "stamps", name: "Stamps", state: "In Preparation" },
-  { slug: "first-day-covers", name: "First Day Covers", state: "In Preparation" },
+  {
+    slug: "first-day-covers",
+    name: "First Day Covers",
+    state: "In Preparation",
+  },
   { slug: "coins", name: "Coins", state: "In Preparation" },
   { slug: "documents", name: "Documents", state: "In Preparation" },
   { slug: "letters", name: "Letters", state: "In Preparation" },
   { slug: "souvenirs", name: "Souvenirs", state: "In Preparation" },
-  { slug: "heritage-objects", name: "Heritage Objects", state: "In Preparation" },
+  {
+    slug: "heritage-objects",
+    name: "Heritage Objects",
+    state: "In Preparation",
+  },
   { slug: "artifacts", name: "Artifacts", state: "In Preparation" },
 ];
 
@@ -51,7 +59,9 @@ export default async function CollectionsPage({
             href={`/${resolved}/collections/${cat.slug}`}
             className={styles.card}
           >
-            <MediaSlotGroup views={slotViewsFor("collection-detail", resolved, cat.slug)} />
+            <MediaSlotGroup
+              views={slotViewsFor("collection-detail", resolved, cat.slug)}
+            />
             <Heading level={3} className={styles.cardTitle}>
               {cat.name}
             </Heading>
