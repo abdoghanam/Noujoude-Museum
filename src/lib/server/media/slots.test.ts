@@ -259,7 +259,7 @@ async function renderLayout(locale: Locale): Promise<string> {
 }
 
 function footerSentenceOf(html: string): string {
-  const match = /<footer[^>]*><p[^>]*>([\s\S]*?)<\/p><\/footer>/.exec(html);
+  const match = /<footer[^>]*><p[^>]*>([\s\S]*?)<\/p>/.exec(html);
   if (match === null || match[1] === undefined)
     throw new Error(`the rendered layout has no footer paragraph: ${html}`);
   return match[1];

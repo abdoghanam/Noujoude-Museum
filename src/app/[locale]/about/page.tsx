@@ -33,8 +33,23 @@ export default async function AboutPage({
   return (
     <PageShell route={ROUTE} locale={resolveLocale(locale)}>
       <p className={shellStyles.slot}>
+        <strong>Noujoude Majdouli</strong> — Digital Heritage Museum
+      </p>
+      <p className={shellStyles.slot}>
+        Country: France
+      </p>
+      <p className={shellStyles.slot}>
+        Location: France — Capital
+      </p>
+      <p className={shellStyles.slot}>
+        Phone: 01011244308
+      </p>
+      <p className={shellStyles.slot}>
+        Email: Noujoude-Majdouli@gmail.com
+      </p>
+      <p className={shellStyles.slot}>
         {
-          "Institutional identity, location, founding history, ownership and provenance claims are Owner facts that have not been supplied. Nothing on this page asserts them."
+          "Founding history, ownership, provenance and accreditation claims remain Owner facts that have not been supplied. Nothing on this page asserts them."
         }
       </p>
       <MediaSlotGroup views={slotViewsFor(ROUTE, resolveLocale(locale))} />
