@@ -19,6 +19,7 @@ import {
 import { MediaSlot } from "@/ui/media-slot";
 import styles from "@/ui/layout.module.css";
 import "@/ui/styles/global.css";
+import "@/ui/styles/motion.css";
 
 /**
  * The locale root layout. §4.2 (line 408) makes the locale prefix mandatory and (line 428) fixes

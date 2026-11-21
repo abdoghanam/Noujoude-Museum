@@ -1,0 +1,205 @@
+/*
+ * Noujoude motion system — CSS-only implementation (ADR-029).
+ * Plain CSS transitions own simple state changes.
+ * GSAP/Motion deferred (not installed, zero-cost mandate).
+ * Lenis deferred (ADR-030).
+ *
+ * Scene IDs from MOTION_SYSTEM.md §6.
+ * Timing tokens from §12.13.
+ */
+
+/* S-NAV-01: Navigation underline thickness/offset as state change */
+.nav-link {
+  position: relative;
+  transition: color var(--ndm-duration-fast) var(--ndm-easing-default);
+}
+
+.nav-link::after {
+  content: "";
+  position: absolute;
+  inset-block-end: -2px;
+  inset-inline-start: 0;
+  inline-size: 0;
+  block-size: 1px;
+  background-color: var(--ndm-accent-primary);
+  transition: inline-size var(--ndm-duration-fast) var(--ndm-easing-default);
+}
+
+.nav-link:hover::after,
+.nav-link:focus-visible::after {
+  inline-size: 100%;
+}
+
+/* S-HOME-01: Hero entrance — slow fade + gentle upward movement */
+@keyframes ndm-hero-enter {
+  from {
+    opacity: 0;
+    transform: translateY(2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-enter {
+  animation: ndm-hero-enter var(--ndm-duration-entrance) var(--ndm-easing-cinematic) both;
+}
+
+/* S-HOME-02: Section reveal — slow fade */
+@keyframes ndm-section-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.section-reveal {
+  animation: ndm-section-reveal var(--ndm-duration-slow-reveal) var(--ndm-easing-default) both;
+}
+
+.section-reveal:nth-child(2) { animation-delay: 100ms; }
+.section-reveal:nth-child(3) { animation-delay: 200ms; }
+.section-reveal:nth-child(4) { animation-delay: 300ms; }
+
+/* S-MUSEUM-01: Museum entrance — soft light reveal */
+@keyframes ndm-light-reveal {
+  from {
+    opacity: 0;
+    filter: brightness(0.6);
+  }
+  to {
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+
+.light-reveal {
+  animation: ndm-light-reveal var(--ndm-duration-cinematic) var(--ndm-easing-cinematic) both;
+}
+
+/* S-WORLDS-01: Worlds grid — gentle staggered reveal */
+@keyframes ndm-grid-reveal {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.grid-reveal > * {
+  animation: ndm-grid-reveal var(--ndm-duration-slow-reveal) var(--ndm-easing-default) both;
+}
+
+.grid-reveal > *:nth-child(1) { animation-delay: 0ms; }
+.grid-reveal > *:nth-child(2) { animation-delay: 80ms; }
+.grid-reveal > *:nth-child(3) { animation-delay: 160ms; }
+.grid-reveal > *:nth-child(4) { animation-delay: 240ms; }
+.grid-reveal > *:nth-child(5) { animation-delay: 320ms; }
+.grid-reveal > *:nth-child(6) { animation-delay: 400ms; }
+
+/* S-COLLECTION-01: Collection cards — subtle hover scale */
+.collection-card {
+  transition: transform var(--ndm-duration-fast) var(--ndm-easing-default),
+    border-color var(--ndm-duration-fast) var(--ndm-easing-default);
+}
+
+.collection-card:hover {
+  transform: translateY(-2px);
+}
+
+/* S-ARTIFACT-01: Artifact image — soft reveal */
+@keyframes ndm-image-reveal {
+  from {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.image-reveal {
+  animation: ndm-image-reveal var(--ndm-duration-slow-reveal) var(--ndm-easing-cinematic) both;
+}
+
+/* S-CURATOR-01: Curator page — gentle entrance */
+.curator-enter {
+  animation: ndm-fade-in var(--ndm-duration-standard) var(--ndm-easing-default) both;
+}
+
+/* S-CONTACT-01: Contact page — restrained reveal */
+.contact-enter {
+  animation: ndm-fade-in var(--ndm-duration-standard) var(--ndm-easing-default) both;
+}
+
+/* S-STORY-01: Story detail — archive-like opening */
+@keyframes ndm-archive-open {
+  from {
+    opacity: 0;
+    transform: translateY(1.5rem);
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    clip-path: inset(0 0 0% 0);
+  }
+}
+
+.archive-open {
+  animation: ndm-archive-open var(--ndm-duration-cinematic) var(--ndm-easing-cinematic) both;
+}
+
+/* S-STORY-02: Story content — gentle reveal */
+.story-reveal {
+  animation: ndm-section-reveal var(--ndm-duration-slow-reveal) var(--ndm-easing-default) both;
+}
+
+/* S-RARE-01: Rare Pieces — delicate reveal */
+.rare-reveal {
+  animation: ndm-section-reveal var(--ndm-duration-slow-reveal) var(--ndm-easing-default) both;
+}
+
+/* Loading state — respectful, no spinner, just opacity pulse */
+@keyframes ndm-loading-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+
+.loading-pulse {
+  animation: ndm-loading-pulse 1.5s ease-in-out infinite;
+}
+
+/* Reduced motion: disable all */
+@media (prefers-reduced-motion: reduce) {
+  .hero-enter,
+  .section-reveal,
+  .light-reveal,
+  .grid-reveal > *,
+  .image-reveal,
+  .curator-enter,
+  .contact-enter,
+  .archive-open,
+  .story-reveal,
+  .rare-reveal,
+  .loading-pulse {
+    animation: none !important;
+  }
+
+  .nav-link::after {
+    transition: none;
+  }
+
+  .collection-card {
+    transition: none;
+  }
+}
