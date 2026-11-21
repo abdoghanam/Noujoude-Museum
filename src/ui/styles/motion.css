@@ -237,3 +237,31 @@
     transition: none;
   }
 }
+
+
+/* S-COUNTRY-01: Country world - cultural identity reveal */
+@keyframes ndm-country-enter {
+  from { opacity: 0; transform: translateY(1.5rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.country-enter {
+  animation: ndm-country-enter var(--ndm-duration-slow-reveal) var(--ndm-easing-cinematic) both;
+}
+
+/* S-CURATOR-02: Curator response - uncertainty reveal */
+@keyframes ndm-uncertainty-reveal {
+  from { opacity: 0; transform: translateY(0.5rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.uncertainty-reveal {
+  animation: ndm-uncertainty-reveal var(--ndm-duration-standard) var(--ndm-easing-default) both;
+}
+
+/* S-ARTIFACT-02: Artifact detail - evidence panel reveal */
+@keyframes ndm-evidence-reveal {
+  from { opacity: 0; transform: translateY(1rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.evidence-reveal {
+  animation: ndm-evidence-reveal var(--ndm-duration-slow-reveal) var(--ndm-easing-default) both;
+}

@@ -21,7 +21,7 @@ export default async function HomePage({ params }: HomePageProps) {
   return (
     <PageShell route="home" locale={locale}>
       {/* Hero / Museum Entrance */}
-      <div className={pageStyles.hero}>
+      <div className={`${pageStyles.hero} hero-enter`}>
         <div className={pageStyles.heroContent}>
           <p className={pageStyles.heroEyebrow}>Noujoude</p>
           <Heading level={1} className={pageStyles.heroTitle}>
@@ -50,7 +50,7 @@ export default async function HomePage({ params }: HomePageProps) {
           return (
             <section
               key={section.title}
-              className={pageStyles.section}
+              className={`${pageStyles.section} section-reveal`}
               aria-labelledby={`section-${anchor}`}
             >
               <Heading

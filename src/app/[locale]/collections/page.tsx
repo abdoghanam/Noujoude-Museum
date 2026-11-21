@@ -57,7 +57,7 @@ export default async function CollectionsPage({
           <a
             key={cat.slug}
             href={`/${resolved}/collections/${cat.slug}`}
-            className={styles.card}
+            className={`${styles.card} collection-card`}
           >
             <MediaSlotGroup
               views={slotViewsFor("collection-detail", resolved, cat.slug)}

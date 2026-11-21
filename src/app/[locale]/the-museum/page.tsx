@@ -4,6 +4,7 @@ import { resolveLocale } from "@/domain/locale";
 import { type RouteKey, routeDefinition } from "@/domain/routes";
 import { slotViewsFor } from "@/lib/server/media/slots";
 import { MediaSlotGroup } from "@/ui/media-slot";
+import { Scene3D } from "@/ui/scene-3d";
 import { PageShell } from "@/ui/page-shell";
 import { Heading } from "@/ui/heading";
 import { Text } from "@/ui/text";
@@ -25,7 +26,7 @@ export default async function TheMuseumPage({
   return (
     <PageShell route={ROUTE} locale={resolved}>
       {/* Museum Identity */}
-      <section className={styles.identity}>
+      <section className={`${styles.identity} light-reveal`}>
         <Heading level={1} className={styles.title}>
           The Museum
         </Heading>
@@ -76,6 +77,12 @@ export default async function TheMuseumPage({
       <section className={styles.atmosphere}>
         <Heading level={2}>Museum Atmosphere</Heading>
         <MediaSlotGroup views={slotViewsFor(ROUTE, resolved)} />
+        <Scene3D>
+          <div style={{ textAlign: "center", padding: "2rem" }}>
+            <Heading level={3}>Nocturnal Elegance</Heading>
+            <Text variant="secondary">Heritage Under Candlelight</Text>
+          </div>
+        </Scene3D>
       </section>
 
       {/* Institutional Closing */}

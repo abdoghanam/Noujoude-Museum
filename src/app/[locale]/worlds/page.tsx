@@ -46,7 +46,7 @@ export default async function WorldsPage({
         </Text>
       </section>
 
-      <div className={styles.grid}>
+      <div className={`${styles.grid} grid-reveal`}>
         {COUNTRIES.map((country) => (
           <a
             key={country.slug}
