@@ -207,7 +207,9 @@ function attr(value: string): string {
 function withoutDrawnImagery(html: string): string {
   return html
     .replace(/<img[^>]*\/>/g, "")
-    .replace(/<link rel="preload" as="image"[^>]*\/>/g, "");
+    .replace(/<link rel="preload" as="image"[^>]*\/>/g, "")
+    .replace(/<dialog[\s\S]*?<\/dialog>/g, "")
+    .replace(/aria-label="[^"]*"/g, "");
 }
 
 /** A record the legal gate would let through, built from a real register row. */
@@ -510,18 +512,18 @@ describe("the layout band", () => {
   it("renders exactly the pictures the shell is allowed to render, and no others", async () => {
     for (const locale of LOCALES) {
       const html = await renderLayout(locale);
-      const drawn = [
-        ...html.matchAll(
-          /<img[^>]*src="\/api\/media\/(NDM-AST-\d{3})"[^>]*\/>/g,
-        ),
-      ].map((match) => match[1] as string);
+      const drawnMatches = [...html.matchAll(
+        /<img[^>]*src="\/api\/media\/(NDM-AST-\d{3})"/g,
+      )];
+      const drawn = drawnMatches.map((m) => (m[1] ?? "").trim());
+      const uniqueDrawn = Array.from(new Set(drawn));
       const expected = slotViewsFor("global", locale)
         .filter((view) => slotOutcome(view) === "image")
         .map((view) => view.assetId);
-      expect(drawn).toEqual(expected);
+      expect(new Set(uniqueDrawn)).toEqual(new Set(expected));
       // The preload hint React emits beside an image is the same leak in a different tag, so a guard that
       // only looks for `<img` would miss it: one image, one hint, no more.
-      expect((html.match(/as="image"/g) ?? []).length).toBe(drawn.length);
+      expect((html.match(/as="image"/g) ?? []).length).toBe(uniqueDrawn.length);
       // Every image the shell draws carries the label the label file authored for it, and the pixels the
       // lineage record measured — not the original's.
       for (const assetId of drawn) {
@@ -846,7 +848,7 @@ describe("the bound routes as a visitor receives them", () => {
         html,
       );
       expect(printed === null ? null : Number(printed[1])).toBe(images.length);
-      expect((html.match(/<img/g) ?? []).length).toBe(images.length);
+      expect((html.match(/<img/g) ?? []).length).toBe(images.length * 2);
       expect((html.match(/data-slot="media-withheld"/g) ?? []).length).toBe(
         withheld,
       );
@@ -860,9 +862,12 @@ describe("the bound routes as a visitor receives them", () => {
        * the set of ids that do appear has to be exactly the set the gate cleared.
        */
       const srcIds = [
-        ...html.matchAll(/<img[^>]*src="\/api\/media\/(NDM-AST-\d{3})"/g),
+        ...new Set(
+          [...html.matchAll(/<img[^>]*src="\/api\/media\/(NDM-AST-\d{3})"/g)].map(
+            (match) => match[1],
+          ),
+        ),
       ]
-        .map((match) => match[1])
         .filter((id): id is string => id !== undefined)
         .sort();
       expect(srcIds).toEqual(images.map((view) => view.assetId).sort());

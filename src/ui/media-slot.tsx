@@ -1,4 +1,5 @@
 import type { WithheldReason } from "@/lib/media/slot";
+import { ImageViewer } from "./image-viewer";
 import {
   type MediaSlotView,
   type SlotFacts,
@@ -66,9 +67,8 @@ export function MediaSlot({ record, facts }: MediaSlotProps) {
 
   if (decision.kind === "image") {
     return (
-      <img
+      <ImageViewer
         alt={decision.alt}
-        className={styles.image}
         height={decision.height}
         src={decision.src}
         width={decision.width}

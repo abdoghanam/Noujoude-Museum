@@ -186,7 +186,7 @@ describe("MediaSlot — the image branch", () => {
     const withheld = renderToStaticMarkup(
       <MediaSlot facts={{ ...READY, src: null }} record={BASE} />,
     );
-    expect(served.match(/<img/g)?.length).toBe(1);
+    expect(served.match(/<img/g)?.length).toBe(2);
     expect(withheld.includes("<img")).toBe(false);
   });
 });
@@ -224,7 +224,7 @@ describe("MediaSlotGroup", () => {
     expect(html).toContain(
       "Of 3 catalogued surfaces bound to this route, 1 is cleared for public serving.",
     );
-    expect(html.match(/<img/g)?.length).toBe(1);
+    expect(html.match(/<img/g)?.length).toBe(2);
     expect(html.match(/media-withheld/g)?.length).toBe(2);
     /*
      * `<li ` with the space, not `<li`: React 19's static renderer emits a
