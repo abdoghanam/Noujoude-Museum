@@ -31,8 +31,9 @@ export default async function ContactPage({
 }) {
   const { locale } = await params;
   return (
-    <PageShell route={ROUTE} locale={resolveLocale(locale)}>
-      <p className={shellStyles.slot}>
+    <div className="contact-enter">
+      <PageShell route={ROUTE} locale={resolveLocale(locale)}>
+        <p className={shellStyles.slot}>
         Noujoude Majdouli — Digital Heritage Museum
       </p>
       <p className={shellStyles.slot}>Email: Noujoude-Majdouli@gmail.com</p>
@@ -46,5 +47,6 @@ export default async function ContactPage({
       </p>
       <MediaSlotGroup views={slotViewsFor(ROUTE, resolveLocale(locale))} />
     </PageShell>
+    </div>
   );
 }

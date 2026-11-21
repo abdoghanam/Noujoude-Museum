@@ -111,7 +111,7 @@ export default async function LocaleLayout({
                       not supplied (`docs/OWNER_INPUT_REGISTER.md`), and translating it here would be
                       inventing content; the label therefore declares its own language.
                     */}
-                    <a href={target.path} lang="en">
+                    <a className="nav-link" href={target.path} lang="en">
                       {item.label}
                     </a>
                   </li>

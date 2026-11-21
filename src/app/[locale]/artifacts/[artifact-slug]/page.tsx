@@ -33,15 +33,19 @@ export default async function ArtifactDetailPage({
 }) {
   const { locale, "artifact-slug": slug } = await params;
   return (
-    <DetailPage
-      route={ROUTE}
-      locale={resolveLocale(locale)}
-      slug={slug}
-      kind="artifact"
-    >
-      <MediaSlotGroup
-        views={slotViewsFor(ROUTE, resolveLocale(locale), slug)}
-      />
-    </DetailPage>
+    <div className="image-reveal">
+      <DetailPage
+        route={ROUTE}
+        locale={resolveLocale(locale)}
+        slug={slug}
+        kind="artifact"
+      >
+        <div className="evidence-reveal">
+          <MediaSlotGroup
+            views={slotViewsFor(ROUTE, resolveLocale(locale), slug)}
+          />
+        </div>
+      </DetailPage>
+    </div>
   );
 }

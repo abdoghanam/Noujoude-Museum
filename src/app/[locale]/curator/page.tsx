@@ -31,13 +31,17 @@ export default async function CuratorPage({
 }) {
   const { locale } = await params;
   return (
-    <PageShell route={ROUTE} locale={resolveLocale(locale)}>
-      <p className={shellStyles.slot}>
-        {
-          "No model, retrieval index or prompt boundary is configured for the AI Curator, and Phase 5 owns that work. This page does not claim that it answers."
-        }
-      </p>
-      <MediaSlotGroup views={slotViewsFor(ROUTE, resolveLocale(locale))} />
-    </PageShell>
+    <div className="curator-enter">
+      <PageShell route={ROUTE} locale={resolveLocale(locale)}>
+        <p className={shellStyles.slot}>
+          {
+            "No model, retrieval index or prompt boundary is configured for the AI Curator, and Phase 5 owns that work. This page does not claim that it answers."
+          }
+        </p>
+        <div className="uncertainty-reveal">
+          <MediaSlotGroup views={slotViewsFor(ROUTE, resolveLocale(locale))} />
+        </div>
+      </PageShell>
+    </div>
   );
 }
