@@ -8,7 +8,8 @@
 
 .perspective {
   transform-style: preserve-3d;
-  transition: transform var(--ndm-duration-cinematic) var(--ndm-easing-cinematic);
+  transition: transform var(--ndm-duration-cinematic)
+    var(--ndm-easing-cinematic);
 }
 
 .card3d {
@@ -18,7 +19,8 @@
   border: 1px solid var(--ndm-color-museum-glass);
   background: var(--ndm-surface-raised);
   padding: var(--ndm-space-4);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4),
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.4),
     0 0 40px rgba(198, 165, 107, 0.06);
 }
 

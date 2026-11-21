@@ -512,9 +512,9 @@ describe("the layout band", () => {
   it("renders exactly the pictures the shell is allowed to render, and no others", async () => {
     for (const locale of LOCALES) {
       const html = await renderLayout(locale);
-      const drawnMatches = [...html.matchAll(
-        /<img[^>]*src="\/api\/media\/(NDM-AST-\d{3})"/g,
-      )];
+      const drawnMatches = [
+        ...html.matchAll(/<img[^>]*src="\/api\/media\/(NDM-AST-\d{3})"/g),
+      ];
       const drawn = drawnMatches.map((m) => (m[1] ?? "").trim());
       const uniqueDrawn = Array.from(new Set(drawn));
       const expected = slotViewsFor("global", locale)
@@ -863,9 +863,9 @@ describe("the bound routes as a visitor receives them", () => {
        */
       const srcIds = [
         ...new Set(
-          [...html.matchAll(/<img[^>]*src="\/api\/media\/(NDM-AST-\d{3})"/g)].map(
-            (match) => match[1],
-          ),
+          [
+            ...html.matchAll(/<img[^>]*src="\/api\/media\/(NDM-AST-\d{3})"/g),
+          ].map((match) => match[1]),
         ),
       ]
         .filter((id): id is string => id !== undefined)

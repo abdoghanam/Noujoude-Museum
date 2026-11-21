@@ -6,7 +6,12 @@ import { ImageViewer } from "./image-viewer";
 describe("ImageViewer primitive", () => {
   it("renders thumbnail image", () => {
     const html = renderToStaticMarkup(
-      <ImageViewer src="/test.webp" alt="Test image" width={100} height={100} />,
+      <ImageViewer
+        src="/test.webp"
+        alt="Test image"
+        width={100}
+        height={100}
+      />,
     );
     expect(html).toContain("<img");
     expect(html).toContain('alt="Test image"');
@@ -14,7 +19,14 @@ describe("ImageViewer primitive", () => {
 
   it("renders caption and credit", () => {
     const html = renderToStaticMarkup(
-      <ImageViewer src="/test.webp" alt="Test" width={100} height={100} caption="A caption" credit="A credit" />,
+      <ImageViewer
+        src="/test.webp"
+        alt="Test"
+        width={100}
+        height={100}
+        caption="A caption"
+        credit="A credit"
+      />,
     );
     expect(html).toContain("A caption");
     expect(html).toContain("A credit");

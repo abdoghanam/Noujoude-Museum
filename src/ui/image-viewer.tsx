@@ -1,6 +1,5 @@
 "use client";
 
-
 import { useState, useCallback, useRef, useEffect } from "react";
 
 // eslint-disable-next-line no-restricted-syntax
@@ -15,7 +14,14 @@ export interface ImageViewerProps {
   readonly credit?: string;
 }
 
-export function ImageViewer({ src, alt, width, height, caption, credit }: ImageViewerProps) {
+export function ImageViewer({
+  src,
+  alt,
+  width,
+  height,
+  caption,
+  credit,
+}: ImageViewerProps) {
   const [zoomed, setZoomed] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
 

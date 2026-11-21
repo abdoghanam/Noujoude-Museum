@@ -43,7 +43,8 @@
 }
 
 .hero-enter {
-  animation: ndm-hero-enter var(--ndm-duration-entrance) var(--ndm-easing-cinematic) both;
+  animation: ndm-hero-enter var(--ndm-duration-entrance)
+    var(--ndm-easing-cinematic) both;
 }
 
 /* S-HOME-02: Section reveal — slow fade */
@@ -59,12 +60,19 @@
 }
 
 .section-reveal {
-  animation: ndm-section-reveal var(--ndm-duration-slow-reveal) var(--ndm-easing-default) both;
+  animation: ndm-section-reveal var(--ndm-duration-slow-reveal)
+    var(--ndm-easing-default) both;
 }
 
-.section-reveal:nth-child(2) { animation-delay: 100ms; }
-.section-reveal:nth-child(3) { animation-delay: 200ms; }
-.section-reveal:nth-child(4) { animation-delay: 300ms; }
+.section-reveal:nth-child(2) {
+  animation-delay: 100ms;
+}
+.section-reveal:nth-child(3) {
+  animation-delay: 200ms;
+}
+.section-reveal:nth-child(4) {
+  animation-delay: 300ms;
+}
 
 /* S-MUSEUM-01: Museum entrance — soft light reveal */
 @keyframes ndm-light-reveal {
@@ -79,7 +87,8 @@
 }
 
 .light-reveal {
-  animation: ndm-light-reveal var(--ndm-duration-cinematic) var(--ndm-easing-cinematic) both;
+  animation: ndm-light-reveal var(--ndm-duration-cinematic)
+    var(--ndm-easing-cinematic) both;
 }
 
 /* S-WORLDS-01: Worlds grid — gentle staggered reveal */
@@ -95,19 +104,33 @@
 }
 
 .grid-reveal > * {
-  animation: ndm-grid-reveal var(--ndm-duration-slow-reveal) var(--ndm-easing-default) both;
+  animation: ndm-grid-reveal var(--ndm-duration-slow-reveal)
+    var(--ndm-easing-default) both;
 }
 
-.grid-reveal > *:nth-child(1) { animation-delay: 0ms; }
-.grid-reveal > *:nth-child(2) { animation-delay: 80ms; }
-.grid-reveal > *:nth-child(3) { animation-delay: 160ms; }
-.grid-reveal > *:nth-child(4) { animation-delay: 240ms; }
-.grid-reveal > *:nth-child(5) { animation-delay: 320ms; }
-.grid-reveal > *:nth-child(6) { animation-delay: 400ms; }
+.grid-reveal > *:nth-child(1) {
+  animation-delay: 0ms;
+}
+.grid-reveal > *:nth-child(2) {
+  animation-delay: 80ms;
+}
+.grid-reveal > *:nth-child(3) {
+  animation-delay: 160ms;
+}
+.grid-reveal > *:nth-child(4) {
+  animation-delay: 240ms;
+}
+.grid-reveal > *:nth-child(5) {
+  animation-delay: 320ms;
+}
+.grid-reveal > *:nth-child(6) {
+  animation-delay: 400ms;
+}
 
 /* S-COLLECTION-01: Collection cards — subtle hover scale */
 .collection-card {
-  transition: transform var(--ndm-duration-fast) var(--ndm-easing-default),
+  transition:
+    transform var(--ndm-duration-fast) var(--ndm-easing-default),
     border-color var(--ndm-duration-fast) var(--ndm-easing-default);
 }
 
@@ -128,17 +151,20 @@
 }
 
 .image-reveal {
-  animation: ndm-image-reveal var(--ndm-duration-slow-reveal) var(--ndm-easing-cinematic) both;
+  animation: ndm-image-reveal var(--ndm-duration-slow-reveal)
+    var(--ndm-easing-cinematic) both;
 }
 
 /* S-CURATOR-01: Curator page — gentle entrance */
 .curator-enter {
-  animation: ndm-fade-in var(--ndm-duration-standard) var(--ndm-easing-default) both;
+  animation: ndm-fade-in var(--ndm-duration-standard) var(--ndm-easing-default)
+    both;
 }
 
 /* S-CONTACT-01: Contact page — restrained reveal */
 .contact-enter {
-  animation: ndm-fade-in var(--ndm-duration-standard) var(--ndm-easing-default) both;
+  animation: ndm-fade-in var(--ndm-duration-standard) var(--ndm-easing-default)
+    both;
 }
 
 /* S-STORY-01: Story detail — archive-like opening */
@@ -156,23 +182,31 @@
 }
 
 .archive-open {
-  animation: ndm-archive-open var(--ndm-duration-cinematic) var(--ndm-easing-cinematic) both;
+  animation: ndm-archive-open var(--ndm-duration-cinematic)
+    var(--ndm-easing-cinematic) both;
 }
 
 /* S-STORY-02: Story content — gentle reveal */
 .story-reveal {
-  animation: ndm-section-reveal var(--ndm-duration-slow-reveal) var(--ndm-easing-default) both;
+  animation: ndm-section-reveal var(--ndm-duration-slow-reveal)
+    var(--ndm-easing-default) both;
 }
 
 /* S-RARE-01: Rare Pieces — delicate reveal */
 .rare-reveal {
-  animation: ndm-section-reveal var(--ndm-duration-slow-reveal) var(--ndm-easing-default) both;
+  animation: ndm-section-reveal var(--ndm-duration-slow-reveal)
+    var(--ndm-easing-default) both;
 }
 
 /* Loading state — respectful, no spinner, just opacity pulse */
 @keyframes ndm-loading-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .loading-pulse {
