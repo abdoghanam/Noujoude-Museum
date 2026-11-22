@@ -94,10 +94,10 @@ export default async function LocaleLayout({
               {SITE_NAME}
             </p>
           ) : (
-            <p className={styles.markBand} data-slot="approved-mark">
+            <div className={styles.markBand} data-slot="approved-mark">
               <MediaSlot facts={headerMark.facts} record={headerMark.record} />
               <span className={styles.markName}>{SITE_NAME}</span>
-            </p>
+            </div>
           )}
           <nav aria-label="Primary" className={styles.primaryNav}>
             <ul className={styles.navList}>
