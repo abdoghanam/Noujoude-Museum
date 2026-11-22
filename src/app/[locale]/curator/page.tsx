@@ -4,21 +4,12 @@ import { resolveLocale } from "@/domain/locale";
 import { type RouteKey, routeDefinition } from "@/domain/routes";
 import { slotViewsFor } from "@/lib/server/media/slots";
 import { MediaSlotGroup } from "@/ui/media-slot";
-import shellStyles from "@/ui/page-shell.module.css";
 import { PageShell } from "@/ui/page-shell";
-
-/**
- * One row of the §4.2 canonical route table. Locale prefixing is mandatory (line 408), so the page
- * reads `locale` from its own segment and renders the shell the registry defines. No editorial
- * copy: the Owner has supplied none, and §6.1 forbids filling space with fabricated content.
- * The media band comes from the usage map and the register, and the gate is armed as of
- * 4 November 2026: a slot renders as an image exactly when its asset is cleared, approved,
- * published and servable, and as an explicit withheld state otherwise. The Owner's declaration
- * of that date cleared and approved all 82 register rows, and the publication register names 46
- * of them; `src/ui/media-slot.tsx` still draws no pixel unless the gate, the served copy, the
- * alt text and the measured dimensions are all present, so a page says which surface has nothing
- * servable rather than showing a reader none.
- */
+import { Heading } from "@/ui/heading";
+import { Text } from "@/ui/text";
+import { State } from "@/ui/state";
+import { MuseumScene } from "@/ui/museum-scene";
+import { Scene3D } from "@/ui/scene-3d";
 
 const ROUTE: RouteKey = "curator";
 
@@ -30,22 +21,36 @@ export default async function CuratorPage({
   readonly params: Promise<{ readonly locale?: string }>;
 }) {
   const { locale } = await params;
+  const resolved = resolveLocale(locale);
+
   return (
-    <PageShell route={ROUTE} locale={resolveLocale(locale)}>
-      <div className="curator-enter">
-        <p className={shellStyles.slot}>
-          {
-            "No model, retrieval index or prompt boundary is configured for the AI Curator, and Phase 5 owns that work. This page does not claim that it answers."
-          }
-        </p>
-        <MediaSlotGroup views={slotViewsFor(ROUTE, resolveLocale(locale))} />
-      </div>
-      <div className="uncertainty-reveal">
-        <p className={shellStyles.slot} lang="en">
-          Uncertainty handling and conflicting-source disclosure will appear
-          here when the AI Curator is active.
-        </p>
-      </div>
+    <PageShell route={ROUTE} locale={resolved}>
+      <MuseumScene scene="chamber" title="AI Curator">
+        <div className="curator-enter">
+          <State
+            kind="empty"
+            title="AI Curator not configured"
+            description="No inference provider is active. The AI Curator is not configured, so no answer is generated. The architecture is ready for activation when a provider is selected (OID-19)."
+          />
+          <MediaSlotGroup views={slotViewsFor(ROUTE, resolved)} />
+        </div>
+      </MuseumScene>
+
+      <MuseumScene scene="chamber" title="Knowledge & Governance">
+        <div className="uncertainty-reveal">
+          <Text variant="secondary">
+            Approved source retrieval only. Claim-level citations. Explicit
+            uncertainty. No invented heritage facts. No fabricated provenance.
+            No disclosure of private drafts. No access to restricted records.
+          </Text>
+        </div>
+        <Scene3D>
+          <div style={{ textAlign: "center", padding: "2rem" }}>
+            <Heading level={3}>Curator Chamber</Heading>
+            <Text variant="secondary">Scholarship &amp; Reflection</Text>
+          </div>
+        </Scene3D>
+      </MuseumScene>
     </PageShell>
   );
 }

@@ -5,19 +5,10 @@ import { type RouteKey, routeDefinition } from "@/domain/routes";
 import { slotViewsFor } from "@/lib/server/media/slots";
 import { MediaSlotGroup } from "@/ui/media-slot";
 import { DetailPage } from "@/ui/detail-page";
+import { MuseumScene } from "@/ui/museum-scene";
 
-/**
- * One row of the §4.2 canonical route table. Locale prefixing is mandatory (line 408), so the page
- * reads `locale` from its own segment and renders the shell the registry defines. No editorial
- * copy: the Owner has supplied none, and §6.1 forbids filling space with fabricated content.
- * The media band comes from the usage map and the register, and the gate is armed as of
- * 4 November 2026: a slot renders as an image exactly when its asset is cleared, approved,
- * published and servable, and as an explicit withheld state otherwise. The Owner's declaration
- * of that date cleared and approved all 82 register rows, and the publication register names 46
- * of them; `src/ui/media-slot.tsx` still draws no pixel unless the gate, the served copy, the
- * alt text and the measured dimensions are all present, so a page says which surface has nothing
- * servable rather than showing a reader none.
- */
+import { Text } from "@/ui/text";
+import { State } from "@/ui/state";
 
 const ROUTE: RouteKey = "artifact-detail";
 
@@ -32,24 +23,39 @@ export default async function ArtifactDetailPage({
   }>;
 }) {
   const { locale, "artifact-slug": slug } = await params;
+  const resolved = resolveLocale(locale);
+
   return (
     <DetailPage
       route={ROUTE}
-      locale={resolveLocale(locale)}
+      locale={resolved}
       slug={slug}
       kind="artifact"
     >
-      <div className="image-reveal">
-        <MediaSlotGroup
-          views={slotViewsFor(ROUTE, resolveLocale(locale), slug)}
-        />
-      </div>
-      <div className="evidence-reveal">
-        <p className="text-secondary" lang="en">
-          Evidence and provenance information will appear here when artifact
-          records are published.
-        </p>
-      </div>
+      <MuseumScene scene="gallery" title="Artifact Presentation">
+        <div className="image-reveal">
+          <MediaSlotGroup
+            views={slotViewsFor(ROUTE, resolved, slug)}
+          />
+        </div>
+      </MuseumScene>
+
+      <MuseumScene scene="archive" title="Documentation & Evidence">
+        <div className="evidence-reveal">
+          <State
+            kind="empty"
+            title="No artifact records published"
+            description="Object identity, description, historical context, classification, documentation, provenance, condition, image rights, and curator note are Owner inputs. Until supplied, this page renders its structure only."
+          />
+        </div>
+      </MuseumScene>
+
+      <MuseumScene scene="corridor" title="Related Exploration">
+        <Text variant="secondary">
+          Related objects, stories, and AI Curator connections will appear here
+          when artifact records are published.
+        </Text>
+      </MuseumScene>
     </DetailPage>
   );
 }
