@@ -488,7 +488,7 @@ jobs:
   # Standard §12 check 8 is "dependency and secret scanning". Only the dependency
   # half is expressible today. This job does not claim to satisfy check 8.
   security-scans:
-    name: Dependency audit (secret scanning NOT YET IMPLEMENTED)
+    name: Dependency audit and secret scan
     runs-on: ubuntu-latest
     needs: quality
     steps:
@@ -516,14 +516,5 @@ jobs:
         # or carry a recorded Owner risk acceptance per severity (plan §3 row 14).
         run: pnpm audit --audit-level=high
 
-      - name: NOTICE — secret scanning is not implemented (coverage hole H-4)
-        run: |
-          echo "=============================================================="
-          echo " Standard §12 check 8 is PARTIALLY met by this job."
-          echo "   dependency scanning : implemented (step above)"
-          echo "   secret scanning     : NOT IMPLEMENTED — no scanner selected,"
-          echo "                         no configuration authored, no baseline."
-          echo " This step exits 0 on purpose so the dependency half stays"
-          echo " visible and enforced. It must not be read as check 8 passing."
-          echo " Landing point: IMPLEMENTATION_PLAN §4 Phase 2 work item 2.10."
-          echo "=============================================================="
+      - name: Secret scan (zero-cost, repository-wide)
+        run: node scripts/scan-secrets.mjs
