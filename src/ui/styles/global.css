@@ -39,7 +39,8 @@
   /* §12.5 type roles — Arabic falls back to system Arabic stack (Tajawal licensed-unresolved, OID-18). */
   --ndm-font-display: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
   --ndm-font-body: "Inter", "Segoe UI", Helvetica, sans-serif;
-  --ndm-font-arabic-display: "Tajawal", "Noto Naskh Arabic", "Traditional Arabic", serif;
+  --ndm-font-arabic-display:
+    "Tajawal", "Noto Naskh Arabic", "Traditional Arabic", serif;
   --ndm-font-arabic-body: "Tajawal", "Noto Sans Arabic", "Segoe UI", sans-serif;
 
   /* §12.13 motion timing table */
@@ -159,7 +160,8 @@ a:hover {
 }
 
 .ndm-fade-in {
-  animation: ndm-fade-in var(--ndm-duration-slow-reveal) var(--ndm-easing-cinematic) both;
+  animation: ndm-fade-in var(--ndm-duration-slow-reveal)
+    var(--ndm-easing-cinematic) both;
 }
 
 /* Reduced motion */

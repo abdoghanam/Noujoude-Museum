@@ -82,7 +82,8 @@
   text-transform: uppercase;
   padding-block: var(--ndm-space-1);
   border-block-end: 1px solid transparent;
-  transition: color var(--ndm-duration-fast) var(--ndm-easing-default),
+  transition:
+    color var(--ndm-duration-fast) var(--ndm-easing-default),
     border-color var(--ndm-duration-fast) var(--ndm-easing-default);
 }
 
@@ -151,7 +152,8 @@
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-size: 0.875rem;
-  transition: background-color var(--ndm-duration-fast) var(--ndm-easing-default),
+  transition:
+    background-color var(--ndm-duration-fast) var(--ndm-easing-default),
     color var(--ndm-duration-fast) var(--ndm-easing-default);
 }
 
