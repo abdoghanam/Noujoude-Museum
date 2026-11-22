@@ -33,19 +33,22 @@ export default async function ArtifactDetailPage({
 }) {
   const { locale, "artifact-slug": slug } = await params;
   return (
-    <div className="image-reveal">
-      <DetailPage
-        route={ROUTE}
-        locale={resolveLocale(locale)}
-        slug={slug}
-        kind="artifact"
-      >
-        <div className="evidence-reveal">
-          <MediaSlotGroup
-            views={slotViewsFor(ROUTE, resolveLocale(locale), slug)}
-          />
-        </div>
-      </DetailPage>
-    </div>
+    <DetailPage
+      route={ROUTE}
+      locale={resolveLocale(locale)}
+      slug={slug}
+      kind="artifact"
+    >
+      <div className="image-reveal">
+        <MediaSlotGroup
+          views={slotViewsFor(ROUTE, resolveLocale(locale), slug)}
+        />
+      </div>
+      <div className="evidence-reveal">
+        <p className="text-secondary" lang="en">
+          Evidence and provenance information will appear here when artifact records are published.
+        </p>
+      </div>
+    </DetailPage>
   );
 }

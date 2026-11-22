@@ -31,17 +31,20 @@ export default async function CuratorPage({
 }) {
   const { locale } = await params;
   return (
-    <div className="curator-enter">
-      <PageShell route={ROUTE} locale={resolveLocale(locale)}>
+    <PageShell route={ROUTE} locale={resolveLocale(locale)}>
+      <div className="curator-enter">
         <p className={shellStyles.slot}>
           {
             "No model, retrieval index or prompt boundary is configured for the AI Curator, and Phase 5 owns that work. This page does not claim that it answers."
           }
         </p>
-        <div className="uncertainty-reveal">
-          <MediaSlotGroup views={slotViewsFor(ROUTE, resolveLocale(locale))} />
-        </div>
-      </PageShell>
-    </div>
+        <MediaSlotGroup views={slotViewsFor(ROUTE, resolveLocale(locale))} />
+      </div>
+      <div className="uncertainty-reveal">
+        <p className={shellStyles.slot} lang="en">
+          Uncertainty handling and conflicting-source disclosure will appear here when the AI Curator is active.
+        </p>
+      </div>
+    </PageShell>
   );
 }

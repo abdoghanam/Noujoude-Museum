@@ -33,17 +33,17 @@ export default async function CountryDetailPage({
 }) {
   const { locale, "country-slug": slug } = await params;
   return (
-    <div className="country-enter">
-      <DetailPage
-        route={ROUTE}
-        locale={resolveLocale(locale)}
-        slug={slug}
-        kind="country"
-      >
+    <DetailPage
+      route={ROUTE}
+      locale={resolveLocale(locale)}
+      slug={slug}
+      kind="country"
+    >
+      <div className="country-enter">
         <MediaSlotGroup
           views={slotViewsFor(ROUTE, resolveLocale(locale), slug)}
         />
-      </DetailPage>
-    </div>
+      </div>
+    </DetailPage>
   );
 }

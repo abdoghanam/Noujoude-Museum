@@ -9,9 +9,9 @@ describe("Scene3D primitive", () => {
     expect(html).toContain("content");
   });
 
-  it("renders placeholder when no children", () => {
+  it("renders empty when no children", () => {
     const html = renderToStaticMarkup(<Scene3D />);
-    expect(html).toContain("Museum Scene");
+    expect(html).toContain("scene");
   });
 
   it("applies scene class", () => {

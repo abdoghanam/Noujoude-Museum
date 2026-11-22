@@ -22,11 +22,7 @@ export function Scene3D({ children, className }: Scene3DProps) {
     <div className={`${styles.scene} ${className ?? ""}`}>
       <div className={styles.perspective}>
         <div className={styles.card3d}>
-          {children ?? (
-            <div className={styles.placeholder}>
-              <span className={styles.placeholderText}>Museum Scene</span>
-            </div>
-          )}
+          {children}
         </div>
       </div>
     </div>

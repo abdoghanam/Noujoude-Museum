@@ -33,19 +33,17 @@ export default async function StoryDetailPage({
 }) {
   const { locale, "story-slug": slug } = await params;
   return (
-    <div className="archive-open">
-      <DetailPage
-        route={ROUTE}
-        locale={resolveLocale(locale)}
-        slug={slug}
-        kind="story"
-      >
-        <div className="story-reveal">
-          <MediaSlotGroup
-            views={slotViewsFor(ROUTE, resolveLocale(locale), slug)}
-          />
-        </div>
-      </DetailPage>
-    </div>
+    <DetailPage
+      route={ROUTE}
+      locale={resolveLocale(locale)}
+      slug={slug}
+      kind="story"
+    >
+      <div className="archive-open">
+        <MediaSlotGroup
+          views={slotViewsFor(ROUTE, resolveLocale(locale), slug)}
+        />
+      </div>
+    </DetailPage>
   );
 }
