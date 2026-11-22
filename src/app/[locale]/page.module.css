@@ -108,7 +108,8 @@
   font-size: 0.8125rem;
   align-self: center;
   margin-block-start: var(--ndm-space-3);
-  transition: background-color var(--ndm-duration-standard) var(--ndm-easing-default),
+  transition:
+    background-color var(--ndm-duration-standard) var(--ndm-easing-default),
     color var(--ndm-duration-standard) var(--ndm-easing-default),
     box-shadow var(--ndm-duration-standard) var(--ndm-easing-default);
 }
