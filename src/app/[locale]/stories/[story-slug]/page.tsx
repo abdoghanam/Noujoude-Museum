@@ -25,17 +25,10 @@ export default async function StoryDetailPage({
   const resolved = resolveLocale(locale);
 
   return (
-    <DetailPage
-      route={ROUTE}
-      locale={resolved}
-      slug={slug}
-      kind="story"
-    >
+    <DetailPage route={ROUTE} locale={resolved} slug={slug} kind="story">
       <MuseumScene scene="archive" title="Story Gallery">
         <div className="archive-open">
-          <MediaSlotGroup
-            views={slotViewsFor(ROUTE, resolved, slug)}
-          />
+          <MediaSlotGroup views={slotViewsFor(ROUTE, resolved, slug)} />
         </div>
         <State
           kind="empty"

@@ -26,17 +26,10 @@ export default async function ArtifactDetailPage({
   const resolved = resolveLocale(locale);
 
   return (
-    <DetailPage
-      route={ROUTE}
-      locale={resolved}
-      slug={slug}
-      kind="artifact"
-    >
+    <DetailPage route={ROUTE} locale={resolved} slug={slug} kind="artifact">
       <MuseumScene scene="gallery" title="Artifact Presentation">
         <div className="image-reveal">
-          <MediaSlotGroup
-            views={slotViewsFor(ROUTE, resolved, slug)}
-          />
+          <MediaSlotGroup views={slotViewsFor(ROUTE, resolved, slug)} />
         </div>
       </MuseumScene>
 
