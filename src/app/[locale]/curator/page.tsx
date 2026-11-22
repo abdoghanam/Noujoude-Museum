@@ -42,7 +42,8 @@ export default async function CuratorPage({
       </div>
       <div className="uncertainty-reveal">
         <p className={shellStyles.slot} lang="en">
-          Uncertainty handling and conflicting-source disclosure will appear here when the AI Curator is active.
+          Uncertainty handling and conflicting-source disclosure will appear
+          here when the AI Curator is active.
         </p>
       </div>
     </PageShell>

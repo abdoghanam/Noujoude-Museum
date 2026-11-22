@@ -46,7 +46,8 @@ export default async function ArtifactDetailPage({
       </div>
       <div className="evidence-reveal">
         <p className="text-secondary" lang="en">
-          Evidence and provenance information will appear here when artifact records are published.
+          Evidence and provenance information will appear here when artifact
+          records are published.
         </p>
       </div>
     </DetailPage>

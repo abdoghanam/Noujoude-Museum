@@ -21,9 +21,7 @@ export function Scene3D({ children, className }: Scene3DProps) {
   return (
     <div className={`${styles.scene} ${className ?? ""}`}>
       <div className={styles.perspective}>
-        <div className={styles.card3d}>
-          {children}
-        </div>
+        <div className={styles.card3d}>{children}</div>
       </div>
     </div>
   );
