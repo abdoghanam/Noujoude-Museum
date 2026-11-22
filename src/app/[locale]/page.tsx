@@ -8,6 +8,7 @@ import { PageShell } from "@/ui/page-shell";
 import { Heading } from "@/ui/heading";
 import { Text } from "@/ui/text";
 import { State } from "@/ui/state";
+import { MuseumScene } from "@/ui/museum-scene";
 
 interface HomePageProps {
   readonly params: Promise<{ locale?: string }>;
@@ -21,9 +22,9 @@ export default async function HomePage({ params }: HomePageProps) {
   return (
     <PageShell route="home" locale={locale}>
       {/* Hero / Museum Entrance — cinematic */}
-      <div className={`${pageStyles.hero} hero-enter`}>
+      <MuseumScene scene="entrance" title="Noujoude">
         <div className={pageStyles.heroContent}>
-          <p className={pageStyles.heroEyebrow}>Noujoude</p>
+          <p className={pageStyles.heroEyebrow}>Digital Heritage Museum</p>
           <Heading level={1} className={pageStyles.heroTitle}>
             More than a collection... it&apos;s a story.
           </Heading>
@@ -40,7 +41,7 @@ export default async function HomePage({ params }: HomePageProps) {
         <div className={pageStyles.heroMedia}>
           <MediaSlotGroup views={slotViewsFor("home", locale)} />
         </div>
-      </div>
+      </MuseumScene>
 
       {/* Required sections in specified order */}
       <div className={pageStyles.sections}>
@@ -48,20 +49,13 @@ export default async function HomePage({ params }: HomePageProps) {
           if (section.route === "home") return null;
           const views =
             section.route === null ? [] : slotViewsFor(section.route, locale);
-          const anchor = section.title.replace(/\W+/g, "-");
           return (
-            <section
+            <MuseumScene
               key={section.title}
-              className={`${pageStyles.section} section-reveal`}
-              aria-labelledby={`section-${anchor}`}
+              scene="gallery"
+              title={section.title}
+              className="section-reveal"
             >
-              <Heading
-                level={2}
-                className={pageStyles.sectionTitle}
-                id={`section-${anchor}`}
-              >
-                {section.title}
-              </Heading>
               {section.route === null ? (
                 <State
                   kind="empty"
@@ -70,7 +64,7 @@ export default async function HomePage({ params }: HomePageProps) {
                 />
               ) : null}
               <MediaSlotGroup views={views} />
-            </section>
+            </MuseumScene>
           );
         })}
       </div>

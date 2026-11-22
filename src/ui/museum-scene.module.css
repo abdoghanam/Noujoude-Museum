@@ -1,0 +1,181 @@
+.scene {
+  position: relative;
+  overflow: hidden;
+  padding-block: var(--ndm-space-6);
+  padding-inline: var(--ndm-space-4);
+}
+
+.sceneHeader {
+  margin-block-end: var(--ndm-space-5);
+  text-align: center;
+}
+
+.sceneTitle {
+  font-family: var(--ndm-font-display);
+  font-size: 2.5rem;
+  font-weight: 300;
+  letter-spacing: 0.05em;
+  color: var(--ndm-text-primary);
+  margin: 0;
+  text-shadow: 0 0 40px rgba(198, 165, 107, 0.1);
+}
+
+.sceneSubtitle {
+  font-size: 1rem;
+  color: var(--ndm-text-secondary);
+  margin-block-start: var(--ndm-space-2);
+  font-style: italic;
+}
+
+.sceneContent {
+  position: relative;
+  z-index: 1;
+}
+
+/* Entrance — full viewport, dramatic lighting */
+.entrance {
+  min-block-size: 90vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background: radial-gradient(
+    ellipse at 50% 30%,
+    rgba(198, 165, 107, 0.08) 0%,
+    var(--ndm-surface-page) 70%
+  );
+  border-block-end: 1px solid var(--ndm-color-museum-glass);
+}
+
+.entrance::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to block-end,
+    transparent 0%,
+    rgba(17, 16, 20, 0.3) 100%
+  );
+  pointer-events: none;
+}
+
+/* Lobby — architectural, spacious */
+.lobby {
+  min-block-size: 70vh;
+  background: linear-gradient(
+    to block-end,
+    var(--ndm-surface-page) 0%,
+    var(--ndm-surface-raised) 50%,
+    var(--ndm-surface-page) 100%
+  );
+  border-block-end: 1px solid var(--ndm-color-museum-glass);
+}
+
+/* Gallery — exhibition walls */
+.gallery {
+  background: var(--ndm-surface-raised);
+  border-block: 1px solid var(--ndm-color-museum-glass);
+  padding-block: var(--ndm-space-6);
+}
+
+.gallery::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block: 0;
+  inline-size: 1px;
+  background: linear-gradient(
+    to block-end,
+    transparent 0%,
+    var(--ndm-accent-primary) 50%,
+    transparent 100%
+  );
+  opacity: 0.3;
+}
+
+.gallery::after {
+  content: "";
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block: 0;
+  inline-size: 1px;
+  background: linear-gradient(
+    to block-end,
+    transparent 0%,
+    var(--ndm-accent-primary) 50%,
+    transparent 100%
+  );
+  opacity: 0.3;
+}
+
+/* Corridor — transition space */
+.corridor {
+  min-block-size: 50vh;
+  background: linear-gradient(
+    to inline-end,
+    var(--ndm-surface-page) 0%,
+    var(--ndm-surface-raised) 50%,
+    var(--ndm-surface-page) 100%
+  );
+  border-block: 1px solid var(--ndm-color-museum-glass);
+}
+
+/* Archive — deep, intimate */
+.archive {
+  background: var(--ndm-surface-exhibition);
+  border-block: 1px solid var(--ndm-color-burgundy-secondary);
+  padding-block: var(--ndm-space-6);
+}
+
+.archive::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    rgba(53, 21, 34, 0.3) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* Chamber — AI Curator, special atmosphere */
+.chamber {
+  min-block-size: 60vh;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    rgba(198, 165, 107, 0.06) 0%,
+    var(--ndm-surface-page) 70%
+  );
+  border-block: 1px solid var(--ndm-color-museum-glass);
+}
+
+/* Closing — reflection space */
+.closing {
+  min-block-size: 50vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background: linear-gradient(
+    to block-end,
+    var(--ndm-surface-page) 0%,
+    var(--ndm-surface-raised) 50%,
+    var(--ndm-surface-page) 100%
+  );
+  border-block-start: 1px solid var(--ndm-color-museum-glass);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .entrance,
+  .lobby,
+  .gallery,
+  .corridor,
+  .archive,
+  .chamber,
+  .closing {
+    animation: none;
+  }
+}

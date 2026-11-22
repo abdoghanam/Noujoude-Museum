@@ -4,11 +4,12 @@ import { resolveLocale } from "@/domain/locale";
 import { type RouteKey, routeDefinition } from "@/domain/routes";
 import { slotViewsFor } from "@/lib/server/media/slots";
 import { MediaSlotGroup } from "@/ui/media-slot";
-import { Scene3D } from "@/ui/scene-3d";
 import { PageShell } from "@/ui/page-shell";
 import { Heading } from "@/ui/heading";
 import { Text } from "@/ui/text";
 
+import { MuseumScene } from "@/ui/museum-scene";
+import { Scene3D } from "@/ui/scene-3d";
 import styles from "@/app/[locale]/the-museum/page.module.css";
 
 const ROUTE: RouteKey = "the-museum";
@@ -25,34 +26,26 @@ export default async function TheMuseumPage({
 
   return (
     <PageShell route={ROUTE} locale={resolved}>
-      {/* Museum Identity */}
-      <section className={`${styles.identity} light-reveal`}>
-        <Heading level={1} className={styles.title}>
-          The Museum
-        </Heading>
-        <Text variant="secondary" className={styles.subtitle}>
+      <MuseumScene scene="lobby" title="The Museum">
+        <Text variant="secondary">
           An interpretive orientation into the Noujoude Digital Heritage Museum.
         </Text>
-        <Text variant="secondary" className={styles.body}>
+        <Text variant="secondary">
           Institutional identity, founding history, and mission are Owner inputs
           that have not been supplied. This page renders its structure and
           available entry points only.
         </Text>
-      </section>
+      </MuseumScene>
 
-      {/* Museum Philosophy */}
-      <section className={styles.philosophy}>
-        <Heading level={2}>Museum Philosophy</Heading>
+      <MuseumScene scene="gallery" title="Museum Philosophy">
         <Text variant="secondary">
           Heritage is preserved not by accumulation but by interpretation. Every
           object carries a story; every story carries a context. The museum
           exists to make that relationship visible.
         </Text>
-      </section>
+      </MuseumScene>
 
-      {/* Museum Exploration */}
-      <section className={styles.exploration}>
-        <Heading level={2}>Museum Exploration</Heading>
+      <MuseumScene scene="gallery" title="Museum Exploration">
         <div className={styles.entryGrid}>
           <a href={`/${resolved}/worlds`} className={styles.entryCard}>
             <Heading level={3}>The Worlds</Heading>
@@ -71,11 +64,9 @@ export default async function TheMuseumPage({
             <Text variant="caption">Guided museum discovery</Text>
           </a>
         </div>
-      </section>
+      </MuseumScene>
 
-      {/* Museum Atmosphere */}
-      <section className={styles.atmosphere}>
-        <Heading level={2}>Museum Atmosphere</Heading>
+      <MuseumScene scene="archive" title="Museum Atmosphere">
         <MediaSlotGroup views={slotViewsFor(ROUTE, resolved)} />
         <Scene3D>
           <div style={{ textAlign: "center", padding: "2rem" }}>
@@ -83,14 +74,13 @@ export default async function TheMuseumPage({
             <Text variant="secondary">Heritage Under Candlelight</Text>
           </div>
         </Scene3D>
-      </section>
+      </MuseumScene>
 
-      {/* Institutional Closing */}
-      <section className={styles.closing}>
+      <MuseumScene scene="closing" title="Closing Reflection">
         <Text variant="secondary">
           More than a collection... it&apos;s a story.
         </Text>
-      </section>
+      </MuseumScene>
     </PageShell>
   );
 }
