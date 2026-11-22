@@ -16,7 +16,8 @@
 
 .siteHeader {
   align-items: center;
-  background-color: var(--ndm-surface-page);
+  background-color: rgba(10, 9, 12, 0.92);
+  backdrop-filter: blur(12px);
   border-block-end: 1px solid var(--ndm-color-museum-glass);
   display: flex;
   flex-wrap: wrap;
@@ -26,17 +27,17 @@
   position: sticky;
   inset-block-start: 0;
   z-index: 50;
-  backdrop-filter: blur(8px);
-  background-color: rgba(17, 16, 20, 0.85);
 }
 
 .wordmark {
   font-family: var(--ndm-font-display);
-  font-size: 1.5rem;
-  letter-spacing: 0.12em;
+  font-size: 1.75rem;
+  font-weight: 300;
+  letter-spacing: 0.15em;
   margin: 0;
   text-transform: uppercase;
   color: var(--ndm-accent-primary);
+  text-shadow: 0 0 20px rgba(198, 165, 107, 0.15);
 }
 
 .markBand {
@@ -54,8 +55,9 @@
 
 .markName {
   font-family: var(--ndm-font-display);
-  font-size: 1.5rem;
-  letter-spacing: 0.12em;
+  font-size: 1.75rem;
+  font-weight: 300;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--ndm-accent-primary);
 }
@@ -75,13 +77,12 @@
 
 .navList a {
   color: var(--ndm-text-secondary);
-  font-size: 0.875rem;
-  letter-spacing: 0.05em;
+  font-size: 0.8125rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   padding-block: var(--ndm-space-1);
   border-block-end: 1px solid transparent;
-  transition:
-    color var(--ndm-duration-fast) var(--ndm-easing-default),
+  transition: color var(--ndm-duration-fast) var(--ndm-easing-default),
     border-color var(--ndm-duration-fast) var(--ndm-easing-default);
 }
 
@@ -94,13 +95,14 @@
   display: flex;
   gap: var(--ndm-space-3);
   margin: 0;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
 }
 
 .utilities a {
   color: var(--ndm-text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.1em;
+  transition: color var(--ndm-duration-fast) var(--ndm-easing-default);
 }
 
 .utilities a:hover {
@@ -118,9 +120,14 @@
 .siteFooter {
   border-block-start: 1px solid var(--ndm-color-museum-glass);
   margin-block-start: var(--ndm-space-6);
-  padding-block: var(--ndm-space-4);
+  padding-block: var(--ndm-space-5);
   padding-inline: var(--ndm-space-4);
   text-align: center;
+  background: linear-gradient(
+    to block-end,
+    transparent 0%,
+    rgba(17, 16, 20, 0.5) 100%
+  );
 }
 
 .siteFooter p {
@@ -133,6 +140,7 @@
 .siteFooter p:last-child {
   color: var(--ndm-text-tertiary);
   font-size: 0.75rem;
+  letter-spacing: 0.05em;
 }
 
 .cta {
@@ -143,8 +151,7 @@
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-size: 0.875rem;
-  transition:
-    background-color var(--ndm-duration-fast) var(--ndm-easing-default),
+  transition: background-color var(--ndm-duration-fast) var(--ndm-easing-default),
     color var(--ndm-duration-fast) var(--ndm-easing-default);
 }
 
