@@ -20,7 +20,7 @@ export default async function HomePage({ params }: HomePageProps) {
 
   return (
     <PageShell route="home" locale={locale}>
-      {/* Hero / Museum Entrance */}
+      {/* Hero / Museum Entrance — cinematic */}
       <div className={`${pageStyles.hero} hero-enter`}>
         <div className={pageStyles.heroContent}>
           <p className={pageStyles.heroEyebrow}>Noujoude</p>
@@ -37,7 +37,9 @@ export default async function HomePage({ params }: HomePageProps) {
             </a>
           )}
         </div>
-        <MediaSlotGroup views={slotViewsFor("home", locale)} />
+        <div className={pageStyles.heroMedia}>
+          <MediaSlotGroup views={slotViewsFor("home", locale)} />
+        </div>
       </div>
 
       {/* Required sections in specified order */}

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-22T10:11:41.139Z",
+  "generatedAt": "2026-11-22T10:37:29.019Z",
   "tool": "scripts/verify-citations.mjs",
   "sources": [
     "master = reference/Noujoude_Master_Specification_EN.md (3942 lines)",

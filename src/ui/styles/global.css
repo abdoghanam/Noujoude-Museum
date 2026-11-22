@@ -10,10 +10,10 @@
 
 :root {
   /* §12.2 proposed canonical palette — BA-002 pending, do not treat as adopted brand. */
-  --ndm-color-noir: #111014;
-  --ndm-color-midnight-velvet: #1a151c;
-  --ndm-color-burgundy: #351522;
-  --ndm-color-burgundy-secondary: #552536;
+  --ndm-color-noir: #0a090c;
+  --ndm-color-midnight-velvet: #15101a;
+  --ndm-color-burgundy: #2a1018;
+  --ndm-color-burgundy-secondary: #4a1e2e;
   --ndm-color-champagne: #c6a56b;
   --ndm-color-champagne-soft: #dfc99e;
   --ndm-color-ivory: #f3ebdd;
@@ -28,6 +28,7 @@
   --ndm-surface-raised: var(--ndm-color-midnight-velvet);
   --ndm-surface-exhibition: var(--ndm-color-burgundy);
   --ndm-surface-glass: rgba(216, 217, 213, 0.04);
+  --ndm-surface-velvet: rgba(42, 16, 24, 0.3);
   --ndm-text-primary: var(--ndm-color-ivory);
   --ndm-text-secondary: var(--ndm-color-muted-stone);
   --ndm-text-tertiary: var(--ndm-color-museum-glass);
@@ -38,8 +39,7 @@
   /* §12.5 type roles — Arabic falls back to system Arabic stack (Tajawal licensed-unresolved, OID-18). */
   --ndm-font-display: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
   --ndm-font-body: "Inter", "Segoe UI", Helvetica, sans-serif;
-  --ndm-font-arabic-display:
-    "Tajawal", "Noto Naskh Arabic", "Traditional Arabic", serif;
+  --ndm-font-arabic-display: "Tajawal", "Noto Naskh Arabic", "Traditional Arabic", serif;
   --ndm-font-arabic-body: "Tajawal", "Noto Sans Arabic", "Segoe UI", sans-serif;
 
   /* §12.13 motion timing table */
@@ -62,6 +62,12 @@
   --ndm-measure-wide: 72rem;
   --ndm-radius: 0;
   --ndm-border-thin: 1px;
+
+  /* Museum depth */
+  --ndm-shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.3);
+  --ndm-shadow-deep: 0 20px 60px rgba(0, 0, 0, 0.5);
+  --ndm-shadow-glow: 0 0 40px rgba(198, 165, 107, 0.08);
+  --ndm-shadow-candle: 0 0 80px rgba(198, 165, 107, 0.04);
 }
 
 *,
@@ -86,7 +92,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Candlelight grain overlay — applied to body via ::before */
+/* Candlelight grain overlay */
 body::before {
   content: "";
   position: fixed;
@@ -140,7 +146,7 @@ a:hover {
   font-family: var(--ndm-font-arabic-display);
 }
 
-/* Fade-in animation for page content */
+/* Fade-in animation */
 @keyframes ndm-fade-in {
   from {
     opacity: 0;
@@ -153,15 +159,7 @@ a:hover {
 }
 
 .ndm-fade-in {
-  animation: ndm-fade-in var(--ndm-duration-slow-reveal)
-    var(--ndm-easing-cinematic) both;
-}
-
-/* Candlelight glow effect */
-.ndm-glow {
-  box-shadow:
-    0 0 40px rgba(198, 165, 107, 0.08),
-    0 0 80px rgba(198, 165, 107, 0.04);
+  animation: ndm-fade-in var(--ndm-duration-slow-reveal) var(--ndm-easing-cinematic) both;
 }
 
 /* Reduced motion */

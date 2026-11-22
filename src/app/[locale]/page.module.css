@@ -67,6 +67,14 @@
   max-inline-size: 50rem;
 }
 
+.heroMedia {
+  position: relative;
+  z-index: 1;
+  margin-block-start: var(--ndm-space-4);
+  max-inline-size: 60rem;
+  width: 100%;
+}
+
 .heroEyebrow {
   font-family: var(--ndm-font-body);
   font-size: 0.75rem;
