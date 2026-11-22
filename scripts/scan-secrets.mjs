@@ -48,7 +48,9 @@ function walk(dir) {
               line.includes("change-me")
             )
               continue;
-            findings.push(`${relative(ROOT, full)}: ${line.trim().slice(0, 80)}`);
+            findings.push(
+              `${relative(ROOT, full)}: ${line.trim().slice(0, 80)}`,
+            );
             break;
           }
         }

@@ -4,8 +4,10 @@ test.describe("image viewer", () => {
   test("dialog opens on click and closes on Escape", async ({ page }) => {
     await page.goto("/en");
     // Find any image that opens the viewer
-    const trigger = page.locator("button[aria-label*='View larger image']").first();
-    if (await trigger.count() === 0) {
+    const trigger = page
+      .locator("button[aria-label*='View larger image']")
+      .first();
+    if ((await trigger.count()) === 0) {
       test.skip();
       return;
     }
@@ -18,8 +20,10 @@ test.describe("image viewer", () => {
 
   test("dialog has accessible name", async ({ page }) => {
     await page.goto("/en");
-    const trigger = page.locator("button[aria-label*='View larger image']").first();
-    if (await trigger.count() === 0) {
+    const trigger = page
+      .locator("button[aria-label*='View larger image']")
+      .first();
+    if ((await trigger.count()) === 0) {
       test.skip();
       return;
     }
@@ -29,8 +33,10 @@ test.describe("image viewer", () => {
 
   test("close button works", async ({ page }) => {
     await page.goto("/en");
-    const trigger = page.locator("button[aria-label*='View larger image']").first();
-    if (await trigger.count() === 0) {
+    const trigger = page
+      .locator("button[aria-label*='View larger image']")
+      .first();
+    if ((await trigger.count()) === 0) {
       test.skip();
       return;
     }
