@@ -19,8 +19,17 @@ export interface MuseumSceneProps extends HTMLAttributes<HTMLElement> {
   readonly subtitle?: string;
 }
 
-export function MuseumScene({ scene, title, subtitle, className, children, ...rest }: MuseumSceneProps) {
-  const classes = [styles.scene, styles[scene], className].filter(Boolean).join(" ");
+export function MuseumScene({
+  scene,
+  title,
+  subtitle,
+  className,
+  children,
+  ...rest
+}: MuseumSceneProps) {
+  const classes = [styles.scene, styles[scene], className]
+    .filter(Boolean)
+    .join(" ");
   return (
     <section className={classes} {...rest}>
       {title ? (
@@ -29,9 +38,7 @@ export function MuseumScene({ scene, title, subtitle, className, children, ...re
           {subtitle ? <p className={styles.sceneSubtitle}>{subtitle}</p> : null}
         </header>
       ) : null}
-      <div className={styles.sceneContent}>
-        {children}
-      </div>
+      <div className={styles.sceneContent}>{children}</div>
     </section>
   );
 }
