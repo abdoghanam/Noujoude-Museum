@@ -31,7 +31,9 @@ function Pedestal() {
 
 function Artifact() {
   const meshRef = useRef<THREE.Mesh>(null);
-  const prefersReduced = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const prefersReduced =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   useFrame((_, delta) => {
     if (meshRef.current && !prefersReduced) {
@@ -40,7 +42,11 @@ function Artifact() {
   });
 
   return (
-    <Float speed={prefersReduced ? 0 : 1} rotationIntensity={prefersReduced ? 0 : 0.2} floatIntensity={prefersReduced ? 0 : 0.5}>
+    <Float
+      speed={prefersReduced ? 0 : 1}
+      rotationIntensity={prefersReduced ? 0 : 0.2}
+      floatIntensity={prefersReduced ? 0 : 0.5}
+    >
       <mesh ref={meshRef} position={[0, 0.5, 0]}>
         <boxGeometry args={[1, 1, 1]} />
         <meshStandardMaterial

@@ -1,7 +1,11 @@
 // Lifecycle Manager — Noujoude Experience Engine
 // Manages scene lifecycle states with proper cleanup.
 
-import type { SceneLifecycleState, SceneLifecycleManager, MuseumSceneDefinition } from "../contracts/scene-contract";
+import type {
+  SceneLifecycleState,
+  SceneLifecycleManager,
+  MuseumSceneDefinition,
+} from "../contracts/scene-contract";
 import { getScene } from "./scene-registry";
 
 export interface SceneCleanupCallback {
@@ -30,18 +34,30 @@ export function createLifecycleManager(): SceneLifecycleManager & {
       if (!scene) throw new Error(`Scene "${sceneId}" not registered.`);
 
       const currentState = states.get(sceneId);
-      if (currentState?.status === "loaded" || currentState?.status === "active") return;
+      if (
+        currentState?.status === "loaded" ||
+        currentState?.status === "active"
+      )
+        return;
 
       // Deduplicate concurrent loads
       const existingPromise = loadingPromises.get(sceneId);
       if (existingPromise) return existingPromise;
 
       const loadPromise = (async () => {
-        states.set(sceneId, { id: sceneId, status: "loading", loadedAt: Date.now() });
+        states.set(sceneId, {
+          id: sceneId,
+          status: "loading",
+          loadedAt: Date.now(),
+        });
 
         try {
           await scene.loader();
-          states.set(sceneId, { id: sceneId, status: "loaded", loadedAt: Date.now() });
+          states.set(sceneId, {
+            id: sceneId,
+            status: "loaded",
+            loadedAt: Date.now(),
+          });
         } catch (error) {
           states.set(sceneId, {
             id: sceneId,
@@ -63,7 +79,11 @@ export function createLifecycleManager(): SceneLifecycleManager & {
         await this.load(sceneId);
       }
 
-      const updatedState: SceneLifecycleState = { id: sceneId, status: "active", activatedAt: Date.now() };
+      const updatedState: SceneLifecycleState = {
+        id: sceneId,
+        status: "active",
+        activatedAt: Date.now(),
+      };
       const current = states.get(sceneId);
       if (current?.loadedAt !== undefined) {
         (updatedState as { loadedAt?: number }).loadedAt = current.loadedAt;
@@ -82,7 +102,10 @@ export function createLifecycleManager(): SceneLifecycleManager & {
         await Promise.allSettled(Array.from(callbacks).map((cb) => cb()));
       }
 
-      const updatedState: SceneLifecycleState = { id: sceneId, status: "loaded" };
+      const updatedState: SceneLifecycleState = {
+        id: sceneId,
+        status: "loaded",
+      };
       if (state.loadedAt !== undefined) {
         (updatedState as { loadedAt?: number }).loadedAt = state.loadedAt;
       }

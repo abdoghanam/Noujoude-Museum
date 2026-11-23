@@ -55,7 +55,9 @@ export function getAllScenes() {
   return sceneRegistry.getAll();
 }
 
-export function getScenesByPriority(priority: "critical" | "normal" | "deferred") {
+export function getScenesByPriority(
+  priority: "critical" | "normal" | "deferred",
+) {
   return sceneRegistry.getByPriority(priority);
 }
 

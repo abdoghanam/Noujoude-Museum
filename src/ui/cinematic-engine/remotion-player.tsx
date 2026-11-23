@@ -30,7 +30,17 @@ export function RemotionPlayer({
 
   if (!def) {
     return (
-      <div className={className} style={{ minHeight: "300px", display: "flex", justifyContent: "center", alignItems: "center", backgroundColor: "#0a090c", color: "#9d9184" }}>
+      <div
+        className={className}
+        style={{
+          minHeight: "300px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#0a090c",
+          color: "#9d9184",
+        }}
+      >
         Composition &quot;{compositionId}&quot; not found.
       </div>
     );
@@ -38,7 +48,17 @@ export function RemotionPlayer({
 
   if (!mounted) {
     return (
-      <div className={className} style={{ minHeight: "300px", display: "flex", justifyContent: "center", alignItems: "center", backgroundColor: "#0a090c", color: "#9d9184" }}>
+      <div
+        className={className}
+        style={{
+          minHeight: "300px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#0a090c",
+          color: "#9d9184",
+        }}
+      >
         Loading cinematic...
       </div>
     );
@@ -55,7 +75,11 @@ export function RemotionPlayer({
         compositionWidth={def.width}
         compositionHeight={def.height}
         inputProps={inputProps}
-        style={{ width: "100%", height: "auto", aspectRatio: `${def.width}/${def.height}` }}
+        style={{
+          width: "100%",
+          height: "auto",
+          aspectRatio: `${def.width}/${def.height}`,
+        }}
         autoPlay={autoPlay}
         loop={loop}
         controls

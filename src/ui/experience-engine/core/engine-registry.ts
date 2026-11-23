@@ -2,7 +2,12 @@
 // Central registry for all rendering engines.
 // Instance-level storage (not module-level) for proper isolation.
 
-import type { ExperienceEngine, EngineRegistry, EngineCapabilities, EngineStatus } from "../contracts/engine-contract";
+import type {
+  ExperienceEngine,
+  EngineRegistry,
+  EngineCapabilities,
+  EngineStatus,
+} from "../contracts/engine-contract";
 
 export interface EngineHealthStatus {
   readonly engineId: string;
@@ -23,10 +28,14 @@ export function createEngineRegistry(): EngineRegistry & {
       const existing = engines.get(engine.id);
       if (existing) {
         if (existing.status === "ready" || existing.status === "initializing") {
-          console.warn(`Engine "${engine.id}" is already active (status: ${existing.status}). Registration rejected.`);
+          console.warn(
+            `Engine "${engine.id}" is already active (status: ${existing.status}). Registration rejected.`,
+          );
           return;
         }
-        console.warn(`Engine "${engine.id}" was in state "${existing.status}". Replacing.`);
+        console.warn(
+          `Engine "${engine.id}" was in state "${existing.status}". Replacing.`,
+        );
       }
       engines.set(engine.id, engine);
       healthStatuses.set(engine.id, {
@@ -36,8 +45,13 @@ export function createEngineRegistry(): EngineRegistry & {
     },
     unregister(engineId: string) {
       const engine = engines.get(engineId);
-      if (engine && (engine.status === "ready" || engine.status === "initializing")) {
-        console.warn(`Cannot unregister active engine "${engineId}" (status: ${engine.status}). Dispose first.`);
+      if (
+        engine &&
+        (engine.status === "ready" || engine.status === "initializing")
+      ) {
+        console.warn(
+          `Cannot unregister active engine "${engineId}" (status: ${engine.status}). Dispose first.`,
+        );
         return;
       }
       engines.delete(engineId);
@@ -63,7 +77,8 @@ export function createEngineRegistry(): EngineRegistry & {
             healthStatuses.set(engine.id, {
               engineId: engine.id,
               status: "error",
-              lastError: error instanceof Error ? error : new Error(String(error)),
+              lastError:
+                error instanceof Error ? error : new Error(String(error)),
             });
             throw error;
           }
@@ -74,7 +89,10 @@ export function createEngineRegistry(): EngineRegistry & {
       results.forEach((result, index) => {
         if (result.status === "rejected") {
           const engineId = Array.from(engines.keys())[index];
-          console.error(`Engine "${engineId}" failed to initialize:`, result.reason);
+          console.error(
+            `Engine "${engineId}" failed to initialize:`,
+            result.reason,
+          );
         }
       });
     },
@@ -91,7 +109,8 @@ export function createEngineRegistry(): EngineRegistry & {
             healthStatuses.set(engine.id, {
               engineId: engine.id,
               status: "error",
-              lastError: error instanceof Error ? error : new Error(String(error)),
+              lastError:
+                error instanceof Error ? error : new Error(String(error)),
             });
             throw error;
           }
@@ -101,7 +120,10 @@ export function createEngineRegistry(): EngineRegistry & {
       results.forEach((result, index) => {
         if (result.status === "rejected") {
           const engineId = Array.from(engines.keys())[index];
-          console.error(`Engine "${engineId}" failed to dispose:`, result.reason);
+          console.error(
+            `Engine "${engineId}" failed to dispose:`,
+            result.reason,
+          );
         }
       });
     },

@@ -34,11 +34,16 @@ export function registerComposition(def: CompositionDefinition): void {
   registry.set(def.id, def);
 }
 
-export function getComposition(id: CompositionId): CompositionDefinition | undefined {
+export function getComposition(
+  id: CompositionId,
+): CompositionDefinition | undefined {
   return registry.get(id);
 }
 
-export function getAllCompositions(): ReadonlyMap<CompositionId, CompositionDefinition> {
+export function getAllCompositions(): ReadonlyMap<
+  CompositionId,
+  CompositionDefinition
+> {
   return registry;
 }
 
