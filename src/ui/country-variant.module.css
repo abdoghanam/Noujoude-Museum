@@ -164,7 +164,8 @@
 
 /* Country-specific border accents */
 .countryVariant {
-  border-inline-start: 2px solid var(--country-border, var(--ndm-color-museum-glass));
+  border-inline-start: 2px solid
+    var(--country-border, var(--ndm-color-museum-glass));
 }
 
 @media (prefers-reduced-motion: reduce) {

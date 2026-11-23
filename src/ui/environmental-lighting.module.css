@@ -167,10 +167,19 @@
 }
 
 @keyframes candleFlicker {
-  0%, 100% { opacity: 0.8; }
-  25% { opacity: 0.9; }
-  50% { opacity: 0.75; }
-  75% { opacity: 0.85; }
+  0%,
+  100% {
+    opacity: 0.8;
+  }
+  25% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 0.75;
+  }
+  75% {
+    opacity: 0.85;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -191,9 +200,21 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse at 50% 0%, rgba(198, 165, 107, 0.06) 0%, transparent 50%),
-    radial-gradient(ellipse at 20% 80%, rgba(42, 16, 24, 0.15) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 80%, rgba(42, 16, 24, 0.1) 0%, transparent 50%);
+    radial-gradient(
+      ellipse at 50% 0%,
+      rgba(198, 165, 107, 0.06) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at 20% 80%,
+      rgba(42, 16, 24, 0.15) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at 80% 80%,
+      rgba(42, 16, 24, 0.1) 0%,
+      transparent 50%
+    );
   pointer-events: none;
   z-index: 0;
 }
