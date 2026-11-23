@@ -1,7 +1,8 @@
 // Engine Contract — Noujoude Experience Engine
 // Defines the contract for all rendering engines.
 
-export type EngineStatus = "uninitialized" | "initializing" | "ready" | "error" | "disposed";
+export type EngineStatus =
+  "uninitialized" | "initializing" | "ready" | "error" | "disposed";
 
 export interface EngineCapabilities {
   readonly webgl: boolean;

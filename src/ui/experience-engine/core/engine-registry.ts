@@ -1,7 +1,11 @@
 // Engine Registry — Noujoude Experience Engine
 // Central registry for all rendering engines.
 
-import type { ExperienceEngine, EngineRegistry, EngineCapabilities } from "../contracts/engine-contract";
+import type {
+  ExperienceEngine,
+  EngineRegistry,
+  EngineCapabilities,
+} from "../contracts/engine-contract";
 
 const engines = new Map<string, ExperienceEngine>();
 
@@ -9,7 +13,9 @@ export function createEngineRegistry(): EngineRegistry {
   return {
     register(engine: ExperienceEngine) {
       if (engines.has(engine.id)) {
-        console.warn(`Engine "${engine.id}" is already registered. Overwriting.`);
+        console.warn(
+          `Engine "${engine.id}" is already registered. Overwriting.`,
+        );
       }
       engines.set(engine.id, engine);
     },
@@ -33,13 +39,15 @@ export function createEngineRegistry(): EngineRegistry {
       await Promise.allSettled(initPromises);
     },
     async disposeAll() {
-      const disposePromises = Array.from(engines.values()).map(async (engine) => {
-        try {
-          await engine.dispose();
-        } catch (error) {
-          console.error(`Failed to dispose engine "${engine.id}":`, error);
-        }
-      });
+      const disposePromises = Array.from(engines.values()).map(
+        async (engine) => {
+          try {
+            await engine.dispose();
+          } catch (error) {
+            console.error(`Failed to dispose engine "${engine.id}":`, error);
+          }
+        },
+      );
       await Promise.allSettled(disposePromises);
     },
   };

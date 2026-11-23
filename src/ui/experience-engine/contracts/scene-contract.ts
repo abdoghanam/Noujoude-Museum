@@ -27,7 +27,8 @@ export interface MuseumSceneDefinition {
 
 export interface SceneLifecycleState {
   readonly id: string;
-  readonly status: "unloaded" | "loading" | "loaded" | "active" | "deactivating" | "disposed";
+  readonly status:
+    "unloaded" | "loading" | "loaded" | "active" | "deactivating" | "disposed";
   readonly loadedAt?: number;
   readonly activatedAt?: number;
   readonly disposedAt?: number;

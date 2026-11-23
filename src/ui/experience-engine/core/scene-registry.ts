@@ -24,10 +24,14 @@ export function getAllScenes(): ReadonlyMap<string, MuseumSceneDefinition> {
   return scenes;
 }
 
-export function getScenesByPriority(priority: "critical" | "normal" | "deferred"): MuseumSceneDefinition[] {
+export function getScenesByPriority(
+  priority: "critical" | "normal" | "deferred",
+): MuseumSceneDefinition[] {
   return Array.from(scenes.values()).filter((s) => s.priority === priority);
 }
 
-export function getScenesByType(type: "2d" | "3d" | "cinematic" | "hybrid"): MuseumSceneDefinition[] {
+export function getScenesByType(
+  type: "2d" | "3d" | "cinematic" | "hybrid",
+): MuseumSceneDefinition[] {
   return Array.from(scenes.values()).filter((s) => s.type === type);
 }

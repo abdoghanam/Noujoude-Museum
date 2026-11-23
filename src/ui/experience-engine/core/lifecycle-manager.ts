@@ -1,7 +1,11 @@
 // Lifecycle Manager — Noujoude Experience Engine
 // Manages scene lifecycle states.
 
-import type { SceneLifecycleState, SceneLifecycleManager, MuseumSceneDefinition } from "../contracts/scene-contract";
+import type {
+  SceneLifecycleState,
+  SceneLifecycleManager,
+  MuseumSceneDefinition,
+} from "../contracts/scene-contract";
 import { getScene } from "./scene-registry";
 
 const states = new Map<string, SceneLifecycleState>();
@@ -24,7 +28,10 @@ export function createLifecycleManager(): SceneLifecycleManager {
       }
 
       const currentState = states.get(sceneId);
-      if (currentState?.status === "loaded" || currentState?.status === "active") {
+      if (
+        currentState?.status === "loaded" ||
+        currentState?.status === "active"
+      ) {
         return;
       }
 
@@ -84,7 +91,8 @@ export function createLifecycleManager(): SceneLifecycleManager {
         (updatedState as { loadedAt?: number }).loadedAt = state.loadedAt;
       }
       if (state.activatedAt !== undefined) {
-        (updatedState as { activatedAt?: number }).activatedAt = state.activatedAt;
+        (updatedState as { activatedAt?: number }).activatedAt =
+          state.activatedAt;
       }
       states.set(sceneId, updatedState);
     },
