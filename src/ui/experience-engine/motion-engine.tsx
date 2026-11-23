@@ -15,7 +15,11 @@ export interface MotionEngineProps {
  * Wraps children in a motion context that applies the correct
  * animation class based on the scene ID. Supports reduced motion.
  */
-export function MotionEngine({ children, sceneId, className }: MotionEngineProps) {
+export function MotionEngine({
+  children,
+  sceneId,
+  className,
+}: MotionEngineProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

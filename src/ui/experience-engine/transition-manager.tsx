@@ -8,7 +8,10 @@ export interface TransitionManagerProps {
   readonly className?: string;
 }
 
-export function TransitionManager({ children, className }: TransitionManagerProps) {
+export function TransitionManager({
+  children,
+  className,
+}: TransitionManagerProps) {
   const { state } = useSceneManager();
 
   const transitionClass = state.isTransitioning

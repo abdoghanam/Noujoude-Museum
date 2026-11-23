@@ -33,9 +33,7 @@ export function lazyLoad(
  * Preload a component for anticipated navigation.
  * Call this on hover/focus to warm the cache.
  */
-export function preloadComponent(
-  importFn: () => Promise<unknown>,
-): void {
+export function preloadComponent(importFn: () => Promise<unknown>): void {
   importFn().catch(() => {
     // Silently fail — preload is best-effort
   });

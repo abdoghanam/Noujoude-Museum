@@ -21,17 +21,24 @@ export interface SceneState {
 
 export interface SceneManagerContextValue {
   readonly state: SceneState;
-  readonly navigateTo: (scene: SceneID, direction?: "forward" | "backward") => void;
+  readonly navigateTo: (
+    scene: SceneID,
+    direction?: "forward" | "backward",
+  ) => void;
   readonly canGoBack: boolean;
   readonly goBack: () => void;
 }
 
-const SceneManagerContext = createContext<SceneManagerContextValue | null>(null);
+const SceneManagerContext = createContext<SceneManagerContextValue | null>(
+  null,
+);
 
 export function useSceneManager(): SceneManagerContextValue {
   const ctx = useContext(SceneManagerContext);
   if (!ctx) {
-    throw new Error("useSceneManager must be used within a SceneManagerProvider");
+    throw new Error(
+      "useSceneManager must be used within a SceneManagerProvider",
+    );
   }
   return ctx;
 }

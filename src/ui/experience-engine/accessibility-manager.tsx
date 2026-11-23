@@ -39,7 +39,12 @@ export function AccessibilityManager({ children }: AccessibilityManagerProps) {
 
   return (
     <>
-      <div ref={liveRegionRef} aria-live="polite" aria-atomic="true" className="sr-only" />
+      <div
+        ref={liveRegionRef}
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      />
       {children}
     </>
   );
