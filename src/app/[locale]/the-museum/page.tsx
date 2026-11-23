@@ -10,6 +10,8 @@ import { Text } from "@/ui/text";
 
 import { MuseumScene } from "@/ui/museum-scene";
 import { Scene3D } from "@/ui/scene-3d";
+import { RemotionPlayer } from "@/ui/cinematic-engine";
+import { Lazy3DScene } from "@/ui/spatial-engine";
 import styles from "@/app/[locale]/the-museum/page.module.css";
 import lightingStyles from "@/ui/environmental-lighting.module.css";
 
@@ -27,6 +29,12 @@ export default async function TheMuseumPage({
 
   return (
     <PageShell route={ROUTE} locale={resolved}>
+      <MuseumScene scene="entrance" title="Museum Entrance">
+        <div style={{ width: "100%", maxWidth: "80rem", margin: "0 auto" }}>
+          <RemotionPlayer composition="MuseumEntrance" autoPlay loop={false} />
+        </div>
+      </MuseumScene>
+
       <MuseumScene scene="lobby" title="The Museum">
         <Text variant="secondary">
           An interpretive orientation into the Noujoude Digital Heritage Museum.
@@ -70,6 +78,7 @@ export default async function TheMuseumPage({
       <MuseumScene scene="archive" title="Museum Atmosphere">
         <div className={lightingStyles.museumAtmosphere}>
           <MediaSlotGroup views={slotViewsFor(ROUTE, resolved)} />
+          <Lazy3DScene scene="rare-pieces" />
           <Scene3D>
             <div
               className={lightingStyles.candleGlow}
