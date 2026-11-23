@@ -58,7 +58,8 @@
   inline-size: 100%;
   block-size: auto;
   object-fit: contain;
-  transition: transform var(--ndm-duration-cinematic) var(--ndm-easing-cinematic);
+  transition: transform var(--ndm-duration-cinematic)
+    var(--ndm-easing-cinematic);
 }
 
 .exhibitImageFrame:hover img {
@@ -262,7 +263,8 @@
 .relatedCard {
   border: 1px solid var(--ndm-color-museum-glass);
   padding: var(--ndm-space-2);
-  transition: border-color var(--ndm-duration-standard) var(--ndm-easing-default),
+  transition:
+    border-color var(--ndm-duration-standard) var(--ndm-easing-default),
     transform var(--ndm-duration-standard) var(--ndm-easing-default);
 }
 
@@ -294,7 +296,8 @@
 .dramaticReveal {
   opacity: 0;
   transform: translateY(3rem) scale(0.98);
-  animation: dramaticReveal var(--ndm-duration-cinematic) var(--ndm-easing-cinematic) forwards;
+  animation: dramaticReveal var(--ndm-duration-cinematic)
+    var(--ndm-easing-cinematic) forwards;
 }
 
 @keyframes dramaticReveal {

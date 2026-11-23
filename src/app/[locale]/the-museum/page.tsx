@@ -71,7 +71,10 @@ export default async function TheMuseumPage({
         <div className={lightingStyles.museumAtmosphere}>
           <MediaSlotGroup views={slotViewsFor(ROUTE, resolved)} />
           <Scene3D>
-            <div className={lightingStyles.candleGlow} style={{ textAlign: "center", padding: "2rem" }}>
+            <div
+              className={lightingStyles.candleGlow}
+              style={{ textAlign: "center", padding: "2rem" }}
+            >
               <Heading level={3}>Nocturnal Elegance</Heading>
               <Text variant="secondary">Heritage Under Candlelight</Text>
             </div>

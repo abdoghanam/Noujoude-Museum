@@ -15,7 +15,8 @@
   padding-block: var(--ndm-space-6);
   padding-inline: var(--ndm-space-4);
   border-block-end: 1px solid var(--ndm-color-museum-glass);
-  transition: background-color var(--ndm-duration-slow-reveal) var(--ndm-easing-cinematic);
+  transition: background-color var(--ndm-duration-slow-reveal)
+    var(--ndm-easing-cinematic);
 }
 
 .narrativeChapter:first-child {
@@ -71,7 +72,8 @@
   display: block;
   inline-size: 100%;
   block-size: auto;
-  transition: transform var(--ndm-duration-cinematic) var(--ndm-easing-cinematic);
+  transition: transform var(--ndm-duration-cinematic)
+    var(--ndm-easing-cinematic);
 }
 
 .chapterImage:hover img {
@@ -92,7 +94,8 @@
 .chapterTransition {
   opacity: 0;
   transform: translateY(2rem);
-  animation: chapterReveal var(--ndm-duration-cinematic) var(--ndm-easing-cinematic) forwards;
+  animation: chapterReveal var(--ndm-duration-cinematic)
+    var(--ndm-easing-cinematic) forwards;
 }
 
 @keyframes chapterReveal {
@@ -124,7 +127,8 @@
   block-size: 0.5rem;
   border-radius: 50%;
   background: var(--ndm-color-museum-glass);
-  transition: background-color var(--ndm-duration-standard) var(--ndm-easing-default),
+  transition:
+    background-color var(--ndm-duration-standard) var(--ndm-easing-default),
     transform var(--ndm-duration-standard) var(--ndm-easing-default);
 }
 
@@ -144,7 +148,8 @@
 .relatedObject {
   border: 1px solid var(--ndm-color-museum-glass);
   padding: var(--ndm-space-3);
-  transition: border-color var(--ndm-duration-standard) var(--ndm-easing-default),
+  transition:
+    border-color var(--ndm-duration-standard) var(--ndm-easing-default),
     transform var(--ndm-duration-standard) var(--ndm-easing-default);
 }
 

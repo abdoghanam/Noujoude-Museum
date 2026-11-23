@@ -62,14 +62,19 @@
 }
 
 @keyframes corridorLightMove {
-  0% { inset-inline-start: -20%; }
-  100% { inset-inline-start: 120%; }
+  0% {
+    inset-inline-start: -20%;
+  }
+  100% {
+    inset-inline-start: 120%;
+  }
 }
 
 /* Scene reveal — fade in from darkness */
 .sceneReveal {
   opacity: 0;
-  animation: sceneReveal var(--ndm-duration-cinematic) var(--ndm-easing-cinematic) forwards;
+  animation: sceneReveal var(--ndm-duration-cinematic)
+    var(--ndm-easing-cinematic) forwards;
 }
 
 @keyframes sceneReveal {
@@ -85,7 +90,8 @@
 
 /* Scene fade out — dissolve to next */
 .sceneFadeOut {
-  animation: sceneFadeOut var(--ndm-duration-standard) var(--ndm-easing-default) forwards;
+  animation: sceneFadeOut var(--ndm-duration-standard) var(--ndm-easing-default)
+    forwards;
 }
 
 @keyframes sceneFadeOut {
@@ -115,7 +121,8 @@
     transparent 100%
   );
   transform-origin: inline-start;
-  animation: archiveDoorOpen var(--ndm-duration-cinematic) var(--ndm-easing-cinematic) forwards;
+  animation: archiveDoorOpen var(--ndm-duration-cinematic)
+    var(--ndm-easing-cinematic) forwards;
   z-index: 1;
   pointer-events: none;
 }
@@ -132,7 +139,8 @@
     transparent 100%
   );
   transform-origin: inline-end;
-  animation: archiveDoorOpen var(--ndm-duration-cinematic) var(--ndm-easing-cinematic) forwards;
+  animation: archiveDoorOpen var(--ndm-duration-cinematic)
+    var(--ndm-easing-cinematic) forwards;
   z-index: 1;
   pointer-events: none;
 }
@@ -159,7 +167,8 @@
   position: absolute;
   inset: 0;
   background: var(--ndm-surface-page);
-  animation: curtainLift var(--ndm-duration-cinematic) var(--ndm-easing-cinematic) forwards;
+  animation: curtainLift var(--ndm-duration-cinematic)
+    var(--ndm-easing-cinematic) forwards;
   z-index: 1;
   pointer-events: none;
 }
@@ -188,7 +197,8 @@
     transparent 0%,
     var(--ndm-surface-page) 0%
   );
-  animation: spotlightExpand var(--ndm-duration-cinematic) var(--ndm-easing-cinematic) forwards;
+  animation: spotlightExpand var(--ndm-duration-cinematic)
+    var(--ndm-easing-cinematic) forwards;
   z-index: 1;
   pointer-events: none;
 }

@@ -40,7 +40,9 @@ export default async function ArtifactDetailPage({
         <div className={exhibitStyles.metadataArea}>
           <div className={exhibitStyles.objectIdentity}>
             <h2 className={exhibitStyles.objectTitle}>Artifact</h2>
-            <span className={exhibitStyles.objectIdentifier}>NDM-AST — — —</span>
+            <span className={exhibitStyles.objectIdentifier}>
+              NDM-AST — — —
+            </span>
           </div>
           <div className={exhibitStyles.metadataSection}>
             <span className={exhibitStyles.metadataLabel}>Object Type</span>
@@ -56,7 +58,8 @@ export default async function ArtifactDetailPage({
           </div>
           <div className={exhibitStyles.curatorNote}>
             <span className={exhibitStyles.curatorNoteLabel}>Curator Note</span>
-            Curatorial interpretation will appear here when artifact records are published.
+            Curatorial interpretation will appear here when artifact records are
+            published.
           </div>
         </div>
       </div>

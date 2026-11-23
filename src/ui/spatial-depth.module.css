@@ -13,7 +13,8 @@
 .parallaxLayer {
   position: relative;
   will-change: transform;
-  transition: transform var(--ndm-duration-slow-reveal) var(--ndm-easing-default);
+  transition: transform var(--ndm-duration-slow-reveal)
+    var(--ndm-easing-default);
 }
 
 /* Foreground layer — closest to viewer */
@@ -159,7 +160,8 @@
 .floatingElement {
   transform: translateY(-4px);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-  transition: transform var(--ndm-duration-standard) var(--ndm-easing-default),
+  transition:
+    transform var(--ndm-duration-standard) var(--ndm-easing-default),
     box-shadow var(--ndm-duration-standard) var(--ndm-easing-default);
 }
 

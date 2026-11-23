@@ -97,7 +97,8 @@
   background: var(--ndm-surface-page);
   border: 1px solid var(--ndm-color-museum-glass);
   padding: var(--ndm-space-3);
-  transition: border-color var(--ndm-duration-standard) var(--ndm-easing-default),
+  transition:
+    border-color var(--ndm-duration-standard) var(--ndm-easing-default),
     transform var(--ndm-duration-standard) var(--ndm-easing-default),
     box-shadow var(--ndm-duration-standard) var(--ndm-easing-default);
 }
@@ -121,7 +122,8 @@
   inline-size: 100%;
   block-size: 100%;
   object-fit: contain;
-  transition: transform var(--ndm-duration-cinematic) var(--ndm-easing-cinematic);
+  transition: transform var(--ndm-duration-cinematic)
+    var(--ndm-easing-cinematic);
 }
 
 .exhibitFrame:hover .exhibitImage img {

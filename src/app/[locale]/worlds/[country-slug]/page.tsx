@@ -27,7 +27,11 @@ export default async function CountryDetailPage({
 
   return (
     <DetailPage route={ROUTE} locale={resolved} slug={slug} kind="country">
-      <MuseumScene scene="gallery" title={`${slug} — Country World`} className={`${countryStyles.countryVariant} ${countryStyles[slug] ?? ""}`}>
+      <MuseumScene
+        scene="gallery"
+        title={`${slug} — Country World`}
+        className={`${countryStyles.countryVariant} ${countryStyles[slug] ?? ""}`}
+      >
         <div className="country-enter">
           <MediaSlotGroup views={slotViewsFor(ROUTE, resolved, slug)} />
         </div>

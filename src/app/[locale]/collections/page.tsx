@@ -64,7 +64,11 @@ export default async function CollectionsPage({
               >
                 <div className={wallStyles.exhibitImage}>
                   <MediaSlotGroup
-                    views={slotViewsFor("collection-detail", resolved, cat.slug)}
+                    views={slotViewsFor(
+                      "collection-detail",
+                      resolved,
+                      cat.slug,
+                    )}
                   />
                 </div>
                 <div className={wallStyles.exhibitLabel}>
