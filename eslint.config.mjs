@@ -70,6 +70,7 @@ export default tseslint.config(
       "Noujoude.photo/**",
       "docs/**",
       "brand/**",
+      "remotion/**",
       // Disposable scratch tooling. Git-ignored at `.gitignore` line 20, so nothing in it is ever
       // committed and nothing in it is part of the product. Measured 2 Nov 2026: a throwaway RAR
       // reconciliation script left there during the archive investigation made `pnpm lint` exit 2

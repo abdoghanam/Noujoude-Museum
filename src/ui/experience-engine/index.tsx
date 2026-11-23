@@ -23,3 +23,10 @@ export type { PerformanceManagerProps } from "./performance-manager";
 
 export { AccessibilityManager } from "./accessibility-manager";
 export type { AccessibilityManagerProps } from "./accessibility-manager";
+
+// Re-export new engines
+export { RemotionPlayer } from "@/ui/cinematic-engine";
+export type { RemotionPlayerProps } from "@/ui/cinematic-engine";
+
+export { Lazy3DScene } from "@/ui/spatial-engine";
+export type { Lazy3DProps } from "@/ui/spatial-engine";
