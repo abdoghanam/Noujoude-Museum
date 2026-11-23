@@ -1,0 +1,214 @@
+/* Environmental lighting system — §12.8
+   Cinematic lighting: candle glow, warm edge lighting, directional museum
+   lighting, reflected highlights, ambient darkness, soft volumetric feeling,
+   glass reflections, brass reflections, velvet materials, parchment illumination.
+*/
+
+/* Volumetric light — soft radial glow from a point source */
+.volumetric {
+  position: relative;
+  overflow: hidden;
+}
+
+.volumetric::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(198, 165, 107, 0.06) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Glass reflection — subtle translucent overlay */
+.glassReflection {
+  position: relative;
+}
+
+.glassReflection::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(216, 217, 213, 0.03) 0%,
+    transparent 40%,
+    rgba(216, 217, 213, 0.02) 60%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Brass reflection — warm metallic highlight */
+.brassReflection {
+  position: relative;
+}
+
+.brassReflection::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: 100%;
+  block-size: 1px;
+  background: linear-gradient(
+    to inline-end,
+    transparent 0%,
+    rgba(198, 165, 107, 0.3) 20%,
+    rgba(223, 201, 158, 0.5) 50%,
+    rgba(198, 165, 107, 0.3) 80%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* Parchment illumination — warm light on paper-like surface */
+.parchmentIllumination {
+  background: linear-gradient(
+    135deg,
+    rgba(229, 216, 195, 0.08) 0%,
+    rgba(229, 216, 195, 0.02) 50%,
+    rgba(229, 216, 195, 0.06) 100%
+  );
+  border: 1px solid rgba(229, 216, 195, 0.1);
+}
+
+/* Velvet material — deep, rich surface */
+.velvetMaterial {
+  background: linear-gradient(
+    to block-end,
+    rgba(42, 16, 24, 0.4) 0%,
+    rgba(42, 16, 24, 0.2) 50%,
+    rgba(42, 16, 24, 0.3) 100%
+  );
+  border: 1px solid rgba(85, 37, 54, 0.3);
+}
+
+/* Warm edge lighting — soft glow at edges */
+.warmEdgeLight {
+  box-shadow:
+    inset 0 1px 0 rgba(198, 165, 107, 0.1),
+    inset 0 -1px 0 rgba(198, 165, 107, 0.05),
+    0 0 40px rgba(198, 165, 107, 0.03);
+}
+
+/* Directional museum lighting — light from one side */
+.directionalLight {
+  position: relative;
+}
+
+.directionalLight::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: 40%;
+  block-size: 100%;
+  background: linear-gradient(
+    to inline-end,
+    rgba(198, 165, 107, 0.04) 0%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* Ambient darkness — deep shadow at edges */
+.ambientDarkness {
+  box-shadow:
+    inset 0 0 80px rgba(0, 0, 0, 0.3),
+    inset 0 0 200px rgba(0, 0, 0, 0.15);
+}
+
+/* Reflected highlights — subtle light bounce */
+.reflectedHighlight {
+  position: relative;
+}
+
+.reflectedHighlight::after {
+  content: "";
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-end: 0;
+  inline-size: 30%;
+  block-size: 30%;
+  background: radial-gradient(
+    ellipse at 100% 100%,
+    rgba(198, 165, 107, 0.04) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* Candle glow — warm, flickering light source */
+.candleGlow {
+  position: relative;
+}
+
+.candleGlow::before {
+  content: "";
+  position: absolute;
+  inset-block-start: -20%;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  inline-size: 60%;
+  block-size: 40%;
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(198, 165, 107, 0.08) 0%,
+    rgba(198, 165, 107, 0.02) 40%,
+    transparent 70%
+  );
+  pointer-events: none;
+  animation: candleFlicker 4s ease-in-out infinite;
+}
+
+@keyframes candleFlicker {
+  0%, 100% { opacity: 0.8; }
+  25% { opacity: 0.9; }
+  50% { opacity: 0.75; }
+  75% { opacity: 0.85; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .candleGlow::before {
+    animation: none;
+    opacity: 0.8;
+  }
+}
+
+/* Combined museum atmosphere — all effects layered */
+.museumAtmosphere {
+  position: relative;
+  overflow: hidden;
+}
+
+.museumAtmosphere::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(198, 165, 107, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 20% 80%, rgba(42, 16, 24, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(42, 16, 24, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.museumAtmosphere::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(216, 217, 213, 0.02) 0%,
+    transparent 40%,
+    rgba(216, 217, 213, 0.01) 60%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}

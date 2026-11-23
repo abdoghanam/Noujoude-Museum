@@ -164,6 +164,21 @@ a:hover {
     var(--ndm-easing-cinematic) both;
 }
 
+/* Volumetric candlelight atmosphere on body */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    ellipse at 50% 20%,
+    rgba(198, 165, 107, 0.04) 0%,
+    transparent 50%
+  );
+  mix-blend-mode: screen;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   :root {
@@ -183,7 +198,8 @@ a:hover {
     scroll-behavior: auto !important;
   }
 
-  body::before {
+  body::before,
+  body::after {
     display: none;
   }
 }
