@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-22T20:59:22.290Z",
+  "generatedAt": "2026-11-23T09:41:32.058Z",
   "tool": "scripts/verify-citations.mjs",
   "sources": [
     "master = reference/Noujoude_Master_Specification_EN.md (3942 lines)",
@@ -29,6 +29,7 @@
     "doc:QUALITY_ACCEPTANCE_FRAMEWORK.md = docs/QUALITY_ACCEPTANCE_FRAMEWORK.md (478 lines)",
     "doc:REQUIREMENTS_TRACEABILITY.md = docs/REQUIREMENTS_TRACEABILITY.md (578 lines)",
     "doc:SECURITY_AND_PERMISSIONS.md = docs/SECURITY_AND_PERMISSIONS.md (928 lines)",
+    "doc:SPEC_IMPLEMENTATION_COMPLIANCE_MATRIX.md = docs/SPEC_IMPLEMENTATION_COMPLIANCE_MATRIX.md (511 lines)",
     "doc:TEST_AND_RELEASE_REPORT.md = docs/TEST_AND_RELEASE_REPORT.md (1127 lines)"
   ],
   "recordedSources": [
@@ -37,19 +38,19 @@
     "gap-csv = reference/Noujoude_Gap_Closure_Register_EN.csv (19 lines)"
   ],
   "summary": {
-    "files": 16,
-    "fragments": 583,
-    "verified": 436,
+    "files": 17,
+    "fragments": 586,
+    "verified": 438,
     "drifted": 0,
     "driftedOtherSource": 0,
     "notFound": 0,
     "selfRecording": 8,
     "projectRecord": 17,
     "definedTerm": 6,
-    "noReference": 122,
+    "noReference": 123,
     "uncitedVerbatim": 0,
     "unmatched": 23,
-    "bareRefs": 1584,
+    "bareRefs": 1586,
     "bareRefDefects": 0
   },
   "interpretation": "VERIFIED = the quotation occurs at (or within a few lines of) a line reference written on the quotation's own markdown line or on the line above/below it inside the same block. Both citation styles are read: `line N` / `(N)` and the registers' declared house style `§11.9 1613–1617`, `G.2 3672`, `Directive 194`. LINE_OFF = genuine quotation, right file, wrong line number. LINE_OFF_OTHER_SOURCE = the quotation exists in a different reference file than the line attributes it to. SELF_RECORDING = the quoted text is a value this project recorded in its own audit registers, or a cell of the Owner's gap-closure register; those carry no requirement line number, so this is a class, not a defect. DEFINED_TERM = a short (≤ 8 token) controlled-vocabulary label with no nearby number, where this same document cites the exact source line the label was found on — the term is anchored once at its definition and repeated as vocabulary, which is not a missing citation. NOT_FOUND = no requirement source contains the quotation; treat as suspect and either restore the source wording or rewrite it as a paraphrase without quotation marks. NO_LINE_REFERENCE = quoted material with no nearby line number, which includes this repository's own vocabulary and is not a citation; when it is verbatim requirement text it is additionally listed as uncited verbatim. Elided quotations (ellipsis or bracketed note) are matched by their surviving runs in order inside a three-line window, so an honest truncated quote is not mistaken for a fabricated one. Quoted strings of fewer than three tokens are skipped (summary.unmatched). SEPARATELY, summary.bareRefs counts the line references that sit on lines carrying no quotation at all — citations made by paraphrase plus number, which the quotation pass cannot see. Each is tested for the claims a number makes without any text to match: REF_PAST_END (no bindable source is that long), REF_BLANK_TARGET (the line named is empty in every candidate), REF_SECTION_MISMATCH (the citation names a section that its source has, and the line lies outside it), REF_SECTION_UNKNOWN (the citation names a section absent from every bindable structured source). These are defects, not classes: a line reference that does not resolve, or that puts a line inside the wrong section, is a citation this repository cannot stand behind. What no check here asserts is that the paraphrase summarises the line correctly — that needs the text or a reader, and neither is simulated. A bare parenthesised `(N)` is excluded from this pass on quote-less lines, where it is indistinguishable from a year or a quantity.",
@@ -8564,6 +8565,65 @@
         "noReference": 3,
         "uncitedVerbatim": 0,
         "ref_ok": 148,
+        "ref_defects": 0
+      }
+    },
+    {
+      "file": "docs/SPEC_IMPLEMENTATION_COMPLIANCE_MATRIX.md",
+      "checks": [
+        {
+          "docLine": 28,
+          "fragment": "no commerce UI on any route",
+          "status": "NO_LINE_REFERENCE",
+          "verbatimIn": [],
+          "note": "quoted with no numeric line reference on its line or in its prose block; this document's own vocabulary is quoted this way, so it is not an error — it is simply not a citation"
+        },
+        {
+          "docLine": 29,
+          "fragment": "More than a collection... it's a story.",
+          "refScope": "own-line",
+          "status": "VERIFIED",
+          "source": "reference/Noujoude_Master_Specification_EN.md",
+          "cited": 139,
+          "actual": 139,
+          "citationsOnLine": [
+            "139",
+            "139"
+          ],
+          "namedSources": [
+            "any"
+          ]
+        },
+        {
+          "docLine": 66,
+          "fragment": "More than a collection...",
+          "refScope": "own-line",
+          "status": "VERIFIED",
+          "source": "reference/Noujoude_Master_Specification_EN.md",
+          "cited": 139,
+          "actual": 139,
+          "citationsOnLine": [
+            "552",
+            "139",
+            "552"
+          ],
+          "namedSources": [
+            "any"
+          ]
+        }
+      ],
+      "refChecks": [],
+      "counts": {
+        "verified": 2,
+        "drifted": 0,
+        "drifted_other_source": 0,
+        "notFound": 0,
+        "self_recording": 0,
+        "project_record": 0,
+        "defined_term": 0,
+        "noReference": 1,
+        "uncitedVerbatim": 0,
+        "ref_ok": 2,
         "ref_defects": 0
       }
     },

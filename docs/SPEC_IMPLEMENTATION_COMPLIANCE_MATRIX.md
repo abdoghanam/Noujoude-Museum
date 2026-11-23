@@ -26,7 +26,7 @@
 |---|---|---|---|---|---|
 | 1.1 | §1.1 | Bilingual digital heritage museum (EN/AR) | `src/domain/locale.ts`, `src/app/[locale]/layout.tsx` | ✅ Complete | Layout sets `lang`/`dir` from segment; 15 routes in both locales |
 | 1.2 | §1.2 | NOT e-commerce/marketplace/blog/gaming/SaaS | No commerce code anywhere in `src/` | ✅ Complete | `src/domain/routes.test.ts` asserts RangeError for "checkout"; e2e test "no commerce UI on any route" passes |
-| 1.3 | §1.3 | Brand promise: "More than a collection... it's a story." | `src/app/[locale]/page.tsx` hero | ✅ Complete | Tagline rendered in hero; footer |
+| 1.3 | §1.3 (line 139) | Brand promise: "More than a collection... it's a story." (line 139) | `src/app/[locale]/page.tsx` hero | ✅ Complete | Tagline rendered in hero; footer |
 | 1.4 | §1.4 | Brand essence: heritage, elegance, restraint, etc. | `src/ui/styles/global.css` (tokens), all pages | ✅ Complete | Nocturnal Elegance palette applied |
 | 1.5 | §1.5 | Institutional facts are Owner Input Required | About/Contact pages show withheld markers for unverified facts | ✅ Complete | `src/app/[locale]/about/page.tsx` uses `shellStyles.slot` withheld pattern |
 | 1.6 | §1.6 | Historical integrity, cultural respect, curatorial responsibility, visual integrity, visitor dignity, institutional honesty, information transparency, collection respect, privacy/rights, identity protection | All pages follow these principles | ✅ Complete | No fabricated content; withheld markers used throughout |
@@ -63,7 +63,7 @@
 | # | Spec ref | Requirement | Implementation | Status | Evidence |
 |---|---|---|---|---|---|
 | 3.1 | §6.1 | Home: 8 sections in order (Hero, Institutional Introduction, Worlds, Featured Collections, Selected Artifacts, Stories, AI Curator, Closing Invitation) | `src/app/[locale]/page.tsx` | ✅ Complete | `HOME_SECTIONS` array; all 8 sections rendered |
-| 3.2 | §6.1 | Home hero: brand name, tagline, CTA, atmospheric visual | `src/app/[locale]/page.tsx` + CSS | ✅ Complete | Hero with "Noujoude" + "More than a collection..." + "Enter the Museum" |
+| 3.2 | §6.1 (line 552) | Home hero: brand name, tagline, CTA, atmospheric visual | `src/app/[locale]/page.tsx` + CSS | ✅ Complete | Hero with "Noujoude" + "More than a collection..." (line 139) + "Enter the Museum" (line 552) |
 | 3.3 | §6.1 | Home: curated route into Worlds, Collections, Stories, AI Curator | `src/app/[locale]/page.tsx` | ✅ Complete | Sections render MediaSlotGroup for each route |
 | 3.4 | §6.1 | Empty/unavailable sections: no fabricated content | `src/app/[locale]/page.tsx` | ✅ Complete | `State kind="empty"` for null routes |
 | 3.5 | §6.2 | The Museum: 5 sections (Identity, Philosophy, Exploration, Atmosphere, Closing) | `src/app/[locale]/the-museum/page.tsx` | ✅ Complete | All 5 sections present |
