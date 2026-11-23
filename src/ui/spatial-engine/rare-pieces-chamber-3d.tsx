@@ -21,11 +21,7 @@ function Pedestal() {
   return (
     <mesh ref={meshRef} position={[0, -0.5, 0]}>
       <cylinderGeometry args={[1, 1.2, 0.3, 32]} />
-      <meshStandardMaterial
-        color="#15101a"
-        metalness={0.3}
-        roughness={0.7}
-      />
+      <meshStandardMaterial color="#15101a" metalness={0.3} roughness={0.7} />
     </mesh>
   );
 }
@@ -106,7 +102,10 @@ export function RarePiecesChamber3D({ className }: RarePiecesChamber3DProps) {
   }
 
   return (
-    <div className={className} style={{ minHeight: "400px", position: "relative" }}>
+    <div
+      className={className}
+      style={{ minHeight: "400px", position: "relative" }}
+    >
       <Canvas
         camera={{ position: [0, 2, 5], fov: 50 }}
         gl={{ antialias: true, alpha: true }}

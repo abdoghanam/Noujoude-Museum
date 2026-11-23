@@ -34,7 +34,9 @@ export function Lazy3DScene({ scene, className }: Lazy3DProps) {
         </div>
       }
     >
-      {scene === "rare-pieces" && <RarePiecesChamber3D className={className ?? ""} />}
+      {scene === "rare-pieces" && (
+        <RarePiecesChamber3D className={className ?? ""} />
+      )}
     </Suspense>
   );
 }
