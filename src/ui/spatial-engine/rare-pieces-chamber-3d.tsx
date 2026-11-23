@@ -11,9 +11,12 @@ export interface RarePiecesChamber3DProps {
 
 function Pedestal() {
   const meshRef = useRef<THREE.Mesh>(null);
+  const prefersReduced =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   useFrame((_, delta) => {
-    if (meshRef.current) {
+    if (meshRef.current && !prefersReduced) {
       meshRef.current.rotation.y += delta * 0.1;
     }
   });
@@ -28,15 +31,16 @@ function Pedestal() {
 
 function Artifact() {
   const meshRef = useRef<THREE.Mesh>(null);
+  const prefersReduced = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   useFrame((_, delta) => {
-    if (meshRef.current) {
+    if (meshRef.current && !prefersReduced) {
       meshRef.current.rotation.y += delta * 0.2;
     }
   });
 
   return (
-    <Float speed={1} rotationIntensity={0.2} floatIntensity={0.5}>
+    <Float speed={prefersReduced ? 0 : 1} rotationIntensity={prefersReduced ? 0 : 0.2} floatIntensity={prefersReduced ? 0 : 0.5}>
       <mesh ref={meshRef} position={[0, 0.5, 0]}>
         <boxGeometry args={[1, 1, 1]} />
         <meshStandardMaterial
@@ -70,6 +74,9 @@ function SceneLighting() {
 
 export function RarePiecesChamber3D({ className }: RarePiecesChamber3DProps) {
   const [webglSupported, setWebglSupported] = useState(true);
+  const prefersReduced =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   useEffect(() => {
     try {
@@ -119,7 +126,7 @@ export function RarePiecesChamber3D({ className }: RarePiecesChamber3DProps) {
           enablePan={false}
           minDistance={3}
           maxDistance={8}
-          autoRotate
+          autoRotate={!prefersReduced}
           autoRotateSpeed={0.5}
         />
         <Environment preset="night" />
