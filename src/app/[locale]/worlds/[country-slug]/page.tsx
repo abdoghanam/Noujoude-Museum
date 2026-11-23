@@ -6,6 +6,7 @@ import { slotViewsFor } from "@/lib/server/media/slots";
 import { MediaSlotGroup } from "@/ui/media-slot";
 import { DetailPage } from "@/ui/detail-page";
 import { MuseumScene } from "@/ui/museum-scene";
+import countryStyles from "@/ui/country-variant.module.css";
 
 import { State } from "@/ui/state";
 
@@ -26,7 +27,7 @@ export default async function CountryDetailPage({
 
   return (
     <DetailPage route={ROUTE} locale={resolved} slug={slug} kind="country">
-      <MuseumScene scene="gallery" title={`${slug} — Country World`}>
+      <MuseumScene scene="gallery" title={`${slug} — Country World`} className={`${countryStyles.countryVariant} ${countryStyles[slug] ?? ""}`}>
         <div className="country-enter">
           <MediaSlotGroup views={slotViewsFor(ROUTE, resolved, slug)} />
         </div>

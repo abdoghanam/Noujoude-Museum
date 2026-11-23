@@ -9,6 +9,7 @@ import { Heading } from "@/ui/heading";
 import { Text } from "@/ui/text";
 import { State } from "@/ui/state";
 import styles from "@/app/[locale]/collections/page.module.css";
+import wallStyles from "@/ui/exhibition-wall.module.css";
 
 const ROUTE: RouteKey = "collections";
 
@@ -52,22 +53,28 @@ export default async function CollectionsPage({
         </Text>
       </section>
 
-      <div className={styles.grid}>
-        {CATEGORIES.map((cat) => (
-          <a
-            key={cat.slug}
-            href={`/${resolved}/collections/${cat.slug}`}
-            className={`${styles.card} collection-card`}
-          >
-            <MediaSlotGroup
-              views={slotViewsFor("collection-detail", resolved, cat.slug)}
-            />
-            <Heading level={3} className={styles.cardTitle}>
-              {cat.name}
-            </Heading>
-            <span className={styles.cardState}>{cat.state}</span>
-          </a>
-        ))}
+      <div className={wallStyles.exhibitionWall}>
+        <div className={wallStyles.wallSurface}>
+          <div className={wallStyles.exhibitCluster}>
+            {CATEGORIES.map((cat) => (
+              <a
+                key={cat.slug}
+                href={`/${resolved}/collections/${cat.slug}`}
+                className={`${wallStyles.exhibitFrame} collection-card`}
+              >
+                <div className={wallStyles.exhibitImage}>
+                  <MediaSlotGroup
+                    views={slotViewsFor("collection-detail", resolved, cat.slug)}
+                  />
+                </div>
+                <div className={wallStyles.exhibitLabel}>
+                  <h3 className={wallStyles.exhibitTitle}>{cat.name}</h3>
+                  <span className={wallStyles.exhibitMeta}>{cat.state}</span>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
       </div>
 
       <section className={styles.emptyState}>

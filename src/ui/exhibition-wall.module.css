@@ -1,0 +1,266 @@
+/* Exhibition wall composition — §6.5, §6.6
+   Collections should become immersive exhibitions rather than card grids.
+   Implement: gallery browsing, exhibition walls, visual clustering,
+   exhibit sequences, collection storytelling, transitions between groups.
+*/
+
+/* Exhibition wall — the main gallery surface */
+.exhibitionWall {
+  position: relative;
+  padding-block: var(--ndm-space-6);
+  padding-inline: var(--ndm-space-4);
+  overflow: hidden;
+}
+
+/* Wall header — exhibition title and curatorial note */
+.wallHeader {
+  text-align: center;
+  margin-block-end: var(--ndm-space-6);
+  position: relative;
+}
+
+.wallTitle {
+  font-family: var(--ndm-font-display);
+  font-size: 2.5rem;
+  font-weight: 300;
+  letter-spacing: 0.05em;
+  color: var(--ndm-text-primary);
+  margin-block-end: var(--ndm-space-2);
+  text-shadow: 0 0 40px rgba(198, 165, 107, 0.1);
+}
+
+.wallSubtitle {
+  font-size: 1rem;
+  color: var(--ndm-text-secondary);
+  font-style: italic;
+  max-inline-size: 60ch;
+  margin-inline: auto;
+}
+
+/* Exhibition wall surface — the physical wall */
+.wallSurface {
+  position: relative;
+  background: linear-gradient(
+    to block-end,
+    var(--ndm-surface-raised) 0%,
+    var(--ndm-surface-page) 100%
+  );
+  border: 1px solid var(--ndm-color-museum-glass);
+  padding: var(--ndm-space-5);
+  margin-block: var(--ndm-space-4);
+}
+
+/* Wall top/bottom trim — architectural framing */
+.wallSurface::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: 2px;
+  background: linear-gradient(
+    to inline-end,
+    transparent 0%,
+    var(--ndm-accent-primary) 20%,
+    var(--ndm-accent-primary) 80%,
+    transparent 100%
+  );
+  opacity: 0.4;
+}
+
+.wallSurface::after {
+  content: "";
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline: 0;
+  block-size: 2px;
+  background: linear-gradient(
+    to inline-end,
+    transparent 0%,
+    var(--ndm-accent-primary) 20%,
+    var(--ndm-accent-primary) 80%,
+    transparent 100%
+  );
+  opacity: 0.4;
+}
+
+/* Exhibit cluster — visual grouping of related objects */
+.exhibitCluster {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--ndm-space-4);
+  margin-block: var(--ndm-space-4);
+}
+
+/* Exhibit frame — individual object on the wall */
+.exhibitFrame {
+  position: relative;
+  background: var(--ndm-surface-page);
+  border: 1px solid var(--ndm-color-museum-glass);
+  padding: var(--ndm-space-3);
+  transition: border-color var(--ndm-duration-standard) var(--ndm-easing-default),
+    transform var(--ndm-duration-standard) var(--ndm-easing-default),
+    box-shadow var(--ndm-duration-standard) var(--ndm-easing-default);
+}
+
+.exhibitFrame:hover {
+  border-color: var(--ndm-accent-primary);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Exhibit image — the object itself */
+.exhibitImage {
+  position: relative;
+  overflow: hidden;
+  margin-block-end: var(--ndm-space-3);
+  aspect-ratio: 4 / 3;
+  background: var(--ndm-surface-raised);
+}
+
+.exhibitImage img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: contain;
+  transition: transform var(--ndm-duration-cinematic) var(--ndm-easing-cinematic);
+}
+
+.exhibitFrame:hover .exhibitImage img {
+  transform: scale(1.05);
+}
+
+/* Exhibit label — museum label beneath the object */
+.exhibitLabel {
+  padding-block: var(--ndm-space-2);
+  border-block-start: 1px solid var(--ndm-color-museum-glass);
+}
+
+.exhibitTitle {
+  font-family: var(--ndm-font-display);
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--ndm-text-primary);
+  margin-block-end: var(--ndm-space-1);
+  letter-spacing: 0.02em;
+}
+
+.exhibitMeta {
+  font-size: 0.75rem;
+  color: var(--ndm-text-secondary);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Exhibit spotlight — featured object, larger */
+.exhibitSpotlight {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+.exhibitSpotlight .exhibitImage {
+  aspect-ratio: 16 / 9;
+}
+
+.exhibitSpotlight .exhibitTitle {
+  font-size: 1.25rem;
+}
+
+/* Wall divider — between exhibit groups */
+.wallDivider {
+  display: flex;
+  align-items: center;
+  gap: var(--ndm-space-3);
+  margin-block: var(--ndm-space-6);
+  color: var(--ndm-text-tertiary);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.wallDivider::before,
+.wallDivider::after {
+  content: "";
+  flex: 1;
+  block-size: 1px;
+  background: linear-gradient(
+    to inline-end,
+    transparent 0%,
+    var(--ndm-color-museum-glass) 50%,
+    transparent 100%
+  );
+}
+
+/* Curatorial note — between exhibit groups */
+.curatorialNote {
+  border-inline-start: 2px solid var(--ndm-accent-primary);
+  padding-inline-start: var(--ndm-space-4);
+  margin-block: var(--ndm-space-4);
+  color: var(--ndm-text-secondary);
+  font-style: italic;
+  font-size: 0.9375rem;
+  line-height: 1.7;
+}
+
+/* Wall navigation — between exhibit groups */
+.wallNavigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-block-start: var(--ndm-space-6);
+  padding-block: var(--ndm-space-4);
+  border-block-start: 1px solid var(--ndm-color-museum-glass);
+}
+
+.wallNavButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ndm-space-2);
+  color: var(--ndm-accent-primary);
+  font-size: 0.8125rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: color var(--ndm-duration-fast) var(--ndm-easing-default);
+}
+
+.wallNavButton:hover {
+  color: var(--ndm-accent-soft);
+}
+
+/* Scene transition — between exhibition walls */
+.sceneTransition {
+  position: relative;
+  block-size: 4rem;
+  overflow: hidden;
+}
+
+.sceneTransition::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline: 0;
+  block-size: 1px;
+  background: linear-gradient(
+    to inline-end,
+    transparent 0%,
+    var(--ndm-accent-primary) 50%,
+    transparent 100%
+  );
+  opacity: 0.3;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .exhibitFrame {
+    transition: none;
+  }
+
+  .exhibitFrame:hover {
+    transform: none;
+  }
+
+  .exhibitImage img {
+    transition: none;
+  }
+
+  .exhibitFrame:hover .exhibitImage img {
+    transform: none;
+  }
+}

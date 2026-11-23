@@ -11,6 +11,7 @@ import { Text } from "@/ui/text";
 import { MuseumScene } from "@/ui/museum-scene";
 import { Scene3D } from "@/ui/scene-3d";
 import styles from "@/app/[locale]/the-museum/page.module.css";
+import lightingStyles from "@/ui/environmental-lighting.module.css";
 
 const ROUTE: RouteKey = "the-museum";
 
@@ -67,13 +68,15 @@ export default async function TheMuseumPage({
       </MuseumScene>
 
       <MuseumScene scene="archive" title="Museum Atmosphere">
-        <MediaSlotGroup views={slotViewsFor(ROUTE, resolved)} />
-        <Scene3D>
-          <div style={{ textAlign: "center", padding: "2rem" }}>
-            <Heading level={3}>Nocturnal Elegance</Heading>
-            <Text variant="secondary">Heritage Under Candlelight</Text>
-          </div>
-        </Scene3D>
+        <div className={lightingStyles.museumAtmosphere}>
+          <MediaSlotGroup views={slotViewsFor(ROUTE, resolved)} />
+          <Scene3D>
+            <div className={lightingStyles.candleGlow} style={{ textAlign: "center", padding: "2rem" }}>
+              <Heading level={3}>Nocturnal Elegance</Heading>
+              <Text variant="secondary">Heritage Under Candlelight</Text>
+            </div>
+          </Scene3D>
+        </div>
       </MuseumScene>
 
       <MuseumScene scene="closing" title="Closing Reflection">

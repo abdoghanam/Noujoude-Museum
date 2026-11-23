@@ -1,0 +1,191 @@
+/* Spatial depth engine — §12.8
+   Increase perceived depth through:
+   - layered foreground
+   - architectural background
+   - parallax where appropriate
+   - perspective composition
+   - atmospheric gradients
+   - depth shadows
+   - visual separation
+*/
+
+/* Parallax layer — moves at different speed */
+.parallaxLayer {
+  position: relative;
+  will-change: transform;
+  transition: transform var(--ndm-duration-slow-reveal) var(--ndm-easing-default);
+}
+
+/* Foreground layer — closest to viewer */
+.foregroundLayer {
+  position: relative;
+  z-index: 3;
+  transform: translateZ(20px);
+}
+
+/* Midground layer — content plane */
+.midgroundLayer {
+  position: relative;
+  z-index: 2;
+  transform: translateZ(0);
+}
+
+/* Background layer — architectural backdrop */
+.backgroundLayer {
+  position: relative;
+  z-index: 1;
+  transform: translateZ(-20px);
+}
+
+/* Perspective container — 3D viewing context */
+.perspectiveContainer {
+  perspective: 1000px;
+  perspective-origin: 50% 50%;
+  transform-style: preserve-3d;
+}
+
+/* Depth shadow — layered shadows for depth */
+.depthShadow {
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    0 8px 16px rgba(0, 0, 0, 0.15),
+    0 20px 40px rgba(0, 0, 0, 0.2),
+    0 40px 80px rgba(0, 0, 0, 0.25);
+}
+
+/* Atmospheric gradient — depth through color */
+.atmosphericGradient {
+  background: linear-gradient(
+    to block-end,
+    var(--ndm-surface-page) 0%,
+    var(--ndm-surface-raised) 30%,
+    var(--ndm-surface-page) 70%,
+    var(--ndm-surface-raised) 100%
+  );
+}
+
+/* Visual separation — between content planes */
+.visualSeparation {
+  position: relative;
+}
+
+.visualSeparation::after {
+  content: "";
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline: 10%;
+  block-size: 1px;
+  background: linear-gradient(
+    to inline-end,
+    transparent 0%,
+    var(--ndm-color-museum-glass) 50%,
+    transparent 100%
+  );
+  opacity: 0.3;
+}
+
+/* Layered composition — multiple depth planes */
+.layeredComposition {
+  position: relative;
+  isolation: isolate;
+}
+
+.layeredComposition > * {
+  position: relative;
+  z-index: 1;
+}
+
+.layeredComposition::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    transparent 0%,
+    rgba(0, 0, 0, 0.1) 100%
+  );
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Architectural framing — museum walls */
+.architecturalFrame {
+  position: relative;
+  border: 1px solid var(--ndm-color-museum-glass);
+  padding: var(--ndm-space-4);
+}
+
+.architecturalFrame::before {
+  content: "";
+  position: absolute;
+  inset-block-start: -1px;
+  inset-inline-start: -1px;
+  inline-size: 2rem;
+  block-size: 2rem;
+  border-block-start: 2px solid var(--ndm-accent-primary);
+  border-inline-start: 2px solid var(--ndm-accent-primary);
+  opacity: 0.4;
+}
+
+.architecturalFrame::after {
+  content: "";
+  position: absolute;
+  inset-block-end: -1px;
+  inset-inline-end: -1px;
+  inline-size: 2rem;
+  block-size: 2rem;
+  border-block-end: 2px solid var(--ndm-accent-primary);
+  border-inline-end: 2px solid var(--ndm-accent-primary);
+  opacity: 0.4;
+}
+
+/* Depth fade — content fading into background */
+.depthFade {
+  mask-image: linear-gradient(
+    to block-end,
+    black 0%,
+    black 70%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to block-end,
+    black 0%,
+    black 70%,
+    transparent 100%
+  );
+}
+
+/* Floating element — lifted from surface */
+.floatingElement {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  transition: transform var(--ndm-duration-standard) var(--ndm-easing-default),
+    box-shadow var(--ndm-duration-standard) var(--ndm-easing-default);
+}
+
+.floatingElement:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.4);
+}
+
+/* Inset panel — recessed into wall */
+.insetPanel {
+  background: var(--ndm-surface-page);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--ndm-color-museum-glass);
+  padding: var(--ndm-space-4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .parallaxLayer {
+    transition: none;
+  }
+
+  .floatingElement {
+    transition: none;
+  }
+
+  .floatingElement:hover {
+    transform: none;
+  }
+}

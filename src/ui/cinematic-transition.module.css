@@ -1,0 +1,247 @@
+/* Cinematic scene transitions — §12.13, §4.6
+   Scene-to-scene navigation should feel like moving through connected galleries.
+   Implement: corridor-like transitions, archive-like openings, fade sequences,
+   spatial progression, continuity between exhibition spaces.
+*/
+
+/* Scene transition corridor — between two museum spaces */
+.sceneCorridor {
+  position: relative;
+  block-size: 6rem;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sceneCorridor::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline: 0;
+  block-size: 1px;
+  background: linear-gradient(
+    to inline-end,
+    transparent 0%,
+    var(--ndm-accent-primary) 15%,
+    var(--ndm-accent-primary) 85%,
+    transparent 100%
+  );
+  opacity: 0.3;
+}
+
+.sceneCorridor::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to block-end,
+    var(--ndm-surface-page) 0%,
+    transparent 30%,
+    transparent 70%,
+    var(--ndm-surface-page) 100%
+  );
+  pointer-events: none;
+}
+
+/* Corridor light — moving light through the transition */
+.corridorLight {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: -20%;
+  transform: translateY(-50%);
+  inline-size: 40%;
+  block-size: 2px;
+  background: linear-gradient(
+    to inline-end,
+    transparent 0%,
+    rgba(198, 165, 107, 0.4) 50%,
+    transparent 100%
+  );
+  animation: corridorLightMove 3s ease-in-out infinite;
+}
+
+@keyframes corridorLightMove {
+  0% { inset-inline-start: -20%; }
+  100% { inset-inline-start: 120%; }
+}
+
+/* Scene reveal — fade in from darkness */
+.sceneReveal {
+  opacity: 0;
+  animation: sceneReveal var(--ndm-duration-cinematic) var(--ndm-easing-cinematic) forwards;
+}
+
+@keyframes sceneReveal {
+  from {
+    opacity: 0;
+    filter: brightness(0.3);
+  }
+  to {
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+
+/* Scene fade out — dissolve to next */
+.sceneFadeOut {
+  animation: sceneFadeOut var(--ndm-duration-standard) var(--ndm-easing-default) forwards;
+}
+
+@keyframes sceneFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Archive opening — door opening effect */
+.archiveOpen {
+  position: relative;
+  overflow: hidden;
+}
+
+.archiveOpen::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 50%;
+  background: linear-gradient(
+    to inline-end,
+    var(--ndm-surface-exhibition) 0%,
+    transparent 100%
+  );
+  transform-origin: inline-start;
+  animation: archiveDoorOpen var(--ndm-duration-cinematic) var(--ndm-easing-cinematic) forwards;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.archiveOpen::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  inline-size: 50%;
+  background: linear-gradient(
+    to inline-start,
+    var(--ndm-surface-exhibition) 0%,
+    transparent 100%
+  );
+  transform-origin: inline-end;
+  animation: archiveDoorOpen var(--ndm-duration-cinematic) var(--ndm-easing-cinematic) forwards;
+  z-index: 1;
+  pointer-events: none;
+}
+
+@keyframes archiveDoorOpen {
+  from {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+  to {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+}
+
+/* Curtain reveal — vertical curtain opening */
+.curtainReveal {
+  position: relative;
+  overflow: hidden;
+}
+
+.curtainReveal::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--ndm-surface-page);
+  animation: curtainLift var(--ndm-duration-cinematic) var(--ndm-easing-cinematic) forwards;
+  z-index: 1;
+  pointer-events: none;
+}
+
+@keyframes curtainLift {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+/* Spotlight reveal — light expanding from center */
+.spotlightReveal {
+  position: relative;
+  overflow: hidden;
+}
+
+.spotlightReveal::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 50%,
+    transparent 0%,
+    var(--ndm-surface-page) 0%
+  );
+  animation: spotlightExpand var(--ndm-duration-cinematic) var(--ndm-easing-cinematic) forwards;
+  z-index: 1;
+  pointer-events: none;
+}
+
+@keyframes spotlightExpand {
+  from {
+    background: radial-gradient(
+      circle at 50% 50%,
+      transparent 0%,
+      var(--ndm-surface-page) 0%
+    );
+  }
+  to {
+    background: radial-gradient(
+      circle at 50% 50%,
+      transparent 0%,
+      var(--ndm-surface-page) 150%
+    );
+  }
+}
+
+/* Scene continuity — shared element transition */
+.sceneContinuity {
+  view-transition-name: scene;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .corridorLight {
+    animation: none;
+    opacity: 0.3;
+  }
+
+  .sceneReveal {
+    animation: none;
+    opacity: 1;
+    filter: none;
+  }
+
+  .archiveOpen::before,
+  .archiveOpen::after {
+    animation: none;
+    transform: scaleX(0);
+    opacity: 0;
+  }
+
+  .curtainReveal::before {
+    animation: none;
+    transform: translateY(-100%);
+  }
+
+  .spotlightReveal::before {
+    animation: none;
+    opacity: 0;
+  }
+}

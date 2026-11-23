@@ -1,0 +1,369 @@
+/* Artifact exhibition behavior — §6.7
+   Artifact pages become museum displays.
+   Implement: dramatic reveal, exhibit lighting, metadata composition,
+   provenance presentation, evidence hierarchy, image focus,
+   contextual narrative, supporting objects, editorial composition.
+*/
+
+/* Artifact stage — the main display area */
+.artifactStage {
+  position: relative;
+  min-block-size: 80vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ndm-space-6);
+  padding-block: var(--ndm-space-6);
+  padding-inline: var(--ndm-space-4);
+  overflow: hidden;
+}
+
+/* Exhibit lighting — dramatic spotlight on the object */
+.artifactStage::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: 50%;
+  block-size: 100%;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    rgba(198, 165, 107, 0.08) 0%,
+    transparent 60%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Exhibit image area — the object in focus */
+.exhibitImageArea {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+}
+
+.exhibitImageFrame {
+  position: relative;
+  max-inline-size: 100%;
+  border: 1px solid var(--ndm-color-museum-glass);
+  background: var(--ndm-surface-page);
+  padding: var(--ndm-space-4);
+  box-shadow: var(--ndm-shadow-deep), var(--ndm-shadow-glow);
+}
+
+.exhibitImageFrame img {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  object-fit: contain;
+  transition: transform var(--ndm-duration-cinematic) var(--ndm-easing-cinematic);
+}
+
+.exhibitImageFrame:hover img {
+  transform: scale(1.02);
+}
+
+/* Image caption — museum label */
+.exhibitImageCaption {
+  text-align: center;
+  margin-block-start: var(--ndm-space-3);
+  font-size: 0.8125rem;
+  color: var(--ndm-text-tertiary);
+  font-style: italic;
+}
+
+/* Metadata area — object information */
+.metadataArea {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ndm-space-4);
+}
+
+/* Object identity — title and identifier */
+.objectIdentity {
+  border-block-end: 1px solid var(--ndm-color-museum-glass);
+  padding-block-end: var(--ndm-space-4);
+}
+
+.objectTitle {
+  font-family: var(--ndm-font-display);
+  font-size: 2.5rem;
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  color: var(--ndm-text-primary);
+  margin-block-end: var(--ndm-space-2);
+  text-shadow: 0 0 40px rgba(198, 165, 107, 0.1);
+}
+
+.objectIdentifier {
+  font-size: 0.75rem;
+  color: var(--ndm-text-tertiary);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* Metadata section — grouped information */
+.metadataSection {
+  padding-block: var(--ndm-space-3);
+  border-block-end: 1px solid var(--ndm-color-museum-glass);
+}
+
+.metadataSection:last-child {
+  border-block-end: none;
+}
+
+.metadataLabel {
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ndm-accent-primary);
+  margin-block-end: var(--ndm-space-2);
+  display: block;
+}
+
+.metadataValue {
+  font-size: 0.9375rem;
+  color: var(--ndm-text-secondary);
+  line-height: 1.6;
+}
+
+/* Provenance timeline — documented custody history */
+.provenanceTimeline {
+  position: relative;
+  padding-inline-start: var(--ndm-space-4);
+}
+
+.provenanceTimeline::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 1px;
+  background: linear-gradient(
+    to block-end,
+    var(--ndm-accent-primary) 0%,
+    var(--ndm-color-museum-glass) 100%
+  );
+  opacity: 0.4;
+}
+
+.provenanceEvent {
+  position: relative;
+  padding-block: var(--ndm-space-3);
+  padding-inline-start: var(--ndm-space-4);
+}
+
+.provenanceEvent::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: -0.375rem;
+  inline-size: 0.75rem;
+  block-size: 0.75rem;
+  border-radius: 50%;
+  background: var(--ndm-accent-primary);
+  transform: translateY(-50%);
+  opacity: 0.6;
+}
+
+.provenanceEventTitle {
+  font-family: var(--ndm-font-display);
+  font-size: 1rem;
+  color: var(--ndm-text-primary);
+  margin-block-end: var(--ndm-space-1);
+}
+
+.provenanceEventDate {
+  font-size: 0.75rem;
+  color: var(--ndm-text-tertiary);
+  letter-spacing: 0.05em;
+}
+
+.provenanceEventDescription {
+  font-size: 0.875rem;
+  color: var(--ndm-text-secondary);
+  line-height: 1.6;
+  margin-block-start: var(--ndm-space-1);
+}
+
+/* Evidence hierarchy — claim support levels */
+.evidenceHierarchy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ndm-space-2);
+}
+
+.evidenceItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ndm-space-2);
+  padding: var(--ndm-space-2);
+  border: 1px solid var(--ndm-color-museum-glass);
+  font-size: 0.875rem;
+}
+
+.evidenceBadge {
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: var(--ndm-space-1) var(--ndm-space-2);
+  border: 1px solid var(--ndm-accent-primary);
+  color: var(--ndm-accent-primary);
+  white-space: nowrap;
+}
+
+/* Curator note — distinguished from factual metadata */
+.curatorNote {
+  border-inline-start: 2px solid var(--ndm-accent-rose);
+  padding-inline-start: var(--ndm-space-4);
+  padding-block: var(--ndm-space-3);
+  background: rgba(169, 109, 120, 0.05);
+  font-style: italic;
+  color: var(--ndm-text-secondary);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+}
+
+.curatorNoteLabel {
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ndm-accent-rose);
+  margin-block-end: var(--ndm-space-2);
+  font-style: normal;
+}
+
+/* Related objects — supporting exhibition */
+.relatedExhibition {
+  padding-block: var(--ndm-space-6);
+  border-block-start: 1px solid var(--ndm-color-museum-glass);
+}
+
+.relatedExhibitionTitle {
+  font-family: var(--ndm-font-display);
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: var(--ndm-text-primary);
+  margin-block-end: var(--ndm-space-4);
+  text-align: center;
+}
+
+.relatedGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: var(--ndm-space-3);
+}
+
+.relatedCard {
+  border: 1px solid var(--ndm-color-museum-glass);
+  padding: var(--ndm-space-2);
+  transition: border-color var(--ndm-duration-standard) var(--ndm-easing-default),
+    transform var(--ndm-duration-standard) var(--ndm-easing-default);
+}
+
+.relatedCard:hover {
+  border-color: var(--ndm-accent-primary);
+  transform: translateY(-2px);
+}
+
+.relatedCardImage {
+  aspect-ratio: 1;
+  overflow: hidden;
+  margin-block-end: var(--ndm-space-2);
+  background: var(--ndm-surface-raised);
+}
+
+.relatedCardImage img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: contain;
+}
+
+.relatedCardTitle {
+  font-size: 0.8125rem;
+  color: var(--ndm-text-primary);
+  letter-spacing: 0.02em;
+}
+
+/* Dramatic reveal animation */
+.dramaticReveal {
+  opacity: 0;
+  transform: translateY(3rem) scale(0.98);
+  animation: dramaticReveal var(--ndm-duration-cinematic) var(--ndm-easing-cinematic) forwards;
+}
+
+@keyframes dramaticReveal {
+  from {
+    opacity: 0;
+    transform: translateY(3rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Return navigation — museum exit path */
+.returnNavigation {
+  display: flex;
+  gap: var(--ndm-space-3);
+  justify-content: center;
+  padding-block: var(--ndm-space-4);
+  border-block-start: 1px solid var(--ndm-color-museum-glass);
+}
+
+.returnLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ndm-space-2);
+  color: var(--ndm-text-secondary);
+  font-size: 0.8125rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: color var(--ndm-duration-fast) var(--ndm-easing-default);
+}
+
+.returnLink:hover {
+  color: var(--ndm-accent-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dramaticReveal {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .exhibitImageFrame img {
+    transition: none;
+  }
+
+  .exhibitImageFrame:hover img {
+    transform: none;
+  }
+
+  .relatedCard {
+    transition: none;
+  }
+
+  .relatedCard:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .artifactStage {
+    grid-template-columns: 1fr;
+    gap: var(--ndm-space-4);
+  }
+
+  .exhibitSpotlight {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+}
