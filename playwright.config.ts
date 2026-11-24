@@ -19,7 +19,7 @@ export default defineConfig({
 
   projects: [
     {
-      name: "en-desktop",
+      name: "en-desktop-chrome",
       use: {
         ...devices["Desktop Chrome"],
         baseURL: BASE,
@@ -28,7 +28,7 @@ export default defineConfig({
       },
     },
     {
-      name: "ar-desktop-rtl",
+      name: "ar-desktop-rtl-chrome",
       use: {
         ...devices["Desktop Chrome"],
         baseURL: `${BASE}/ar`,
@@ -37,13 +37,48 @@ export default defineConfig({
       },
     },
     {
-      name: "en-mobile",
+      name: "en-mobile-chrome",
       use: { ...devices["Pixel 7"], baseURL: BASE, locale: "en-US" },
     },
     {
-      // RTL is a required composition target, not a desktop-only concern.
-      name: "ar-mobile-rtl",
+      name: "ar-mobile-rtl-chrome",
       use: { ...devices["iPhone 13"], baseURL: `${BASE}/ar`, locale: "ar-AE" },
+    },
+    {
+      name: "en-desktop-firefox",
+      use: {
+        ...devices["Desktop Firefox"],
+        baseURL: BASE,
+        locale: "en-US",
+        viewport: { width: 1440, height: 900 },
+      },
+    },
+    {
+      name: "ar-desktop-rtl-firefox",
+      use: {
+        ...devices["Desktop Firefox"],
+        baseURL: `${BASE}/ar`,
+        locale: "ar-AE",
+        viewport: { width: 1440, height: 900 },
+      },
+    },
+    {
+      name: "en-desktop-webkit",
+      use: {
+        ...devices["Desktop Safari"],
+        baseURL: BASE,
+        locale: "en-US",
+        viewport: { width: 1440, height: 900 },
+      },
+    },
+    {
+      name: "ar-desktop-rtl-webkit",
+      use: {
+        ...devices["Desktop Safari"],
+        baseURL: `${BASE}/ar`,
+        locale: "ar-AE",
+        viewport: { width: 1440, height: 900 },
+      },
     },
   ],
 
