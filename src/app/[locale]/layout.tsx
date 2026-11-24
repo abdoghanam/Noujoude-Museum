@@ -46,14 +46,16 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "Noujoude Digital Heritage Museum",
     title: "Noujoude Digital Heritage Museum",
-    description: "A bilingual digital heritage museum preserving and presenting cultural objects, collections, and the stories they carry.",
+    description:
+      "A bilingual digital heritage museum preserving and presenting cultural objects, collections, and the stories they carry.",
     locale: "en_US",
     alternateLocale: ["ar_SA"],
   },
   twitter: {
     card: "summary_large_image",
     title: "Noujoude Digital Heritage Museum",
-    description: "A bilingual digital heritage museum preserving and presenting cultural objects, collections, and the stories they carry.",
+    description:
+      "A bilingual digital heritage museum preserving and presenting cultural objects, collections, and the stories they carry.",
   },
   alternates: {
     canonical: "https://no-beta-azure.vercel.app/en",
