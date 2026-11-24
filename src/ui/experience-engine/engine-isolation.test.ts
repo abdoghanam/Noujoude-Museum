@@ -2,14 +2,16 @@ import { describe, it, expect } from "vitest";
 import { createEngineRegistry } from "@/ui/experience-engine/core/engine-registry";
 import { createSceneRegistry, registerScene } from "@/ui/experience-engine/core/scene-registry";
 import { createLifecycleManager } from "@/ui/experience-engine/core/lifecycle-manager";
+import type { ExperienceEngine } from "@/ui/experience-engine/contracts/engine-contract";
+import type { MuseumSceneDefinition } from "@/ui/experience-engine/contracts/scene-contract";
 
 describe("Engine Isolation", () => {
   it("engine registry: one failed engine does not disable others", async () => {
     const registry = createEngineRegistry();
 
-    const goodEngine = {
+    const goodEngine: ExperienceEngine = {
       id: "good",
-      status: "uninitialized" as const,
+      status: "uninitialized",
       initialize: async () => {},
       activate: async () => {},
       deactivate: async () => {},
@@ -17,9 +19,9 @@ describe("Engine Isolation", () => {
       isAvailable: () => true,
     };
 
-    const badEngine = {
+    const badEngine: ExperienceEngine = {
       id: "bad",
-      status: "uninitialized" as const,
+      status: "uninitialized",
       initialize: async () => {
         throw new Error("Initialization failed");
       },
@@ -29,8 +31,8 @@ describe("Engine Isolation", () => {
       isAvailable: () => false,
     };
 
-    registry.register(goodEngine as any);
-    registry.register(badEngine as any);
+    registry.register(goodEngine);
+    registry.register(badEngine);
 
     const capabilities = {
       webgl: true,
@@ -42,12 +44,10 @@ describe("Engine Isolation", () => {
 
     await registry.initializeAll(capabilities);
 
-    // Good engine should still be available
     expect(registry.get("good")?.isAvailable()).toBe(true);
-    // Bad engine health should show error
-    const health = (registry as any).getHealthStatuses?.();
+    const health = registry.getHealthStatuses?.();
     if (health) {
-      const badHealth = health.find((h: any) => h.engineId === "bad");
+      const badHealth = health.find((h) => h.engineId === "bad");
       expect(badHealth?.status).toBe("error");
     }
   });
@@ -56,16 +56,16 @@ describe("Engine Isolation", () => {
     const reg1 = createSceneRegistry();
     const reg2 = createSceneRegistry();
 
-    const scene = {
+    const scene: MuseumSceneDefinition = {
       id: "test-scene",
-      type: "2d" as const,
+      type: "2d",
       title: "Test",
       loader: async () => {},
       engines: {
-        webMotion: "required" as const,
-        spatial: "none" as const,
-        cinematic: "none" as const,
-        exhibition: "none" as const,
+        webMotion: "required",
+        spatial: "none",
+        cinematic: "none",
+        exhibition: "none",
       },
     };
 
@@ -76,30 +76,28 @@ describe("Engine Isolation", () => {
 
   it("lifecycle manager: concurrent loads are deduplicated", async () => {
     const lm = createLifecycleManager();
-    const scene = {
+
+    const scene: MuseumSceneDefinition = {
       id: "concurrent-scene",
-      type: "2d" as const,
+      type: "2d",
       title: "Concurrent",
       loader: async () => {
         await new Promise((r) => setTimeout(r, 50));
       },
       engines: {
-        webMotion: "required" as const,
-        spatial: "none" as const,
-        cinematic: "none" as const,
-        exhibition: "none" as const,
+        webMotion: "required",
+        spatial: "none",
+        cinematic: "none",
+        exhibition: "none",
       },
     };
 
-    // Register in global scene registry
-    registerScene(scene as any);
+    registerScene(scene);
 
-    // Load twice concurrently
     const load1 = lm.load("concurrent-scene").catch(() => {});
     const load2 = lm.load("concurrent-scene").catch(() => {});
     await Promise.all([load1, load2]);
 
-    // Should have loaded only once
     const state = lm.getState("concurrent-scene");
     expect(state?.status).toBe("loaded");
   });
@@ -108,25 +106,25 @@ describe("Engine Isolation", () => {
     const lm = createLifecycleManager();
     let cleanedUp = false;
 
-    const scene = {
+    const scene: MuseumSceneDefinition = {
       id: "cleanup-scene",
-      type: "2d" as const,
+      type: "2d",
       title: "Cleanup",
       loader: async () => {},
       engines: {
-        webMotion: "required" as const,
-        spatial: "none" as const,
-        cinematic: "none" as const,
-        exhibition: "none" as const,
+        webMotion: "required",
+        spatial: "none",
+        cinematic: "none",
+        exhibition: "none",
       },
     };
 
-    registerScene(scene as any);
+    registerScene(scene);
 
     await lm.load("cleanup-scene");
     await lm.activate("cleanup-scene");
 
-    const unregister = (lm as any).registerCleanup("cleanup-scene", () => {
+    lm.registerCleanup("cleanup-scene", () => {
       cleanedUp = true;
     });
 
@@ -142,16 +140,16 @@ describe("Engine Isolation", () => {
 
   it("scene registry: duplicate registration warns but allows overwrite", () => {
     const sr = createSceneRegistry();
-    const scene = {
+    const scene: MuseumSceneDefinition = {
       id: "dup-scene",
-      type: "2d" as const,
+      type: "2d",
       title: "Dup",
       loader: async () => {},
       engines: {
-        webMotion: "required" as const,
-        spatial: "none" as const,
-        cinematic: "none" as const,
-        exhibition: "none" as const,
+        webMotion: "required",
+        spatial: "none",
+        cinematic: "none",
+        exhibition: "none",
       },
     };
 

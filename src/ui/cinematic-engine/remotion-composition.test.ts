@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest";
 import {
   getComposition,
   getAllCompositions,
-  registerComposition,
 } from "@/ui/cinematic-engine/composition-registry";
 
 describe("Remotion Composition Registry", () => {
@@ -48,7 +47,7 @@ describe("Remotion Composition Registry", () => {
   });
 
   it("unknown composition returns undefined", () => {
-    const comp = getComposition("NonExistent" as any);
+    const comp = getComposition("NonExistent" as "MuseumEntrance");
     expect(comp).toBeUndefined();
   });
 
