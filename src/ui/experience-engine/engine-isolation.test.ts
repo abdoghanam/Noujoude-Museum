@@ -1,6 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { createEngineRegistry } from "@/ui/experience-engine/core/engine-registry";
-import { createSceneRegistry, registerScene } from "@/ui/experience-engine/core/scene-registry";
+import {
+  createSceneRegistry,
+  registerScene,
+} from "@/ui/experience-engine/core/scene-registry";
 import { createLifecycleManager } from "@/ui/experience-engine/core/lifecycle-manager";
 import type { ExperienceEngine } from "@/ui/experience-engine/contracts/engine-contract";
 import type { MuseumSceneDefinition } from "@/ui/experience-engine/contracts/scene-contract";

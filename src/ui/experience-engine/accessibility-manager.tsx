@@ -13,12 +13,16 @@ export interface AccessibilityContextValue {
   readonly isReducedMotion: boolean;
 }
 
-const AccessibilityContext = createContext<AccessibilityContextValue | null>(null);
+const AccessibilityContext = createContext<AccessibilityContextValue | null>(
+  null,
+);
 
 export function useAccessibility(): AccessibilityContextValue {
   const ctx = useContext(AccessibilityContext);
   if (!ctx) {
-    throw new Error("useAccessibility must be used within AccessibilityManager");
+    throw new Error(
+      "useAccessibility must be used within AccessibilityManager",
+    );
   }
   return ctx;
 }
@@ -78,7 +82,10 @@ export function AccessibilityManager({ children }: AccessibilityManagerProps) {
     const element = document.querySelector<HTMLElement>(selector);
     if (element) {
       element.focus();
-      element.scrollIntoView({ behavior: isReducedMotion ? "auto" : "smooth", block: "start" });
+      element.scrollIntoView({
+        behavior: isReducedMotion ? "auto" : "smooth",
+        block: "start",
+      });
     }
   };
 
