@@ -42,6 +42,26 @@ export const metadata: Metadata = {
   },
   description:
     "Noujoude Digital Heritage Museum — bilingual English and Arabic heritage museum. Pre-publication structural shell.",
+  openGraph: {
+    type: "website",
+    siteName: "Noujoude Digital Heritage Museum",
+    title: "Noujoude Digital Heritage Museum",
+    description: "A bilingual digital heritage museum preserving and presenting cultural objects, collections, and the stories they carry.",
+    locale: "en_US",
+    alternateLocale: ["ar_SA"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Noujoude Digital Heritage Museum",
+    description: "A bilingual digital heritage museum preserving and presenting cultural objects, collections, and the stories they carry.",
+  },
+  alternates: {
+    canonical: "https://no-beta-azure.vercel.app/en",
+    languages: {
+      en: "https://no-beta-azure.vercel.app/en",
+      ar: "https://no-beta-azure.vercel.app/ar",
+    },
+  },
   /**
    * No public record of this build has been approved. Asset *use* was authorised by the Owner on 4 November
    * 2026 (see `docs/OWNER_ASSET_AUTHORIZATION_2026-11-04.md`), which is a different axis from what this flag
