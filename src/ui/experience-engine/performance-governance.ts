@@ -11,7 +11,9 @@ export interface PerformanceProfile {
   readonly animationComplexity: "full" | "reduced" | "none";
 }
 
-export const PERFORMANCE_PROFILES: Readonly<Record<string, PerformanceProfile>> = {
+export const PERFORMANCE_PROFILES: Readonly<
+  Record<string, PerformanceProfile>
+> = {
   high: {
     name: "high",
     maxConcurrentLoads: 4,
@@ -66,12 +68,18 @@ export function shouldLoadResource(
   return true;
 }
 
-export function markResourceLoaded(resourceId: string, tracker: ResourceTracker): void {
+export function markResourceLoaded(
+  resourceId: string,
+  tracker: ResourceTracker,
+): void {
   tracker.loadedResources.add(resourceId);
   tracker.pendingLoads.delete(resourceId);
 }
 
-export function markResourceUnloaded(resourceId: string, tracker: ResourceTracker): void {
+export function markResourceUnloaded(
+  resourceId: string,
+  tracker: ResourceTracker,
+): void {
   tracker.loadedResources.delete(resourceId);
   tracker.activeScenes.delete(resourceId);
 }
@@ -86,7 +94,9 @@ export function detectPerformanceProfile(): PerformanceProfile {
   if (typeof window === "undefined") return getProfile("balanced");
 
   // Check reduced motion
-  const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const prefersReduced = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
   if (prefersReduced) return getProfile("low");
 
   // Check device memory (if available)
