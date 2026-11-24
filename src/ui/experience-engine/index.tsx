@@ -28,6 +28,9 @@ export type { AccessibilityManagerProps } from "./accessibility-manager";
 export * from "./core";
 export * from "./contracts";
 
+// Performance Governance
+export * from "./performance-governance";
+
 // Re-export new engines
 export { RemotionPlayer } from "@/ui/cinematic-engine";
 export type { RemotionPlayerProps } from "@/ui/cinematic-engine";
