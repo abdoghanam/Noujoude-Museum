@@ -13,7 +13,8 @@ export interface DuplicateCandidate {
 }
 
 export interface DuplicateGroup {
-  readonly type: "exact" | "same-content" | "visual-similar" | "alternative-resolution";
+  readonly type:
+    "exact" | "same-content" | "visual-similar" | "alternative-resolution";
   readonly assets: readonly DuplicateCandidate[];
   readonly confidence: "high" | "medium" | "low";
 }
