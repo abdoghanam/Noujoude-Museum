@@ -45,8 +45,12 @@ describe("Canonical Permission Matrix", () => {
     expect(hasPermission("system_administrator", "delete")).toBe(false);
   });
 
-  it("system_administrator does NOT have manage_users", () => {
-    expect(hasPermission("system_administrator", "manage_users")).toBe(false);
+  it("system_administrator HAS manage_users (account management)", () => {
+    expect(hasPermission("system_administrator", "manage_users")).toBe(true);
+  });
+
+  it("system_administrator does NOT have manage_roles", () => {
+    expect(hasPermission("system_administrator", "manage_roles")).toBe(false);
   });
 
   it("system_administrator does NOT have verify_claims", () => {

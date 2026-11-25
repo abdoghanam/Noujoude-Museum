@@ -1,6 +1,6 @@
 import type { CollectionConfig } from "payload";
 
-import { isOwnerOrAdmin, canCreate, canUpdate } from "../access";
+import { isOwner, isOwnerOrAdmin, canCreate, canUpdate } from "../access";
 
 export const ArtifactClaims: CollectionConfig = {
   slug: "artifact-claims",
@@ -8,7 +8,7 @@ export const ArtifactClaims: CollectionConfig = {
     read: isOwnerOrAdmin,
     create: canCreate,
     update: canUpdate,
-    delete: isOwnerOrAdmin,
+    delete: isOwner,
   },
   admin: { useAsTitle: "id" },
   fields: [

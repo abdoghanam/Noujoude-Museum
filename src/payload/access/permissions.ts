@@ -44,7 +44,7 @@ const PERMISSION_MATRIX: Record<CanonicalRole, Set<PermissionAction>> = {
     "manage_integrations", "view_audit", "export_data",
   ]),
   system_administrator: new Set([
-    "view", "manage_settings", "manage_integrations", "view_audit",
+    "view", "manage_users", "manage_settings", "manage_integrations", "view_audit",
   ]),
   museum_director: new Set([
     "view", "create", "edit", "duplicate", "submit_for_review", "review",

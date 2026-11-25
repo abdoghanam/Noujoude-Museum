@@ -1,6 +1,6 @@
 import type { CollectionConfig } from "payload";
 
-import { isOwnerOrAdmin } from "../access";
+import { isOwner, isOwnerOrAdmin } from "../access";
 
 export const Inquiries: CollectionConfig = {
   slug: "inquiries",
@@ -8,7 +8,7 @@ export const Inquiries: CollectionConfig = {
     read: isOwnerOrAdmin,
     create: () => true, // Public can submit inquiries
     update: isOwnerOrAdmin,
-    delete: isOwnerOrAdmin,
+    delete: isOwner,
   },
   admin: { useAsTitle: "subject" },
   fields: [
