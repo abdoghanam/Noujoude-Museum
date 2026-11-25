@@ -41,8 +41,16 @@ import { AiKnowledgeSources } from "./collections/ai-knowledge-sources";
 const serverURL =
   process.env["PAYLOAD_PUBLIC_SERVER_URL"] ?? "http://localhost:3000";
 
+const payloadSecret =
+  process.env["PAYLOAD_SECRET"] ??
+  (process.env["NODE_ENV"] === "production"
+    ? (() => {
+        throw new Error("PAYLOAD_SECRET is required in production");
+      })()
+    : "dev-only-insecure-secret-change-me");
+
 export default buildConfig({
-  secret: process.env["PAYLOAD_SECRET"] ?? "dev-only-insecure-secret-change-me",
+  secret: payloadSecret,
   serverURL,
   localization: {
     // §4.2: public English and Arabic experiences are mandatory.
