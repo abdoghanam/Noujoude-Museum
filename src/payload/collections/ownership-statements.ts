@@ -1,7 +1,15 @@
 import type { CollectionConfig } from "payload";
 
+import { isOwnerOrAdmin, canCreate, canUpdate } from "../access";
+
 export const OwnershipStatements: CollectionConfig = {
   slug: "ownership-statements",
+  access: {
+    read: isOwnerOrAdmin,
+    create: canCreate,
+    update: canUpdate,
+    delete: isOwnerOrAdmin,
+  },
   admin: { useAsTitle: "id" },
   fields: [
     {

@@ -1,7 +1,15 @@
 import type { CollectionConfig } from "payload";
 
+import { isOwnerOrAdmin, canCreate, canUpdate } from "../access";
+
 export const ArtifactCountryRelationships: CollectionConfig = {
   slug: "artifact-country-relationships",
+  access: {
+    read: isOwnerOrAdmin,
+    create: canCreate,
+    update: canUpdate,
+    delete: isOwnerOrAdmin,
+  },
   admin: { useAsTitle: "id" },
   fields: [
     {

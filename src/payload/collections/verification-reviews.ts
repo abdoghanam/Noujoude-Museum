@@ -1,7 +1,15 @@
 import type { CollectionConfig } from "payload";
 
+import { isOwnerOrAdmin, canCreate, canUpdate } from "../access";
+
 export const VerificationReviews: CollectionConfig = {
   slug: "verification-reviews",
+  access: {
+    read: isOwnerOrAdmin,
+    create: canCreate,
+    update: canUpdate,
+    delete: isOwnerOrAdmin,
+  },
   admin: { useAsTitle: "id" },
   fields: [
     { name: "entityType", type: "text", required: true },

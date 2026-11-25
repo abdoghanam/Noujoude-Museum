@@ -1,7 +1,15 @@
 import type { CollectionConfig } from "payload";
 
+import { isOwnerOrAdmin, canCreate, canUpdate } from "../access";
+
 export const Eras: CollectionConfig = {
   slug: "eras",
+  access: {
+    read: isOwnerOrAdmin,
+    create: canCreate,
+    update: canUpdate,
+    delete: isOwnerOrAdmin,
+  },
   admin: { useAsTitle: "name" },
   fields: [
     { name: "name", type: "text", required: true, localized: true },

@@ -1,7 +1,15 @@
 import type { CollectionConfig } from "payload";
 
+import { isOwnerOrAdmin, canCreate, canUpdate } from "../access";
+
 export const MediaAssets: CollectionConfig = {
   slug: "media-assets",
+  access: {
+    read: isOwnerOrAdmin,
+    create: canCreate,
+    update: canUpdate,
+    delete: isOwnerOrAdmin,
+  },
   admin: { useAsTitle: "filename" },
   fields: [
     { name: "filename", type: "text", required: true },
