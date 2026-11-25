@@ -12,7 +12,7 @@ test.describe("image viewer", () => {
       return;
     }
     await trigger.click();
-    const dialog = page.locator("dialog");
+    const dialog = page.locator("dialog").first();
     await expect(dialog).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(dialog).not.toBeVisible();
@@ -41,9 +41,9 @@ test.describe("image viewer", () => {
       return;
     }
     await trigger.click();
-    const closeBtn = page.locator("button[aria-label='Close image viewer']");
+    const closeBtn = page.locator("button[aria-label='Close image viewer']").first();
     await closeBtn.click();
-    const dialog = page.locator("dialog");
+    const dialog = page.locator("dialog").first();
     await expect(dialog).not.toBeVisible();
   });
 });
