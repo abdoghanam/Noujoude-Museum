@@ -18,6 +18,7 @@ export default defineConfig({
       "src/**/*.test.tsx",
       "src/**/*.integration.ts",
       "tests/rbac/**/*.test.ts",
+      "tests/runtime/**/*.test.ts",
     ],
     exclude: [
       "node_modules",
