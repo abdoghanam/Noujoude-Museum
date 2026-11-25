@@ -1,6 +1,3 @@
-packages:
-  - "."
-
 # pnpm-workspace.yaml — created by `pnpm install` under Owner decision OD-2 (1 November 2026).
 #
 # `allowBuilds` is pnpm 11's mechanism for permitting a dependency to run its own install-time build
