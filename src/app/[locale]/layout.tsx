@@ -17,6 +17,7 @@ import {
   slotViewsFor,
 } from "@/lib/server/media/slots";
 import { MediaSlot } from "@/ui/media-slot";
+import { AccessibilityManager } from "@/ui/experience-engine";
 import styles from "@/ui/layout.module.css";
 import "@/ui/styles/global.css";
 import "@/ui/styles/motion.css";
@@ -107,6 +108,7 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} dir={directionOf(locale)}>
       <body>
+        <AccessibilityManager>
         <a className={styles.skip} href="#main">
           Skip to content
         </a>
@@ -174,6 +176,7 @@ export default async function LocaleLayout({
             © Noujoude Digital Heritage Museum — All Rights Reserved
           </p>
         </footer>
+        </AccessibilityManager>
       </body>
     </html>
   );
